@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Okta Secures AI — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-seller-bg:#1a1710;
+  --c-seller-border:#3d3520;
+  --c-seller-accent:#f5a623;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(60px,8vw,120px);
+  --max-w:1200px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-okta-blue);color:#fff}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--c-text-muted);
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);
+  font-size:clamp(32px,5vw,56px);
+  line-height:1.1;
+  letter-spacing:-0.02em;
+  margin-bottom:24px;
+}
+.section-subtitle{
+  font-size:18px;
+  color:var(--c-text-muted);
+  max-width:640px;
+  line-height:1.6;
+}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);
+  background:rgba(10,10,15,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+  transition:border-color 0.3s;
+}
+.nav.seller-active{border-bottom-color:var(--c-seller-accent)}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);
+  font-size:20px;
+  color:var(--c-text);
+  text-decoration:none;
+  display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:8px;list-style:none}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:13px;
+  padding:6px 12px;border-radius:6px;transition:all 0.2s;
+  font-weight:500;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+
+/* ─── Hamburger Menu (Mobile) ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+  align-items:center;justify-content:center;
+  margin-right:12px;
+}
+.hamburger span{
+  width:24px;height:2px;background:var(--c-text);
+  border-radius:2px;transition:all 0.3s;
+}
+.hamburger.active span:nth-child(1){transform:rotate(45deg) translate(8px,8px)}
+.hamburger.active span:nth-child(2){opacity:0}
+.hamburger.active span:nth-child(3){transform:rotate(-45deg) translate(8px,-8px)}
+
+/* ─── Mobile Nav Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(8px);
+  z-index:999;
+  opacity:0;visibility:hidden;
+  transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;
+  width:100%;max-width:320px;
+  background:var(--c-bg-elevated);
+  border-right:1px solid var(--c-border);
+  border-bottom:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));
+  overflow-y:auto;
+  z-index:1001;
+  transform:translateX(-100%);
+  transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+
+.nav-drawer-content{
+  padding:24px;display:flex;flex-direction:column;gap:16px;position:relative;
+}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;
+  background:none;border:none;font-size:24px;
+  cursor:pointer;color:var(--c-text-muted);
+  min-width:44px;min-height:44px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:6px;transition:all 0.2s;
+  padding:0;
+}
+.nav-drawer-close:hover{
+  color:var(--c-text);background:var(--c-surface);
+}
+.nav-drawer-links{
+  display:flex;flex-direction:column;gap:4px;list-style:none;margin-top:24px;
+}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;
+  color:var(--c-text-muted);text-decoration:none;
+  border-radius:6px;transition:all 0.2s;
+  font-size:14px;font-weight:500;
+}
+.nav-drawer-links a:hover{
+  background:var(--c-surface);color:var(--c-text)
+}
+.nav-drawer-separator{
+  height:1px;background:var(--c-border);
+}
+.nav-drawer .seller-toggle{
+  width:100%;justify-content:center;
+  padding:10px 14px;min-height:44px;
+}
+
+/* ─── Seller Mode Toggle ─── */
+.seller-toggle{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 14px;border-radius:8px;
+  border:1px solid var(--c-border);
+  cursor:pointer;transition:all 0.3s;
+  background:transparent;color:var(--c-text-muted);
+  font-family:var(--font-mono);font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;
+  user-select:none;
+  min-height:44px;
+}
+.seller-toggle:hover{border-color:var(--c-seller-accent);color:var(--c-seller-accent)}
+.seller-toggle.active{
+  border-color:var(--c-seller-accent);
+  background:rgba(245,166,35,0.08);
+  color:var(--c-seller-accent);
+}
+.seller-toggle .toggle-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--c-text-dim);transition:all 0.3s;
+}
+.seller-toggle.active .toggle-dot{
+  background:var(--c-seller-accent);
+  box-shadow:0 0 8px var(--c-seller-accent);
+}
+
+/* ─── Seller-only sections ─── */
+.seller-section{
+  display:none;
+  border-top:2px solid var(--c-seller-border);
+  position:relative;
+}
+body.seller-mode .seller-section{display:block}
+.seller-badge{
+  position:absolute;top:20px;right:24px;
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--c-seller-accent);
+  padding:4px 10px;border:1px solid var(--c-seller-border);
+  border-radius:4px;background:rgba(245,166,35,0.06);
+}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 80px) 0 var(--section-pad);
+  position:relative;overflow:hidden;
+  min-height:100vh;
+  display:flex;align-items:center;
+}
+.hero::before{
+  content:'';position:absolute;top:-200px;right:-200px;
+  width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,102,204,0.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;bottom:-300px;left:-100px;
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(103,66,213,0.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-content{position:relative;z-index:1}
+.hero-eyebrow{
+  font-family:var(--font-mono);font-size:12px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-okta-blue-light);
+  margin-bottom:24px;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-eyebrow::before{
+  content:'';width:40px;height:2px;
+  background:linear-gradient(90deg,var(--c-okta-blue),var(--c-auth0-purple));
+}
+.hero h1{
+  font-family:var(--font-display);
+  font-size:clamp(42px,7vw,80px);
+  line-height:1.0;
+  letter-spacing:-0.03em;
+  margin-bottom:24px;
+  max-width:800px;
+}
+.hero h1 em{font-style:italic;color:var(--c-okta-blue-light)}
+.hero-desc{
+  font-size:19px;color:var(--c-text-muted);
+  max-width:560px;margin-bottom:48px;line-height:1.7;
+}
+.hero-stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2px;
+  background:var(--c-border);
+  border-radius:12px;
+  overflow:hidden;
+  max-width:900px;
+}
+.hero-stat{
+  background:var(--c-bg-elevated);
+  padding:28px 24px;
+  text-align:center;
+}
+.hero-stat .num{
+  font-family:var(--font-display);
+  font-size:clamp(28px,4vw,44px);
+  color:var(--c-text);
+  line-height:1;
+  margin-bottom:8px;
+}
+.hero-stat .num .suffix{font-size:0.6em;color:var(--c-okta-blue-light)}
+.hero-stat .label{
+  font-size:12px;color:var(--c-text-muted);line-height:1.4;
+  font-weight:500;
+}
+
+/* ─── Stats animation ─── */
+.count-up{opacity:0;transform:translateY(10px);transition:all 0.6s ease-out}
+.count-up.visible{opacity:1;transform:translateY(0)}
+
+/* ─── Section Base ─── */
+section{padding:var(--section-pad) 0}
+section:nth-child(even){background:var(--c-bg-elevated)}
+.seller-section{background:var(--c-seller-bg) !important}
+
+/* ─── Problem Section ─── */
+.risk-card{
+  background:var(--c-bg-card);
+  border:1px solid var(--c-border);
+  border-radius:12px;
+  padding:28px;
+  backdrop-filter:blur(10px);
+  transition:all 0.3s;
+  position:relative;
+  overflow:hidden;
+}
+.risk-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--c-accent-red),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.risk-card:hover{border-color:var(--c-accent-red);transform:translateY(-2px)}
+.risk-card:hover::before{opacity:1}
+.risk-card .icon{
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(255,71,87,0.1);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;font-size:18px;
+}
+.risk-card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.risk-card p{font-size:14px;color:var(--c-text-muted);line-height:1.6}
+
+.stat-bar{
+  display:flex;align-items:center;gap:16px;
+  padding:20px 0;
+  border-bottom:1px solid var(--c-border);
+}
+.stat-bar:last-child{border-bottom:none}
+.stat-bar .big-num{
+  font-family:var(--font-display);
+  font-size:36px;
+  min-width:100px;
+  color:var(--c-accent-red);
+}
+.stat-bar .stat-desc{font-size:14px;color:var(--c-text-muted)}
+
+/* ─── Solution Lifecycle ─── */
+.lifecycle{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+  background:var(--c-border);border-radius:16px;overflow:hidden;
+  margin-top:40px;
+}
+.lifecycle-phase{
+  background:var(--c-bg);padding:32px 24px;
+  position:relative;transition:all 0.3s;
+}
+.lifecycle-phase:hover{background:var(--c-bg-elevated)}
+.phase-num{
+  font-family:var(--font-mono);font-size:11px;
+  color:var(--c-okta-blue-light);letter-spacing:2px;
+  margin-bottom:12px;
+}
+.phase-title{
+  font-family:var(--font-display);font-size:24px;
+  margin-bottom:12px;
+}
+.phase-desc{font-size:13px;color:var(--c-text-muted);line-height:1.6;margin-bottom:16px}
+.phase-products{display:flex;flex-wrap:wrap;gap:6px}
+.phase-products span{
+  font-size:11px;padding:3px 8px;border-radius:4px;
+  background:rgba(0,102,204,0.1);color:var(--c-okta-blue-light);
+  font-family:var(--font-mono);
+}
+
+/* ─── Auth0 Section ─── */
+.auth0-section{
+  background:linear-gradient(180deg,var(--c-bg) 0%,#0e0b18 100%) !important;
+}
+.feature-card{
+  background:rgba(103,66,213,0.06);
+  border:1px solid rgba(103,66,213,0.15);
+  border-radius:12px;
+  padding:28px;
+  transition:all 0.3s;
+}
+.feature-card:hover{
+  border-color:var(--c-auth0-purple);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(103,66,213,0.1);
+}
+.feature-card .fc-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(103,66,213,0.15);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;font-size:18px;color:var(--c-auth0-purple-light);
+}
+.feature-card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--c-text-muted);line-height:1.6}
+
+.sdk-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
+.sdk-pill{
+  padding:8px 16px;border-radius:20px;
+  background:rgba(103,66,213,0.08);
+  border:1px solid rgba(103,66,213,0.2);
+  color:var(--c-auth0-purple-light);
+  font-size:13px;font-weight:500;
+  transition:all 0.2s;cursor:default;
+}
+.sdk-pill:hover{background:rgba(103,66,213,0.15);border-color:var(--c-auth0-purple)}
+
+/* ─── Interactive Elements Touch Sizing ─── */
+button,a[href*="#"],input[type="number"],input[type="text"],select{
+  min-height:44px;
+}
+.accordion-header{min-height:48px}
+
+/* ─── Code Block ─── */
+.code-block{
+  background:#0d0d14;
+  border:1px solid var(--c-border);
+  border-radius:12px;
+  overflow:hidden;
+  margin-top:32px;
+  position:relative;
+}
+.code-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid var(--c-border);
+  background:rgba(255,255,255,0.02);
+}
+.code-header .dots{display:flex;gap:6px}
+.code-header .dots span{width:10px;height:10px;border-radius:50%;background:var(--c-border)}
+.code-header .filename{font-family:var(--font-mono);font-size:12px;color:var(--c-text-muted)}
+.copy-btn{
+  background:none;border:1px solid var(--c-border);color:var(--c-text-muted);
+  padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;
+  font-family:var(--font-mono);transition:all 0.2s;
+}
+.copy-btn:hover{border-color:var(--c-text-muted);color:var(--c-text)}
+.code-block pre{
+  padding:20px;overflow-x:auto;
+  font-family:var(--font-mono);font-size:13px;line-height:1.7;
+  color:#c9d1d9;
+}
+.code-block .kw{color:#ff7b72}
+.code-block .fn{color:#d2a8ff}
+.code-block .str{color:#a5d6ff}
+.code-block .cm{color:#5a5a6a}
+.code-block .typ{color:#79c0ff}
+
+/* ─── Architecture Patterns ─── */
+.pattern-card{
+  background:var(--c-bg-card);
+  border:1px solid var(--c-border);
+  border-radius:12px;
+  padding:24px;
+  backdrop-filter:blur(10px);
+  transition:all 0.3s;
+}
+.pattern-card:hover{border-color:var(--c-okta-blue);transform:translateY(-2px)}
+.pattern-tag{
+  display:inline-block;
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:1px;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;
+  background:rgba(0,102,204,0.1);color:var(--c-okta-blue-light);
+  margin-bottom:12px;
+}
+.pattern-card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.pattern-card .use-case{font-size:13px;color:var(--c-text-muted);margin-bottom:12px}
+.pattern-flow{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:12px;background:rgba(0,0,0,0.3);border-radius:8px;
+  margin-top:12px;
+}
+.flow-step{
+  font-size:11px;padding:4px 10px;border-radius:4px;
+  background:rgba(0,102,204,0.12);color:var(--c-okta-blue-light);
+  font-family:var(--font-mono);white-space:nowrap;
+}
+.flow-arrow{color:var(--c-text-dim);font-size:14px}
+
+/* ─── Token Flow Section ─── */
+.token-flow-visual{
+  display:flex;flex-direction:column;gap:3px;
+  margin-top:40px;
+  background:var(--c-border);
+  border-radius:16px;
+  overflow:hidden;
+}
+.token-step{
+  display:grid;grid-template-columns:60px 1fr;
+  background:var(--c-bg);
+  padding:20px 24px;
+  gap:16px;
+  align-items:start;
+}
+.step-num{
+  font-family:var(--font-display);font-size:28px;
+  color:var(--c-okta-blue-light);
+  text-align:center;
+  line-height:1;
+  padding-top:2px;
+}
+.step-content h4{font-size:15px;font-weight:600;margin-bottom:4px}
+.step-content p{font-size:13px;color:var(--c-text-muted)}
+
+/* ─── Seller: CIO Talk Track ─── */
+.talk-track-card{
+  background:rgba(245,166,35,0.04);
+  border:1px solid var(--c-seller-border);
+  border-radius:12px;
+  padding:28px;
+}
+.talk-track-card h3{
+  font-family:var(--font-display);font-size:20px;
+  margin-bottom:12px;color:var(--c-seller-accent);
+}
+.talk-track-card p,.talk-track-card li{font-size:14px;color:var(--c-text-muted);line-height:1.7}
+.talk-track-card ul{list-style:none;padding:0}
+.talk-track-card ul li{padding:6px 0;padding-left:20px;position:relative}
+.talk-track-card ul li::before{
+  content:'\25B8';position:absolute;left:0;color:var(--c-seller-accent);
+}
+blockquote{
+  border-left:3px solid var(--c-seller-accent);
+  padding:16px 20px;margin:16px 0;
+  background:rgba(245,166,35,0.04);
+  border-radius:0 8px 8px 0;
+  font-style:italic;font-size:15px;
+  color:var(--c-text-muted);
+}
+blockquote cite{
+  display:block;margin-top:8px;font-style:normal;
+  font-size:12px;color:var(--c-seller-accent);
+  font-family:var(--font-mono);
+}
+
+/* ─── Seller: Pricing Calculator ─── */
+.calc-container{
+  background:rgba(245,166,35,0.04);
+  border:1px solid var(--c-seller-border);
+  border-radius:16px;
+  padding:32px;
+  margin-top:32px;
+}
+.calc-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px}
+.calc-field label{
+  display:block;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.calc-field input,.calc-field select{
+  width:100%;padding:12px 16px;
+  background:rgba(0,0,0,0.3);
+  border:1px solid var(--c-seller-border);
+  border-radius:8px;color:var(--c-text);
+  font-family:var(--font-body);font-size:16px;
+  transition:border-color 0.2s;
+}
+.calc-field input:focus,.calc-field select:focus{
+  outline:none;border-color:var(--c-seller-accent);
+}
+.calc-field select option{background:var(--c-bg)}
+.calc-output{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;background:var(--c-seller-border);
+  border-radius:12px;overflow:hidden;
+}
+.calc-result{
+  background:var(--c-seller-bg);padding:24px;text-align:center;
+}
+.calc-result .result-label{
+  font-size:11px;font-family:var(--font-mono);
+  color:var(--c-text-muted);letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:8px;
+}
+.calc-result .result-value{
+  font-family:var(--font-display);font-size:32px;
+  color:var(--c-seller-accent);
+}
+
+.adoption-table{
+  width:100%;border-collapse:collapse;margin-top:32px;
+  font-size:13px;
+}
+.adoption-table th{
+  text-align:left;padding:12px 16px;
+  border-bottom:2px solid var(--c-seller-border);
+  font-family:var(--font-mono);font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--c-text-muted);
+}
+.adoption-table td{
+  padding:12px 16px;border-bottom:1px solid var(--c-border);
+  color:var(--c-text-muted);vertical-align:top;
+}
+.adoption-table tr:hover td{color:var(--c-text)}
+
+/* ─── Seller: Discovery Questions ─── */
+.accordion-item{
+  border:1px solid var(--c-seller-border);
+  border-radius:8px;
+  margin-bottom:8px;
+  overflow:hidden;
+}
+.accordion-header{
+  padding:16px 20px;
+  display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;background:rgba(245,166,35,0.03);
+  font-weight:600;font-size:15px;
+  transition:background 0.2s;
+}
+.accordion-header:hover{background:rgba(245,166,35,0.06)}
+.accordion-arrow{
+  transition:transform 0.3s;font-size:12px;color:var(--c-seller-accent);
+}
+.accordion-item.open .accordion-arrow{transform:rotate(180deg)}
+.accordion-body{
+  max-height:0;overflow:hidden;transition:max-height 0.4s ease;
+}
+.accordion-body-inner{padding:0 20px 20px}
+.accordion-body ol{
+  padding-left:24px;counter-reset:q;
+}
+.accordion-body ol li{
+  padding:8px 0;font-size:14px;color:var(--c-text-muted);
+  border-bottom:1px solid rgba(42,42,58,0.3);
+  line-height:1.6;
+}
+.accordion-body ol li:last-child{border-bottom:none}
+
+/* ─── Seller: Competitive ─── */
+.comp-table{
+  width:100%;border-collapse:collapse;font-size:13px;
+  margin-top:24px;
+}
+.comp-table th{
+  padding:12px 16px;text-align:left;
+  border-bottom:2px solid var(--c-seller-border);
+  font-family:var(--font-mono);font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--c-text-muted);
+}
+.comp-table td{
+  padding:12px 16px;border-bottom:1px solid var(--c-border);
+  color:var(--c-text-muted);vertical-align:top;
+}
+.comp-table tr:first-child td{color:var(--c-okta-blue-light);font-weight:600}
+.comp-check{color:var(--c-accent-green)}
+.comp-partial{color:var(--c-accent-amber)}
+.comp-miss{color:var(--c-accent-red)}
+
+/* ─── Seller: Win Stories ─── */
+.win-card{
+  background:rgba(245,166,35,0.04);
+  border:1px solid var(--c-seller-border);
+  border-radius:12px;
+  padding:28px;
+}
+.win-card .company{
+  font-family:var(--font-display);font-size:24px;
+  margin-bottom:4px;
+}
+.win-card .deal-tag{
+  display:inline-block;font-family:var(--font-mono);font-size:10px;
+  letter-spacing:1px;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;
+  background:rgba(46,213,115,0.1);color:var(--c-accent-green);
+  margin-bottom:16px;
+}
+.win-card p{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:12px}
+.win-card .takeaway{
+  font-size:13px;color:var(--c-seller-accent);font-weight:600;
+  margin-top:16px;padding-top:16px;border-top:1px solid var(--c-seller-border);
+}
+
+/* ─── Resources ─── */
+.resource-link{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;
+  border:1px solid var(--c-border);
+  border-radius:8px;
+  text-decoration:none;color:var(--c-text);
+  transition:all 0.2s;
+  font-size:14px;
+}
+.resource-link:hover{border-color:var(--c-okta-blue);background:rgba(0,102,204,0.04)}
+.resource-link .r-icon{font-size:20px;width:32px;text-align:center}
+.resource-link .r-label{font-weight:500}
+.resource-link .r-desc{font-size:12px;color:var(--c-text-muted)}
+
+/* ─── Footer ─── */
+.footer{
+  padding:40px 0;text-align:center;
+  border-top:1px solid var(--c-border);
+  font-size:13px;color:var(--c-text-dim);
+}
+
+/* ─── Responsive ─── */
+@media(max-width:900px){
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .lifecycle{grid-template-columns:repeat(2,1fr)}
+  .calc-inputs{grid-template-columns:1fr}
+  .calc-output{grid-template-columns:1fr}
+}
+
+@media(max-width:768px){
+  .hamburger{display:flex}
+  .nav-links{display:none}
+  .nav-brand{font-size:18px;gap:8px}
+  .nav-brand .okta-mark{width:24px;height:24px;font-size:10px}
+  .seller-toggle{display:none}
+}
+
+@media(max-width:600px){
+  .hero-stats{grid-template-columns:1fr}
+  .lifecycle{grid-template-columns:1fr}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .container{padding:0 16px}
+  .nav-inner{padding:0 16px}
+
+  /* Code blocks and tables — ensure horizontal scroll is available */
+  .code-block pre{font-size:12px;line-height:1.5;padding:16px}
+  .code-header{flex-direction:column;gap:8px;padding:10px 12px}
+  .code-header .dots{order:2}
+
+  /* Table improvements */
+  .adoption-table,.comp-table{font-size:12px}
+  .adoption-table th,.comp-table th{padding:10px 12px}
+  .adoption-table td,.comp-table td{padding:10px 12px}
+
+  /* Smaller accordion text on mobile */
+  .accordion-header{font-size:14px;padding:14px 16px}
+  .accordion-body ol li{font-size:13px;padding:6px 0}
+
+  /* Calc inputs and results fit better */
+  .calc-result .result-value{font-size:24px}
+}
+
+/* ─── Scroll reveal ─── */
+.reveal{opacity:0;transform:translateY(20px);transition:all 0.7s cubic-bezier(0.16,1,0.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:0.1s}
+.reveal-delay-2{transition-delay:0.2s}
+.reveal-delay-3{transition-delay:0.3s}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Okta Secures AI
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="#problem">The Problem</a></li>
+      <li><a href="#okta-solution">Okta Platform</a></li>
+      <li><a href="#auth0">Auth0 for AI</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#token-flow">Token Flow</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid var(--c-seller-border);border-radius:6px;">SE Technical Deep-Dive &rarr;</a></li>
+    </ul>
+    <button class="seller-toggle" id="sellerToggle" onclick="toggleSellerMode()">
+      <span class="toggle-dot"></span>
+      Seller Mode
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Nav Drawer ─── -->
+<div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+<div class="nav-drawer" id="navDrawer" role="navigation" aria-label="Mobile navigation">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button" aria-label="Close menu">✕</button>
+    <ul class="nav-drawer-links">
+      <li><a href="#problem">The Problem</a></li>
+      <li><a href="#okta-solution">Okta Platform</a></li>
+      <li><a href="#auth0">Auth0 for AI</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#token-flow">Token Flow</a></li>
+      <li><a href="technical.html">SE Technical Deep-Dive →</a></li>
+    </ul>
+    <div class="nav-drawer-separator"></div>
+    <button class="seller-toggle" id="sellerToggleMobile" onclick="toggleSellerModeMobile()">
+      <span class="toggle-dot"></span>
+      Seller Mode
+    </button>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero" id="hero">
+  <div class="container hero-content">
+    <div class="hero-eyebrow">Okta + Auth0 for AI Agents</div>
+    <h1>AI Security Starts<br>with <em>Identity</em></h1>
+    <p class="hero-desc">Agents are autonomous. They make decisions, access data, and trigger workflows at machine speed. Every material risk in the agentic enterprise is an identity problem.</p>
+    <div class="hero-stats">
+      <div class="hero-stat count-up">
+        <div class="num"><span data-target="91">0</span><span class="suffix">%</span></div>
+        <div class="label">of companies adopting<br>AI agents</div>
+      </div>
+      <div class="hero-stat count-up">
+        <div class="num"><span data-target="58">0</span></div>
+        <div class="label">tool calls per single<br>agent conversation</div>
+      </div>
+      <div class="hero-stat count-up">
+        <div class="num"><span data-target="580">0</span><span class="suffix">M</span></div>
+        <div class="label">access policy decisions<br>at enterprise scale</div>
+      </div>
+      <div class="hero-stat count-up">
+        <div class="num"><span data-target="6500">0</span><span class="suffix">+</span></div>
+        <div class="label">public MCP servers<br>in the ecosystem</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── The Problem ─── -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label reveal">The Problem</div>
+    <h2 class="section-title reveal">Meet Your Next<br>Insider Threat</h2>
+    <p class="section-subtitle reveal">Anyone can spin up an AI agent in minutes. These agents bypass SSO, skip MFA, and hold direct access to your most sensitive data. Traditional security was built for humans.</p>
+
+    <div class="grid-4" style="margin-top:40px">
+      <div class="risk-card reveal">
+        <div class="icon">&#x1F6E1;</div>
+        <h3>Shadow AI Sprawl</h3>
+        <p>Users build agents with no approval process. IT can see who logs in, but what the agent does after login is completely invisible.</p>
+      </div>
+      <div class="risk-card reveal reveal-delay-1">
+        <div class="icon">&#x1F511;</div>
+        <h3>Over-Permissioned Accounts</h3>
+        <p>Agents are configured with service accounts that grant full admin access, long-lived tokens, and no user binding.</p>
+      </div>
+      <div class="risk-card reveal reveal-delay-2">
+        <div class="icon">&#x1F464;</div>
+        <h3>Missing User Context</h3>
+        <p>Agents operate without user context. They need to act on behalf of a user with permissions lesser than or equal to that user's.</p>
+      </div>
+      <div class="risk-card reveal reveal-delay-3">
+        <div class="icon">&#x1F4CA;</div>
+        <h3>No Audit Trail</h3>
+        <p>Agents work 24/7 at 5,000 ops/minute. EU AI Act Section 14 mandates every agent action be logged with who, why, when, and on whose behalf.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:48px;max-width:600px" class="reveal">
+      <div class="stat-bar">
+        <div class="big-num count-up"><span data-target="40">0</span>%</div>
+        <div class="stat-desc">of enterprise apps will feature AI agents by end of 2026 <span style="color:var(--c-text-dim)">— Gartner</span></div>
+      </div>
+      <div class="stat-bar">
+        <div class="big-num count-up"><span data-target="53">0</span>%</div>
+        <div class="stat-desc">of AI agents are accessing sensitive information invisible to legacy security</div>
+      </div>
+      <div class="stat-bar">
+        <div class="big-num count-up"><span data-target="90">0</span>%</div>
+        <div class="stat-desc">of agents are over-permissioned — builders default to "admin" rights</div>
+      </div>
+      <div class="stat-bar">
+        <div class="big-num" style="color:var(--c-accent-red)">16&times;</div>
+        <div class="stat-desc">faster data movement than humans. Response window shrinks from hours to seconds.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Okta Platform Solution ─── -->
+<section id="okta-solution">
+  <div class="container">
+    <div class="section-label reveal">Okta Platform</div>
+    <h2 class="section-title reveal">Discover. Register.<br>Protect. Govern.</h2>
+    <p class="section-subtitle reveal">Okta for AI Agents manages the full identity lifecycle for agents — the same rigor you apply to human identities, extended to your autonomous digital workforce.</p>
+
+    <div class="lifecycle reveal">
+      <div class="lifecycle-phase">
+        <div class="phase-num">Phase 01</div>
+        <div class="phase-title">Discover</div>
+        <div class="phase-desc">Find every agent — whether spun up in a browser or dev platform. Map blast radius and prioritize highest risks.</div>
+        <div class="phase-products">
+          <span>ISPM</span>
+          <span>SAM Plugin</span>
+          <span>Shadow AI Detection</span>
+        </div>
+      </div>
+      <div class="lifecycle-phase">
+        <div class="phase-num">Phase 02</div>
+        <div class="phase-title">Register</div>
+        <div class="phase-desc">Bring every agent into Universal Directory as a first-class identity. Assign human owners and issue credentials.</div>
+        <div class="phase-products">
+          <span>Universal Directory</span>
+          <span>Agent Identity</span>
+          <span>PKI Auth</span>
+        </div>
+      </div>
+      <div class="lifecycle-phase">
+        <div class="phase-num">Phase 03</div>
+        <div class="phase-title">Protect</div>
+        <div class="phase-desc">Enforce least-privilege access with managed connections, token vaulting, fine-grained authorization, and human-in-the-loop controls.</div>
+        <div class="phase-products">
+          <span>XAA</span>
+          <span>Token Vault</span>
+          <span>FGA</span>
+          <span>CIBA</span>
+          <span>OPA</span>
+        </div>
+      </div>
+      <div class="lifecycle-phase">
+        <div class="phase-num">Phase 04</div>
+        <div class="phase-title">Govern</div>
+        <div class="phase-desc">Manage agent lifecycle with access reviews, certification campaigns, audit logging, and automated session termination.</div>
+        <div class="phase-products">
+          <span>OIG</span>
+          <span>ITP</span>
+          <span>System Logs</span>
+          <span>Universal Logout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capability matrix -->
+    <div style="margin-top:48px" class="reveal">
+      <h3 style="font-family:var(--font-display);font-size:24px;margin-bottom:20px">Capability Matrix</h3>
+      <div style="overflow-x:auto">
+        <table class="adoption-table">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>Description</th>
+              <th>Key Use Cases</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">Agent Identity</td><td>Register agents as workload identity principals in Universal Directory</td><td>Agent onboarding, lifecycle management, certificate-based auth</td></tr>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">Cross-App Access (XAA)</td><td>Enterprise-managed delegation enabling agents to access internal resources on behalf of users</td><td>Internal tool access, enterprise API federation, controlled delegation</td></tr>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">Token Vault</td><td>Secure storage and management of OAuth tokens for third-party SaaS access</td><td>Gmail, Salesforce, Slack integration; consent-based access</td></tr>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">Fine-Grained Auth (FGA)</td><td>Relationship-based access control for document and data-level permissions</td><td>RAG filtering, document access, data classification enforcement</td></tr>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">CIBA (Human-in-Loop)</td><td>Asynchronous authorization allowing user approval for agent actions via push or email</td><td>High-value transactions, sensitive data access, privileged operations</td></tr>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">Identity Governance (OIG)</td><td>Lifecycle governance, access requests, and certification for agents</td><td>Agent provisioning, access reviews, compliance attestation</td></tr>
+            <tr><td style="color:var(--c-okta-blue-light);font-weight:600">MCP Authorization</td><td>OAuth-based authorization for Model Context Protocol server access</td><td>MCP tool authorization, gateway integration, scope management</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Auth0 for AI Agents ─── -->
+<section id="auth0" class="auth0-section">
+  <div class="container">
+    <div class="section-label reveal" style="color:var(--c-auth0-purple-light)">Auth0 for AI Agents</div>
+    <h2 class="section-title reveal">The Developer<br>Security Toolkit</h2>
+    <p class="section-subtitle reveal">A suite of identity features that help developers build secure GenAI applications. SDKs for every major AI framework.</p>
+
+    <div class="grid-2" style="margin-top:40px">
+      <div class="feature-card reveal">
+        <div class="fc-icon">&#x1F512;</div>
+        <h3>User Authentication</h3>
+        <p>Securely authenticate users with Universal Login — OAuth 2.0 and OpenID Connect for both interactive and headless AI agents. Support for social, enterprise, and custom identity providers.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="fc-icon">&#x1F5C4;</div>
+        <h3>Token Vault</h3>
+        <p>Securely connect agents to external tools — Google, Slack, GitHub. Manages obtaining, storing, and refreshing API tokens. Agents never handle sensitive credentials directly.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="fc-icon">&#x1F6D1;</div>
+        <h3>Async Auth (CIBA)</h3>
+        <p>Human-in-the-loop for critical actions. Agents request approval via push, SMS, or email using Client-Initiated Backchannel Authentication. Supports Rich Authorization Requests (RAR).</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="fc-icon">&#x1F50D;</div>
+        <h3>Authorization for RAG</h3>
+        <p>Enforce document-level access control in RAG pipelines using Auth0 FGA. Only data the user is authorized to see is included in LLM context. Prevents sensitive data leakage.</p>
+      </div>
+    </div>
+
+    <!-- Code snippet -->
+    <div class="code-block reveal">
+      <div class="code-header">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="filename">context-docs.ts — FGA-protected RAG tool</div>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+<pre id="codeSnippet"><span class="kw">import</span> { FGARetriever } <span class="kw">from</span> <span class="str">"@auth0/ai-langchain/RAG"</span>;
+
+<span class="kw">const</span> retriever = <span class="fn">FGARetriever.create</span>({
+  retriever: vectorStore.<span class="fn">asRetriever</span>(),
+  <span class="cm">// FGA tuple: check if user can view this document</span>
+  <span class="fn">buildQuery</span>: (doc) => ({
+    user: <span class="str">`user:${user?.email}`</span>,
+    object: <span class="str">`doc:${doc.metadata.documentId}`</span>,
+    relation: <span class="str">"can_view"</span>,
+  }),
+});
+
+<span class="cm">// Only authorized documents reach the LLM</span>
+<span class="kw">const</span> documents = <span class="kw">await</span> retriever.<span class="fn">invoke</span>(question);</pre>
+    </div>
+
+    <div class="sdk-pills reveal">
+      <span class="sdk-pill">LangChain</span>
+      <span class="sdk-pill">LlamaIndex</span>
+      <span class="sdk-pill">Vercel AI SDK</span>
+      <span class="sdk-pill">Cloudflare Agents</span>
+      <span class="sdk-pill">Genkit</span>
+      <span class="sdk-pill">JavaScript SDK</span>
+      <span class="sdk-pill">Python SDK</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Architecture Patterns ─── -->
+<section id="architecture">
+  <div class="container">
+    <div class="section-label reveal">Architecture</div>
+    <h2 class="section-title reveal">Reference Patterns</h2>
+    <p class="section-subtitle reveal">Five foundational patterns for securing agent-to-resource and agent-to-agent communication, grounded in OpenID Foundation standards.</p>
+
+    <div class="grid-3" style="margin-top:40px">
+      <div class="pattern-card reveal">
+        <div class="pattern-tag">Pattern A — XAA</div>
+        <h3>Agent-to-Resource (Enterprise)</h3>
+        <p class="use-case">Agent accesses internal APIs (HR, CRM, ERP) on behalf of authenticated users.</p>
+        <div class="pattern-flow">
+          <span class="flow-step">Agent Auth (PKI)</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">XAA Token Exchange</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">ID-JAG</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Resource Access</span>
+        </div>
+      </div>
+      <div class="pattern-card reveal reveal-delay-1">
+        <div class="pattern-tag">Pattern B — Token Vault</div>
+        <h3>Agent-to-Resource (Consent)</h3>
+        <p class="use-case">Agent accesses third-party SaaS (Gmail, Salesforce, Slack) with user consent.</p>
+        <div class="pattern-flow">
+          <span class="flow-step">OAuth Consent</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Token Vault Store</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Auto Refresh</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">SaaS API</span>
+        </div>
+      </div>
+      <div class="pattern-card reveal reveal-delay-2">
+        <div class="pattern-tag">Pattern C — A2A</div>
+        <h3>Agent-to-Agent</h3>
+        <p class="use-case">Multiple specialized agents collaborate, with delegation chains preserved.</p>
+        <div class="pattern-flow">
+          <span class="flow-step">Agent A (Client)</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Validate Identity</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Agent B (Resource)</span>
+        </div>
+      </div>
+      <div class="pattern-card reveal">
+        <div class="pattern-tag">Pattern D — CIBA</div>
+        <h3>Human-in-the-Loop</h3>
+        <p class="use-case">Sensitive actions (large transactions, PII access) require explicit human approval.</p>
+        <div class="pattern-flow">
+          <span class="flow-step">Agent Request</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">CIBA Push</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">User Approves</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Token Issued</span>
+        </div>
+      </div>
+      <div class="pattern-card reveal reveal-delay-1">
+        <div class="pattern-tag">Pattern E — FGA + RAG</div>
+        <h3>RAG Security</h3>
+        <p class="use-case">AI agent uses RAG with enterprise documents — access levels enforced at retrieval time.</p>
+        <div class="pattern-flow">
+          <span class="flow-step">RAG Query</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">FGA Check</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">Filtered Context</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-step">LLM Response</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Token Exchange Flow ─── -->
+<section id="token-flow">
+  <div class="container">
+    <div class="section-label reveal">Technical Deep-Dive</div>
+    <h2 class="section-title reveal">Token Exchange Flow</h2>
+    <p class="section-subtitle reveal">How an AI agent securely obtains credentials to access protected resources on behalf of an authenticated user via Okta's org authorization server.</p>
+
+    <div class="token-flow-visual reveal">
+      <div class="token-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>User Authenticates</h4>
+          <p>User authenticates with the Okta org authorization server using a web app (Authorization Code + PKCE). Server returns an ID token to the web app.</p>
+        </div>
+      </div>
+      <div class="token-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>ID Token Passed to Agent</h4>
+          <p>The web app passes the ID token to the AI agent so it can perform actions on the user's behalf. Every subsequent action is bound to this user context.</p>
+        </div>
+      </div>
+      <div class="token-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Agent Exchanges Token</h4>
+          <p>Agent sends the ID token to Okta and requests exchange for resource credentials (ID-JAG, secret, or service account). Okta validates against Managed Connections configuration.</p>
+        </div>
+      </div>
+      <div class="token-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>ID-JAG to Access Token</h4>
+          <p>If the credential is an ID-JAG (Identity Assertion JWT), the agent sends it to the custom authorization server to exchange for a usable, scoped access token.</p>
+        </div>
+      </div>
+      <div class="token-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Resource Access</h4>
+          <p>Agent uses the access token to request the protected resource. Every action is logged: who, what, when, on whose behalf, with a digital signature.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SELLER MODE SECTIONS                        -->
+<!-- ════════════════════════════════════════════ -->
+
+<!-- ─── CIO Talk Track ─── -->
+<section class="seller-section" id="cio-track">
+  <div class="seller-badge">Internal</div>
+  <div class="container">
+    <div class="section-label" style="color:var(--c-seller-accent)">Seller Intel</div>
+    <h2 class="section-title">CIO Talk Track</h2>
+    <p class="section-subtitle">Key positioning insights from CIO conversations. Use these frameworks when speaking to executive buyers.</p>
+
+    <div class="grid-2" style="margin-top:40px">
+      <div class="talk-track-card">
+        <h3>The Four Layers Framework</h3>
+        <p>CIOs think in four layers when evaluating AI. Align your conversation to all four — not just technology:</p>
+        <ul>
+          <li><strong>People</strong> — What new skills and teams do I need? I can't spin up new teams overnight.</li>
+          <li><strong>Process</strong> — AI changes how domains connect. My SaaS-aligned org structure may not work anymore.</li>
+          <li><strong>Technology</strong> — Table stakes. Has to run. But it's just one layer.</li>
+          <li><strong>Data</strong> — Your AI strategy is only as good as your data strategy.</li>
+        </ul>
+        <blockquote>"If you're not talking about those layers to your CIO, you're just talking about a technology. Then you are just a connector in a Martech slide — a single-source vendor for one thing."<cite>— CIO, Fortune 500</cite></blockquote>
+      </div>
+      <div class="talk-track-card">
+        <h3>Positioning Tips</h3>
+        <ul>
+          <li>Don't come in with "big brand identity" — get laser-focused on <strong>their specific needs</strong></li>
+          <li>It has become <strong>cheaper to build than buy</strong> — CIOs are re-evaluating every SaaS vendor through an AI lens</li>
+          <li>CIOs are making decisions <strong>right now</strong> — every vendor is talking to them about AI</li>
+          <li>Be a <strong>thought leader</strong>, not just a sales rep. Bring perspective on the double bubble: managing SaaS while building AI</li>
+          <li>Frame Okta across all four layers: People (skill augmentation), Process (workloads), Technology (brand), Data (strategy)</li>
+          <li>The <strong>"build vs. buy" calculus has shifted</strong> — but the SAS apocalypse is the extreme end. Position nuance.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:32px" class="talk-track-card">
+      <h3>The Killer Stat Narrative</h3>
+      <p>Use this progression to quantify the problem during your pitch:</p>
+      <ul>
+        <li><strong>1,000 agents</strong> &times; <strong>58 tools</strong> per conversation = <strong>58,000 access paths</strong></li>
+        <li>&times; <strong>10,000 users</strong> = <strong>580,000,000 access paths</strong></li>
+        <li>&times; <strong>10 conversations/user</strong> = <strong>5.8 billion access policy decisions</strong></li>
+        <li>Each one needs: Who's accessing? Is it user-bound? Least privilege? Short-lived tokens? Auditable?</li>
+      </ul>
+      <blockquote>"If you give an agent access to sensitive APIs 'just in case,' the agent will find a reason to use it — that's the job of the LLM system."<cite>— Anthropic Engineering Study</cite></blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Pricing Calculator ─── -->
+<section class="seller-section" id="pricing">
+  <div class="seller-badge">Internal</div>
+  <div class="container">
+    <div class="section-label" style="color:var(--c-seller-accent)">Pricing</div>
+    <h2 class="section-title">Pricing Calculator</h2>
+    <p class="section-subtitle">Okta for AI Agents: $5 per Agent-to-Identity Connection per month. An AIC = unique assignment of an AI Agent to a User Identity.</p>
+
+    <div class="calc-container">
+      <div class="calc-inputs">
+        <div class="calc-field">
+          <label>Users with AI Agents</label>
+          <input type="number" id="calcUsers" value="1000" min="1" oninput="updateCalc()">
+        </div>
+        <div class="calc-field">
+          <label>Avg Agents per User</label>
+          <input type="number" id="calcAgents" value="2" min="1" max="20" step="1" oninput="updateCalc()">
+        </div>
+        <div class="calc-field">
+          <label>Adoption Stage</label>
+          <select id="calcStage" onchange="updateCalc()">
+            <option value="early">Early (1x UD users)</option>
+            <option value="scaling" selected>Scaling (2x UD users)</option>
+            <option value="mature">Mature (3x UD users)</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-output">
+        <div class="calc-result">
+          <div class="result-label">Total Connections</div>
+          <div class="result-value" id="calcConnections">2,000</div>
+        </div>
+        <div class="calc-result">
+          <div class="result-label">Monthly (List)</div>
+          <div class="result-value" id="calcMonthly">$10,000</div>
+        </div>
+        <div class="calc-result">
+          <div class="result-label">Annual (List)</div>
+          <div class="result-value" id="calcAnnual">$120,000</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:22px;margin-top:48px;margin-bottom:16px;color:var(--c-seller-accent)">Adoption Stage Guidance</h3>
+    <table class="adoption-table">
+      <thead>
+        <tr><th>Stage</th><th>What Customer Is Doing</th><th>How to Talk About It</th><th>Connections</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:var(--c-seller-accent)">Early AI Adoption</td><td>Pilot agents, one team or function</td><td>"Good starting point for visibility and control without overthinking scale"</td><td>1x UD user count</td></tr>
+        <tr><td style="color:var(--c-seller-accent)">Scaling Usage</td><td>Multiple teams, shared agents across departments</td><td>"Most customers land here once AI moves beyond a single team"</td><td>2x UD user count</td></tr>
+        <tr><td style="color:var(--c-seller-accent)">Mature / Pioneer</td><td>Broad employee access, high automation density</td><td>"Designed for company-wide AI usage where security and governance need to scale"</td><td>3x UD user count</td></tr>
+        <tr><td style="color:var(--c-seller-accent)">Non-Standard</td><td>Large workforce, uneven adoption, regulated</td><td>"Your AI usage doesn't map cleanly — we can custom-size"</td><td>Custom counts</td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:32px;padding:20px;background:rgba(245,166,35,0.04);border:1px solid var(--c-seller-border);border-radius:8px">
+      <p style="font-size:13px;color:var(--c-text-muted)"><strong style="color:var(--c-seller-accent)">Key Sizing Insight:</strong> 150 customers surveyed — median expectation is 1-2 connections per employee with 10% p.a. growth. Agents managed in Okta (on-behalf-of employees) typically represent ~25% of total agents. Use ISPM diagnostic for precision.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Discovery Questions ─── -->
+<section class="seller-section" id="discovery">
+  <div class="seller-badge">Internal</div>
+  <div class="container">
+    <div class="section-label" style="color:var(--c-seller-accent)">Discovery</div>
+    <h2 class="section-title">36 Discovery Questions</h2>
+    <p class="section-subtitle">Organized by category. Use during initial pitch, pre-workshop, or qualification calls.</p>
+
+    <div style="margin-top:32px">
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Business & AI Strategy (6 questions)
+          <span class="accordion-arrow">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner"><ol>
+          <li>What are your top 3 business drivers for adopting AI agents? (efficiency, innovation, customer experience, cost reduction)</li>
+          <li>Which business functions are currently piloting or deploying AI agents? (engineering, support, sales, operations, finance)</li>
+          <li>What is your current AI governance maturity level? (ad-hoc, defined, managed, optimized)</li>
+          <li>How do you currently measure AI risk and trustworthiness metrics?</li>
+          <li>Who owns the AI security budget and decision authority?</li>
+          <li>Are there board-level or regulatory mandates driving AI security investments?</li>
+        </ol></div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          AI Architecture & Integration (6 questions)
+          <span class="accordion-arrow">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner"><ol start="7">
+          <li>What AI/LLM platforms are in production or planned? (OpenAI, Anthropic, Azure, Bedrock, Vertex, local models)</li>
+          <li>What agent frameworks are you using? (LangChain, LangGraph, AutoGen, Semantic Kernel, CrewAI, custom)</li>
+          <li>Are you implementing RAG patterns? What vector databases and retrieval systems?</li>
+          <li>How many distinct AI agents are currently deployed or in development?</li>
+          <li>Do agents operate autonomously, on behalf of users, or both?</li>
+          <li>What MCP servers or tools are agents accessing (first party, 3rd party, both)?</li>
+        </ol></div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Authentication & Authorization (6 questions)
+          <span class="accordion-arrow">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner"><ol start="13">
+          <li>How do AI agents authenticate today? (API keys, service accounts, OAuth client credentials, certificates)</li>
+          <li>Are credentials long-lived or short-lived? How are they rotated?</li>
+          <li>How granular is your current authorization model? (application-level, API-level, data-level)</li>
+          <li>Do you need to track delegation chains (which user an agent acts on behalf of)?</li>
+          <li>Are there scenarios requiring real-time human approval before agent actions?</li>
+          <li>How do you currently handle agent access to third-party SaaS APIs?</li>
+        </ol></div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Agent Governance & Lifecycle (6 questions)
+          <span class="accordion-arrow">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner"><ol start="19">
+          <li>Do you have a registry or inventory of all deployed AI agents?</li>
+          <li>How are new agents onboarded and existing agents decommissioned?</li>
+          <li>Are there known instances of shadow AI or unsanctioned LLM usage?</li>
+          <li>How do you govern agent access to sensitive data classifications?</li>
+          <li>What compliance frameworks apply? (SOC2, HIPAA, GDPR, industry-specific)</li>
+          <li>Do you perform access reviews or certifications for agent permissions?</li>
+        </ol></div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          Security & Threat Protection (6 questions)
+          <span class="accordion-arrow">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner"><ol start="25">
+          <li>How do you handle privileged access for agents performing admin actions?</li>
+          <li>Do you monitor for anomalous agent behavior or token misuse?</li>
+          <li>Are AI agent activities integrated into your SIEM/SOAR pipelines?</li>
+          <li>Do you have visibility into what data agents are accessing and exfiltrating?</li>
+          <li>Would you benefit from risk scoring or adaptive access for AI interactions?</li>
+          <li>How do you detect and respond to anomalous agent behavior or unauthorized access attempts?</li>
+        </ol></div></div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          PoC Readiness & Success Criteria (6 questions)
+          <span class="accordion-arrow">&#x25BC;</span>
+        </div>
+        <div class="accordion-body"><div class="accordion-body-inner"><ol start="31">
+          <li>Which AI use case would be most impactful to secure first?</li>
+          <li>What environments can we use for PoC testing? (sandbox, staging, production clone)</li>
+          <li>Who will participate in the PoC? (AI developers, identity architects, security ops, compliance)</li>
+          <li>What KPIs define success? (time to deploy, risk reduction, compliance coverage, developer experience)</li>
+          <li>Are there upcoming milestones to align with? (audits, board reviews, fiscal deadlines)</li>
+          <li>What is the path from successful PoC to production deployment?</li>
+        </ol></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Competitive Positioning ─── -->
+<section class="seller-section" id="competitive">
+  <div class="seller-badge">Internal</div>
+  <div class="container">
+    <div class="section-label" style="color:var(--c-seller-accent)">Competitive</div>
+    <h2 class="section-title">Competitive Landscape</h2>
+    <p class="section-subtitle">Agentic security is all about access management and authorization. If competitors don't have an authorization service, they are not credible.</p>
+
+    <div style="overflow-x:auto">
+      <table class="comp-table">
+        <thead>
+          <tr><th>Vendor</th><th>Agent Identity</th><th>Authorization</th><th>Token Mgmt</th><th>FGA / RAG</th><th>CIBA / HitL</th><th>Governance</th><th>Cross-Platform</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Okta + Auth0</td>
+            <td class="comp-check">&#x2714; Full</td>
+            <td class="comp-check">&#x2714; Full</td>
+            <td class="comp-check">&#x2714; Full</td>
+            <td class="comp-check">&#x2714; Full</td>
+            <td class="comp-check">&#x2714; Full</td>
+            <td class="comp-check">&#x2714; Full</td>
+            <td class="comp-check">&#x2714; Full</td>
+          </tr>
+          <tr>
+            <td>Microsoft Entra Agent ID</td>
+            <td class="comp-check">&#x2714;</td>
+            <td class="comp-partial">&#x25D0; Azure only</td>
+            <td class="comp-partial">&#x25D0; Limited</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-partial">&#x25D0; Limited</td>
+            <td class="comp-partial">&#x25D0;</td>
+            <td class="comp-miss">&#x2718; Azure-native</td>
+          </tr>
+          <tr>
+            <td>Ping Identity</td>
+            <td class="comp-partial">&#x25D0; Emerging</td>
+            <td class="comp-partial">&#x25D0; Emerging</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-partial">&#x25D0;</td>
+            <td class="comp-partial">&#x25D0;</td>
+          </tr>
+          <tr>
+            <td>Astrix Security</td>
+            <td class="comp-check">&#x2714; NHI focus</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-partial">&#x25D0;</td>
+            <td class="comp-partial">&#x25D0;</td>
+          </tr>
+          <tr>
+            <td>ServiceNow Control Tower</td>
+            <td class="comp-partial">&#x25D0;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-check">&#x2714; IT workflow</td>
+            <td class="comp-miss">&#x2718;</td>
+          </tr>
+          <tr>
+            <td>CyberArk / Clutch</td>
+            <td class="comp-partial">&#x25D0; Discovery</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-partial">&#x25D0; Vaulting</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-miss">&#x2718;</td>
+            <td class="comp-partial">&#x25D0;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote style="margin-top:24px">"They beat us to the marketing piece of it. But as they talked through it, I shut it down — from soup to nuts, nobody can do it like Okta."<cite>— George Campbell, AE (One Main Financial)</cite></blockquote>
+  </div>
+</section>
+
+<!-- ─── Win Stories ─── -->
+<section class="seller-section" id="wins">
+  <div class="seller-badge">Internal</div>
+  <div class="container">
+    <div class="section-label" style="color:var(--c-seller-accent)">Win Stories</div>
+    <h2 class="section-title">Closed Deals</h2>
+
+    <div class="grid-2" style="margin-top:32px">
+      <div class="win-card">
+        <div class="company">NTT</div>
+        <div class="deal-tag">Closed Won — Multinational</div>
+        <p><strong>How it started:</strong> Three-year purchasing cycle. Over years, introduced OIG, OPA, and other products. At Oktane, the urgency was already there — executives saw the vision on the main stage.</p>
+        <p><strong>Key moment:</strong> "When we showed how the individual point products had become the roadmap to how we're executing, the scrutiny dissolved. It became 'how do we go fast?'"</p>
+        <p><strong>Competitive:</strong> Clutch (discovery only, no manage/secure), ServiceNow Control Tower (doesn't find everything, doesn't tie back to user). Neither was a significant gate.</p>
+        <div class="takeaway">Takeaway: Build the relationship over time. Show how individual products connect to the AI security story. Urgency is already there.</div>
+      </div>
+      <div class="win-card">
+        <div class="company">One Main Financial</div>
+        <div class="deal-tag">Closed Won — Financial Services</div>
+        <p><strong>How it started:</strong> Long-time happy customer. CISO attended CSAW Forum. Built a custom Oktane experience for CISO, CTO, and team. Realized the NHI focus was really about agents.</p>
+        <p><strong>Key moment:</strong> "The CTO literally said 'this is keeping us up at night.' We set up exec time with Harish ahead of the keynote. At that point, the selling was done."</p>
+        <p><strong>Design partner approach:</strong> Customer wanted to be on the ground floor. Early enough in the market that the design partner pitch resonates — "help us accelerate time to value in partnership with you."</p>
+        <div class="takeaway">Takeaway: Meet them where they are. Once they see agents classified as identity, it clicks — light bulb moment. Use the design partner framing.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding:20px;background:rgba(245,166,35,0.04);border:1px solid var(--c-seller-border);border-radius:8px">
+      <p style="font-size:14px;color:var(--c-text-muted)"><strong style="color:var(--c-seller-accent)">Field Advice:</strong> "Approach this with a no-limits mindset. You don't have to wonder if accounts are thinking about this. Everybody has to solve for this, and no one can do it the way we can. This has been the most natural, enjoyable sales cycle of my career." — David Oliver, AE (NTT)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Resources ─── -->
+<section class="seller-section" id="resources">
+  <div class="seller-badge">Internal</div>
+  <div class="container">
+    <div class="section-label" style="color:var(--c-seller-accent)">Resources</div>
+    <h2 class="section-title">Quick Links</h2>
+
+    <div class="grid-3" style="margin-top:32px">
+      <a href="https://developer.okta.com/docs/guides/ai-agent-token-exchange/authserver/main/" target="_blank" class="resource-link">
+        <span class="r-icon">&#x1F4D6;</span>
+        <div><div class="r-label">Okta Developer: AI Agent Token Exchange</div><div class="r-desc">Technical guide for setting up XAA token exchange</div></div>
+      </a>
+      <a href="https://help.okta.com/oie/en-us/content/topics/ai-agents/ai-agents.htm" target="_blank" class="resource-link">
+        <span class="r-icon">&#x2699;</span>
+        <div><div class="r-label">Okta Help: Manage AI Agents</div><div class="r-desc">Admin guide for the four-phase lifecycle</div></div>
+      </a>
+      <a href="https://auth0.com/ai/docs/intro/overview" target="_blank" class="resource-link">
+        <span class="r-icon">&#x1F6E1;</span>
+        <div><div class="r-label">Auth0 for AI Agents Docs</div><div class="r-desc">Developer docs — auth, Token Vault, CIBA, FGA</div></div>
+      </a>
+      <a href="https://auth0.com/ai/docs/get-started/authorization-for-rag" target="_blank" class="resource-link">
+        <span class="r-icon">&#x1F50D;</span>
+        <div><div class="r-label">Auth0: Authorization for RAG Quickstart</div><div class="r-desc">Step-by-step FGA + RAG implementation guide</div></div>
+      </a>
+      <a href="https://github.com/auth0-samples/auth0-assistant0" target="_blank" class="resource-link">
+        <span class="r-icon">&#x1F4BB;</span>
+        <div><div class="r-label">Assistant0 Sample App</div><div class="r-desc">Full-stack AI assistant demo (Next.js + FastAPI)</div></div>
+      </a>
+      <a href="https://auth0.com/ai/docs/sdks/overview" target="_blank" class="resource-link">
+        <span class="r-icon">&#x1F4E6;</span>
+        <div><div class="r-label">Auth0 AI SDKs</div><div class="r-desc">JavaScript, Python, LangChain, LlamaIndex, Vercel AI</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Footer ─── -->
+<footer class="footer">
+  <div class="container">
+    <p>Okta Secures AI — Enablement Hub &middot; Internal + Customer Reference &middot; Updated February 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Contains forward-looking statements. Product roadmap items subject to change.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Mobile Menu ─── */
+function openNavDrawer() {
+  const drawer = document.getElementById('navDrawer');
+  const overlay = document.getElementById('navOverlay');
+  const hamburger = document.getElementById('hamburger');
+  drawer.classList.add('active');
+  overlay.classList.add('active');
+  hamburger.classList.add('active');
+  hamburger.setAttribute('aria-expanded', 'true');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+
+  // Focus first link in drawer
+  const firstLink = drawer.querySelector('.nav-drawer-links a');
+  if (firstLink) {
+    setTimeout(() => firstLink.focus(), 100);
+  }
+}
+
+function closeNavDrawer() {
+  const drawer = document.getElementById('navDrawer');
+  const overlay = document.getElementById('navOverlay');
+  const hamburger = document.getElementById('hamburger');
+  drawer.classList.remove('active');
+  overlay.classList.remove('active');
+  hamburger.classList.remove('active');
+  hamburger.setAttribute('aria-expanded', 'false');
+  overlay.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+
+  // Return focus to hamburger
+  hamburger.focus();
+}
+
+// Hamburger button click
+const hamburger = document.getElementById('hamburger');
+if (hamburger) {
+  hamburger.addEventListener('click', () => {
+    const drawer = document.getElementById('navDrawer');
+    if (drawer.classList.contains('active')) {
+      closeNavDrawer();
+    } else {
+      openNavDrawer();
+    }
+  });
+}
+
+// Close menu when overlay is clicked
+const overlay = document.getElementById('navOverlay');
+if (overlay) {
+  overlay.addEventListener('click', closeNavDrawer);
+}
+
+// Close menu when close button is clicked
+const closeButton = document.getElementById('navDrawerClose');
+if (closeButton) {
+  closeButton.addEventListener('click', closeNavDrawer);
+}
+
+// Close menu when ESC key is pressed
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const drawer = document.getElementById('navDrawer');
+    if (drawer.classList.contains('active')) {
+      closeNavDrawer();
+    }
+  }
+});
+
+// Close menu when a link is clicked
+const drawerLinks = document.querySelectorAll('.nav-drawer-links a');
+drawerLinks.forEach(link => {
+  link.addEventListener('click', closeNavDrawer);
+});
+
+/* ─── Seller Mode Toggle ─── */
+function toggleSellerMode() {
+  const body = document.body;
+  const btn = document.getElementById('sellerToggle');
+  const btnMobile = document.getElementById('sellerToggleMobile');
+  const nav = document.getElementById('mainNav');
+  body.classList.toggle('seller-mode');
+  btn.classList.toggle('active');
+  if (btnMobile) btnMobile.classList.toggle('active');
+  nav.classList.toggle('seller-active');
+  localStorage.setItem('sellerMode', body.classList.contains('seller-mode'));
+}
+
+function toggleSellerModeMobile() {
+  toggleSellerMode();
+}
+
+// Restore seller mode from localStorage
+if (localStorage.getItem('sellerMode') === 'true') {
+  document.body.classList.add('seller-mode');
+  document.getElementById('sellerToggle').classList.add('active');
+  const btnMobile = document.getElementById('sellerToggleMobile');
+  if (btnMobile) btnMobile.classList.add('active');
+  document.getElementById('mainNav').classList.add('seller-active');
+}
+
+/* ─── Count-up Animation ─── */
+function animateCountUp(el) {
+  const span = el.querySelector('[data-target]');
+  if (!span) return;
+  const target = parseInt(span.dataset.target);
+  const duration = 1600;
+  const start = performance.now();
+
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    span.textContent = Math.round(target * eased).toLocaleString();
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+/* ─── Scroll Reveal & Count-up ─── */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      if (entry.target.classList.contains('count-up')) {
+        animateCountUp(entry.target);
+      }
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal, .count-up').forEach(el => observer.observe(el));
+
+/* ─── Accordion ─── */
+function toggleAccordion(header) {
+  const item = header.parentElement;
+  const body = item.querySelector('.accordion-body');
+  const isOpen = item.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.accordion-item').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.accordion-body').style.maxHeight = null;
+  });
+
+  if (!isOpen) {
+    item.classList.add('open');
+    body.style.maxHeight = body.scrollHeight + 'px';
+  }
+}
+
+/* ─── Pricing Calculator ─── */
+function updateCalc() {
+  const users = parseInt(document.getElementById('calcUsers').value) || 0;
+  const agents = parseInt(document.getElementById('calcAgents').value) || 0;
+  const connections = users * agents;
+  const monthly = connections * 5;
+  const annual = monthly * 12;
+
+  document.getElementById('calcConnections').textContent = connections.toLocaleString();
+  document.getElementById('calcMonthly').textContent = '$' + monthly.toLocaleString();
+  document.getElementById('calcAnnual').textContent = '$' + annual.toLocaleString();
+}
+
+/* ─── Copy Code ─── */
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+/* ─── Smooth scroll for nav (local anchors only) ─── */
+document.querySelectorAll('.nav-links a, .nav-drawer-links a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const href = link.getAttribute('href');
+    // Only apply smooth scroll to hash links (#), not external links
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

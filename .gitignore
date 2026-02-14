@@ -1,0 +1,13 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Playwright test artifacts
+.playwright-mcp/
+
+# Node modules (if added later)
+node_modules/
+
+# Environment files
+.env
+.env.local

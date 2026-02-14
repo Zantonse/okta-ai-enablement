@@ -1,0 +1,2799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Okta AI — SE Technical Reference</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & Root */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --c-bg: #0b0b10;
+      --c-surface: #121219;
+      --c-surface-alt: #16161f;
+      --c-border: #2a2a35;
+      --c-text: #e8e8f0;
+      --c-text-secondary: #a8a8b8;
+      --c-okta-blue: #0066cc;
+      --c-auth0-purple: #6742d5;
+      --c-accent-amber: #f5a623;
+      --c-accent-green: #2ed573;
+      --c-accent-red: #ff4757;
+      --c-accent-cyan: #00d4ff;
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --spacing-md: 1.5rem;
+      --spacing-lg: 2rem;
+      --spacing-xl: 3rem;
+      --font-display: 'Instrument Serif', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+      --transition: all 0.2s ease;
+    }
+
+    /* Typography */
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--c-bg);
+      color: var(--c-text);
+      line-height: 1.6;
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.03) 0px,
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      margin-bottom: var(--spacing-md);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      margin-bottom: var(--spacing-md);
+      margin-top: var(--spacing-lg);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      margin-top: var(--spacing-sm);
+    }
+
+    p {
+      margin-bottom: var(--spacing-md);
+    }
+
+    a {
+      color: var(--c-okta-blue);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: var(--transition);
+    }
+
+    a:hover {
+      border-bottom-color: var(--c-okta-blue);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      background: var(--c-surface-alt);
+      padding: 0.2rem 0.4rem;
+      border-radius: var(--radius-sm);
+      color: var(--c-accent-cyan);
+    }
+
+    pre {
+      background: var(--c-surface-alt);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      overflow-x: auto;
+      margin-bottom: var(--spacing-md);
+      position: relative;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Syntax highlighting classes */
+    .kw { color: var(--c-auth0-purple); font-weight: 600; }
+    .str { color: var(--c-accent-green); }
+    .num { color: var(--c-accent-amber); }
+    .cmt { color: var(--c-text-secondary); font-style: italic; }
+    .fn { color: var(--c-accent-cyan); }
+    .attr { color: var(--c-okta-blue); }
+
+    /* Internal Banner */
+    .internal-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 32px;
+      background: linear-gradient(90deg, #1a1a1f, #16161f);
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--spacing-md);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--c-text-secondary);
+      z-index: 1000;
+    }
+
+    .internal-badge {
+      display: inline-block;
+      background: var(--c-accent-red);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 0.75rem;
+      margin-left: var(--spacing-sm);
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 32px;
+      left: 240px;
+      right: 0;
+      height: 72px;
+      background: linear-gradient(180deg, rgba(18, 18, 25, 0.95), rgba(12, 12, 16, 0.9));
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--spacing-lg);
+      z-index: 900;
+      backdrop-filter: blur(4px);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .header-title {
+      font-size: 1.25rem;
+      font-family: var(--font-display);
+      font-weight: 400;
+    }
+
+    .header-subtitle {
+      color: var(--c-text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .header-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--c-text-secondary);
+      font-size: 0.95rem;
+      transition: var(--transition);
+    }
+
+    .header-back:hover {
+      color: var(--c-text);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      padding: 0.5rem var(--spacing-sm);
+      width: 280px;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--c-text);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: var(--c-text-secondary);
+    }
+
+    .search-icon {
+      color: var(--c-text-secondary);
+      margin-right: 0.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 32px;
+      width: 240px;
+      height: calc(100vh - 32px);
+      background: linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+      border-right: 1px solid var(--c-border);
+      overflow-y: auto;
+      padding: var(--spacing-lg) 0;
+      z-index: 800;
+    }
+
+    .sidebar-section {
+      padding: 0;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .sidebar-label {
+      display: block;
+      padding: var(--spacing-xs) var(--spacing-md);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--c-text-secondary);
+    }
+
+    .sidebar-link {
+      display: block;
+      padding: 0.75rem var(--spacing-md);
+      font-size: 0.95rem;
+      color: var(--c-text-secondary);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .sidebar-link:hover {
+      color: var(--c-text);
+      background: rgba(0, 102, 204, 0.05);
+    }
+
+    .sidebar-link.active {
+      color: var(--c-okta-blue);
+      border-left-color: var(--c-okta-blue);
+      background: rgba(0, 102, 204, 0.1);
+    }
+
+    /* Main Content */
+    .content-wrapper {
+      margin-left: 240px;
+      margin-top: 104px;
+      padding: var(--spacing-xl);
+      max-width: 1200px;
+    }
+
+    section {
+      margin-bottom: var(--spacing-xl);
+      scroll-margin-top: 120px;
+    }
+
+    section.collapsible {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg);
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .collapsible .section-header {
+      background: linear-gradient(90deg, rgba(0, 102, 204, 0.05), transparent);
+    }
+
+    .collapsible .section-header:hover {
+      background: linear-gradient(90deg, rgba(0, 102, 204, 0.1), transparent);
+    }
+
+    .section-header.collapsed {
+      background: linear-gradient(90deg, rgba(18, 18, 25, 0.5), transparent);
+    }
+
+    .collapse-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-text-secondary);
+      transition: transform 0.3s ease;
+      font-size: 1.25rem;
+    }
+
+    .section-header.collapsed .collapse-icon {
+      transform: rotate(-90deg);
+    }
+
+    .section-content {
+      padding: var(--spacing-lg);
+      border-top: 1px solid var(--c-border);
+      display: none;
+    }
+
+    .section-content.expanded {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 1000vh;
+      }
+    }
+
+    /* Two-column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .col {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+    }
+
+    .col.okta {
+      border-left: 4px solid var(--c-okta-blue);
+    }
+
+    .col.auth0 {
+      border-left: 4px solid var(--c-auth0-purple);
+    }
+
+    .col-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .col.okta .col-label {
+      color: var(--c-okta-blue);
+    }
+
+    .col.auth0 .col-label {
+      color: var(--c-auth0-purple);
+    }
+
+    .col-title {
+      font-size: 1.25rem;
+      font-family: var(--font-display);
+      margin-bottom: var(--spacing-md);
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    .col-content li {
+      margin-bottom: var(--spacing-sm);
+      padding-left: var(--spacing-md);
+      position: relative;
+    }
+
+    .col-content li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--c-text-secondary);
+    }
+
+    /* Sequence diagram */
+    .sequence-diagram {
+      background: var(--c-surface-alt);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin: var(--spacing-lg) 0;
+      overflow-x: auto;
+    }
+
+    .sequence-step {
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-md);
+      background: var(--c-bg);
+      border-left: 3px solid var(--c-accent-cyan);
+      border-radius: var(--radius-sm);
+    }
+
+    .sequence-step-num {
+      color: var(--c-accent-amber);
+      font-weight: 700;
+    }
+
+    .sequence-step-actor {
+      color: var(--c-okta-blue);
+      font-weight: 600;
+    }
+
+    .sequence-step-action {
+      color: var(--c-accent-green);
+    }
+
+    .sequence-arrow {
+      color: var(--c-text-secondary);
+      margin: 0 var(--spacing-sm);
+    }
+
+    /* Code block copy button */
+    .code-wrapper {
+      position: relative;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: var(--c-border);
+      border: 1px solid var(--c-border);
+      color: var(--c-text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: var(--transition);
+      z-index: 10;
+    }
+
+    .copy-btn:hover {
+      background: var(--c-surface-alt);
+      color: var(--c-text);
+    }
+
+    .copy-btn.copied {
+      background: var(--c-accent-green);
+      color: #000;
+      border-color: var(--c-accent-green);
+    }
+
+    /* Table */
+    .integration-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--spacing-lg);
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .integration-table thead {
+      background: linear-gradient(90deg, var(--c-surface-alt), var(--c-bg));
+    }
+
+    .integration-table th {
+      padding: var(--spacing-md);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--c-border);
+      font-family: var(--font-display);
+    }
+
+    .integration-table td {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .integration-table tbody tr:hover {
+      background: rgba(0, 102, 204, 0.05);
+    }
+
+    .check-mark {
+      color: var(--c-accent-green);
+      font-weight: 700;
+    }
+
+    .dash {
+      color: var(--c-text-secondary);
+    }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      border-color: var(--c-okta-blue);
+      box-shadow: 0 0 20px rgba(0, 102, 204, 0.2);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .card-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--c-text-secondary);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .card-content {
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Competitive cards */
+    .competitor-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .competitor-name {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .competitor-item {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .item-label {
+      font-weight: 600;
+      color: var(--c-text-secondary);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .item-has {
+      padding-left: 1.5rem;
+      position: relative;
+      color: var(--c-accent-green);
+    }
+
+    .item-has::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
+    .item-lacks {
+      padding-left: 1.5rem;
+      position: relative;
+      color: var(--c-accent-red);
+    }
+
+    .item-lacks::before {
+      content: "—";
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
+    .objection-box {
+      background: linear-gradient(90deg, rgba(0, 102, 204, 0.05), transparent);
+      border-left: 3px solid var(--c-okta-blue);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-sm);
+      margin-top: var(--spacing-sm);
+      font-style: italic;
+    }
+
+    .objection-box strong {
+      display: block;
+      font-style: normal;
+      color: var(--c-text);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Key stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .stat-box {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--c-okta-blue);
+      margin-bottom: 0.5rem;
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--c-text-secondary);
+    }
+
+    /* Callout box */
+    .callout {
+      background: linear-gradient(135deg, rgba(103, 66, 213, 0.1), rgba(0, 102, 204, 0.1));
+      border: 1px solid var(--c-border);
+      border-left: 4px solid var(--c-auth0-purple);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      margin: var(--spacing-lg) 0;
+      font-style: italic;
+    }
+
+    .callout strong {
+      display: block;
+      font-style: normal;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Positioning callout */
+    .positioning-callout {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 102, 204, 0.1));
+      border-left-color: var(--c-accent-cyan);
+    }
+
+    /* Accordion */
+    .accordion-item {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-md);
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      padding: var(--spacing-md);
+      background: linear-gradient(90deg, rgba(0, 102, 204, 0.05), transparent);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .accordion-header:hover {
+      background: linear-gradient(90deg, rgba(0, 102, 204, 0.1), transparent);
+    }
+
+    .accordion-icon {
+      color: var(--c-text-secondary);
+      transition: transform 0.3s ease;
+      font-size: 1.25rem;
+    }
+
+    .accordion-item.expanded .accordion-header {
+      background: linear-gradient(90deg, rgba(0, 102, 204, 0.15), transparent);
+    }
+
+    .accordion-item.expanded .accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      border-top: 1px solid var(--c-border);
+    }
+
+    .accordion-item.expanded .accordion-content {
+      max-height: 1000vh;
+    }
+
+    .accordion-body {
+      padding: var(--spacing-lg);
+    }
+
+    /* Highlight class for search */
+    .search-highlight {
+      background: rgba(245, 166, 35, 0.3);
+      color: var(--c-accent-amber);
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    /* Hamburger menu */
+    .hamburger {
+      display: none;
+      background: none;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      color: var(--c-text);
+      font-size: 1.25rem;
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: var(--transition);
+    }
+
+    .hamburger:hover {
+      background: var(--c-surface-alt);
+      border-color: var(--c-okta-blue);
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 940;
+    }
+
+    .sidebar-overlay.visible {
+      display: block;
+    }
+
+    .mobile-search {
+      display: none;
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: var(--c-surface);
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .mobile-search input {
+      width: 100%;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      padding: 0.5rem var(--spacing-sm);
+      color: var(--c-text);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .mobile-search input::placeholder {
+      color: var(--c-text-secondary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        width: 200px;
+      }
+
+      .header {
+        left: 200px;
+      }
+
+      .content-wrapper {
+        margin-left: 200px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: absolute;
+        width: 100%;
+        height: auto;
+        max-height: 70vh;
+        left: 0;
+        overflow-y: auto;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 950;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .header {
+        left: 0;
+        padding: 0 var(--spacing-md);
+      }
+
+      .header-left {
+        gap: var(--spacing-sm);
+      }
+
+      .content-wrapper {
+        margin-left: 0;
+        padding: var(--spacing-md);
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      h2 {
+        font-size: 1.35rem;
+      }
+
+      .search-box {
+        display: none;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .mobile-search {
+        display: block;
+        position: fixed;
+        top: 104px;
+        left: 0;
+        right: 0;
+        z-index: 800;
+      }
+
+      .content-wrapper {
+        margin-top: 152px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body>
+  <!-- Internal Banner -->
+  <div class="internal-banner">
+    INTERNAL DOCUMENTATION
+    <span class="internal-badge">SE USE ONLY</span>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">☰</button>
+      <a href="index.html" class="header-back">← Back to Enablement Hub</a>
+      <div>
+        <div class="header-title">Okta AI — SE Technical Reference</div>
+        <div class="header-subtitle">Identity for AI Agents Across Enterprise</div>
+      </div>
+    </div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search documentation...">
+    </div>
+  </div>
+
+  <!-- Mobile search -->
+  <div class="mobile-search">
+    <input type="text" id="mobileSearchInput" placeholder="Search documentation...">
+  </div>
+
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Updates</div>
+      <a class="sidebar-link" data-section="whats-new">What's New</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Platform</div>
+      <a class="sidebar-link" data-section="overview">Platform Overview</a>
+      <a class="sidebar-link" data-section="architecture">Architecture Deep-Dive</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Core Features</div>
+      <a class="sidebar-link" data-section="xaa">Cross-App Access (XAA)</a>
+      <a class="sidebar-link" data-section="token-vault">Token Vault</a>
+      <a class="sidebar-link" data-section="ciba">Async Authorization (CIBA)</a>
+      <a class="sidebar-link" data-section="fga">FGA for RAG</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Operations</div>
+      <a class="sidebar-link" data-section="governance">Discovery & Governance</a>
+      <a class="sidebar-link" data-section="integration-matrix">Integration Matrix</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Competition</div>
+      <a class="sidebar-link" data-section="competitive">War Room</a>
+      <a class="sidebar-link" data-section="troubleshooting">Troubleshooting</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Verticals</div>
+      <a class="sidebar-link" data-section="fins-vertical">Financial Services</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Reference</div>
+      <a class="sidebar-link" data-section="quick-ref">Quick Reference</a>
+      <a class="sidebar-link" data-section="stats">Key Stats</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="content-wrapper">
+    <!-- What's New -->
+    <section id="whats-new">
+      <h1>What's New</h1>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Latest updates and feature releases</p>
+
+      <!-- Changelog Entry: Feb 2026 — Okta for AI Agents GA -->
+      <div style="border-left: 3px solid var(--c-accent-green); background: var(--c-surface); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Feb 2026</span>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-accent-green); color: #000; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">New Feature</span>
+        </div>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Okta for AI Agents GA</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">Okta for AI Agents is now generally available. Discover, register, protect, and govern AI agents as first-class identities in Universal Directory. Includes XAA, Token Vault integration, and CIBA support.</p>
+      </div>
+
+      <!-- Changelog Entry: Feb 2026 — Auth0 AI SDKs for LangChain & LlamaIndex -->
+      <div style="border-left: 3px solid var(--c-accent-green); background: var(--c-surface); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Feb 2026</span>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-accent-green); color: #000; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">New Feature</span>
+        </div>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Auth0 AI SDKs for LangChain & LlamaIndex</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">Official Auth0 AI SDK packages for LangChain and LlamaIndex are now available. Includes FGARetriever for RAG authorization, withAsyncUserConfirmation for CIBA, and getAccessTokenForConnection for Token Vault.</p>
+      </div>
+
+      <!-- Changelog Entry: Feb 2026 — MCP Authorization Support -->
+      <div style="border-left: 3px solid var(--c-okta-blue); background: var(--c-surface); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Feb 2026</span>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-okta-blue); color: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Enhancement</span>
+        </div>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">MCP Authorization Support</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">OAuth-based authorization for Model Context Protocol (MCP) servers. Agents can now request scoped access to MCP tools through Okta's authorization framework.</p>
+      </div>
+
+      <!-- Changelog Entry: Feb 2026 — Cross-App Access (XAA) with ID-JAG -->
+      <div style="border-left: 3px solid var(--c-auth0-purple); background: var(--c-surface); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Feb 2026</span>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-auth0-purple); color: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Preview</span>
+        </div>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Cross-App Access (XAA) with ID-JAG</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">Public preview of Cross-App Access using Identity Assertion JWT (ID-JAG) tokens. Enables enterprise-managed delegation for agent-to-resource access following RFC 8693.</p>
+      </div>
+
+      <!-- Changelog Entry: Jan 2026 — ISPM Agent Discovery -->
+      <div style="border-left: 3px solid var(--c-okta-blue); background: var(--c-surface); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);">
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Jan 2026</span>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-okta-blue); color: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Enhancement</span>
+        </div>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">ISPM Agent Discovery</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">Identity Security Posture Management now detects and classifies AI agents across your environment. Identifies shadow agents, maps blast radius, and prioritizes remediation.</p>
+      </div>
+    </section>
+
+    <!-- Platform Overview -->
+    <section id="overview">
+      <h1>Platform Architecture Overview</h1>
+      <p>Okta and Auth0 work together to create a complete identity platform for AI agents. Okta governs agents at the enterprise level; Auth0 powers agent-native authentication and authorization for builders.</p>
+
+      <div class="two-col">
+        <div class="col okta">
+          <div class="col-label">🏢 Enterprise IT</div>
+          <div class="col-title">Okta Platform</div>
+          <div class="col-content">
+            <ul>
+              <li><strong>Discover:</strong> ISPM, SAM Plugin for shadow agent detection</li>
+              <li><strong>Register:</strong> Universal Directory for agent identities</li>
+              <li><strong>Protect:</strong> XAA, Token Vault, FGA, CIBA, OPA</li>
+              <li><strong>Govern:</strong> OIG, ITP, System Logs, Universal Logout</li>
+            </ul>
+            <p style="margin-top: var(--spacing-lg); font-style: italic; color: var(--c-text-secondary);">Okta governs all agents across the organization with centralized identity, policies, and audit.</p>
+          </div>
+        </div>
+
+        <div class="col auth0">
+          <div class="col-label">🚀 Builders</div>
+          <div class="col-title">Auth0 for AI</div>
+          <div class="col-content">
+            <ul>
+              <li><strong>User Authentication:</strong> Universal Login, MFA, Passkeys, Social</li>
+              <li><strong>Token Vault:</strong> Federated token exchange, auto-refresh</li>
+              <li><strong>Async Authorization:</strong> CIBA for human-in-the-loop</li>
+              <li><strong>Fine-Grained Authorization:</strong> FGA/ReBAC for RAG pipelines</li>
+            </ul>
+            <p style="margin-top: var(--spacing-lg); font-style: italic; color: var(--c-text-secondary);">Auth0 provides secure, agent-native credential handling and authorization without token sprawl.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout positioning-callout">
+        <strong>Positioning Callout:</strong> Auth0 for builders shipping AI apps. Okta for enterprises governing agents across the org.
+      </div>
+    </section>
+
+    <!-- Architecture Deep-Dive -->
+    <section id="architecture">
+      <h2>Architecture Deep-Dive</h2>
+      <p>The unified identity stack creates a seamless flow from user authentication through agent authorization to resource access—with every hop auditable and policy-controlled.</p>
+
+      <div class="sequence-diagram">
+        <div style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg); font-size: 0.85rem;">COMPLETE IDENTITY FLOW FOR AI AGENTS</div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">1.</span>
+          <span class="sequence-step-actor">User</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Authenticates to GenAI App via Auth0 Universal Login</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">2.</span>
+          <span class="sequence-step-actor">Auth0</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Issues ID token + Access token (federated IdP)</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">3.</span>
+          <span class="sequence-step-actor">GenAI App</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Stores tokens in Auth0 Token Vault (automatic)</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">4.</span>
+          <span class="sequence-step-actor">Agent</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Requests token for third-party API (e.g., Google Workspace)</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">5.</span>
+          <span class="sequence-step-actor">Auth0</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Auto-refreshes if expired, returns scoped access token</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">6.</span>
+          <span class="sequence-step-actor">Agent</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Calls third-party API with token (no raw credentials exposed)</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">7.</span>
+          <span class="sequence-step-actor">Agent</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Requests sensitive action (e.g., transfer funds)</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">8.</span>
+          <span class="sequence-step-actor">Auth0</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Sends CIBA push to user's device for async approval</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">9.</span>
+          <span class="sequence-step-actor">User</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Approves context-rich binding message on phone</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">10.</span>
+          <span class="sequence-step-actor">Auth0</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Issues scoped access token to agent</span>
+        </div>
+
+        <div class="sequence-step">
+          <span class="sequence-step-num">11.</span>
+          <span class="sequence-step-actor">Okta</span>
+          <span class="sequence-arrow">→</span>
+          <span class="sequence-step-action">Logs every hop: user auth, token exchange, action approval</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- XAA Deep-Dive -->
+    <section id="xaa" class="collapsible">
+      <div class="section-header collapsed">
+        <div style="flex: 1;">
+          <h2 style="margin: 0;">Cross-App Access (XAA)</h2>
+          <p style="margin: 0.5rem 0 0 0; color: var(--c-text-secondary);">Enterprise-managed token exchange protocol for agent-to-resource delegation</p>
+        </div>
+        <div class="collapse-icon">▼</div>
+      </div>
+      <div class="section-content">
+        <h3>What It Is</h3>
+        <p>Enterprise-managed token exchange protocol. Okta sits as the identity broker between requesting apps/agents and resource apps. Uses ID-JAG (Identity Assertion JWT) to carry user context through agent-to-resource interactions.</p>
+
+        <h3>Sequence Diagram</h3>
+        <div class="sequence-diagram">
+          <div style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg); font-size: 0.85rem;">XAA TOKEN EXCHANGE FLOW</div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">1.</span>
+            <span class="sequence-step-actor">User</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Authenticates to Agent App via Okta SSO</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">2.</span>
+            <span class="sequence-step-actor">Okta</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Issues ID token to Agent App</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">3.</span>
+            <span class="sequence-step-actor">Agent App</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Needs to access Resource App on user's behalf</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">4.</span>
+            <span class="sequence-step-actor">Agent App</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Requests ID-JAG from Okta (presents ID token + agent identity)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">5.</span>
+            <span class="sequence-step-actor">Okta</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Validates: agent registered? user assigned? policy met?</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">6.</span>
+            <span class="sequence-step-actor">Okta</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Issues ID-JAG (short-lived JWT with user + agent context)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">7.</span>
+            <span class="sequence-step-actor">Agent App</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Presents ID-JAG + client credentials to Resource App</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">8.</span>
+            <span class="sequence-step-actor">Resource App</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Validates ID-JAG, issues scoped access token</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">9.</span>
+            <span class="sequence-step-actor">Agent App</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Accesses Resource App API with scoped token</span>
+          </div>
+        </div>
+
+        <h3>Key Technical Details</h3>
+        <ul>
+          <li><strong>Based on:</strong> OAuth 2.0 Token Exchange (RFC 8693)</li>
+          <li><strong>ID-JAG payload:</strong> Contains sub (user), azp (agent app), aud (resource), scope, exp (short TTL)</li>
+          <li><strong>Requirements:</strong> Agent registered in Okta Universal Directory, user-agent assignment, auth policy</li>
+          <li><strong>Token chain:</strong> ID Token → ID-JAG → Scoped Access Token (each step validated)</li>
+        </ul>
+
+        <h3>Demo Script</h3>
+
+        <div style="background: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Prerequisites</div>
+          <ul>
+            <li>Okta org with AI Agents feature enabled</li>
+            <li>At least one registered agent in Universal Directory</li>
+            <li>User-to-agent assignment configured</li>
+            <li>Postman or curl for token exchange testing</li>
+          </ul>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Walkthrough</div>
+
+        <div style="border-left: 2px solid var(--c-okta-blue); padding-left: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 1: Show Agent Identity</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to Universal Directory → Agents. Show the registered agent with its identity type, certificate thumbprint, and assigned users. Emphasize: "This is a first-class identity — just like a human user."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Agent profile in Universal Directory showing identity type and credentials</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 2: Show User Assignment</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Click into the agent → Assignments tab. Show how users are mapped to this agent. Highlight: "Every agent action traces back to a human owner."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: User-to-agent assignment table showing mapped users</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 3: Initiate Token Exchange</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Open Postman. Send the RFC 8693 token exchange request with the user's ID token as subject_token. Show the request payload and headers. Walk through the parameters: grant_type, subject_token, subject_token_type, requested_token_type, and scope.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Postman request showing token exchange payload and headers</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 4: Inspect the ID-JAG</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Copy the returned ID-JAG token and decode it at jwt.io. Walk through the critical claims: sub (agent identity), act.sub (user identity), scope (least-privilege permissions), and exp (short-lived, typically 5 minutes).</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Decoded ID-JAG at jwt.io with highlighted claims showing delegation chain</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 5: Access Protected Resource</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Use the ID-JAG to exchange for a scoped access token at the custom authorization server. Make an API call to the protected resource using the scoped access token. Show the successful response with user context preserved.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Successful API response showing resource access</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 6: Show Audit Trail</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to System Logs. Filter by agent ID. Show the complete delegation chain: user → agent → resource. Demonstrate how every authentication event, token exchange, and resource access is logged with full context.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: System Log entries showing complete delegation chain from user through agent to resource</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(46, 213, 115, 0.08); border: 1px solid rgba(46, 213, 115, 0.2); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);">
+          <strong style="color: var(--c-accent-green);">Talking Point:</strong> "Every hop is authenticated, authorized, and logged. The agent never gets more access than the user, and every action traces back to a real person."
+        </div>
+
+        <h3>Code Snippet</h3>
+        <div class="code-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre><code><span class="kw">curl</span> <span class="attr">-X POST</span> https://{yourOktaDomain}/oauth2/v1/token \
+  <span class="attr">-H</span> <span class="str">"Content-Type: application/x-www-form-urlencoded"</span> \
+  <span class="attr">-d</span> <span class="str">"grant_type=urn:ietf:params:oauth:grant-type:token-exchange"</span> \
+  <span class="attr">-d</span> <span class="str">"subject_token={id_token}"</span> \
+  <span class="attr">-d</span> <span class="str">"subject_token_type=urn:ietf:params:oauth:token-type:id_token"</span> \
+  <span class="attr">-d</span> <span class="str">"requested_token_type=urn:okta:oauth:token-type:id-jag"</span> \
+  <span class="attr">-d</span> <span class="str">"audience={resource_app_audience}"</span> \
+  <span class="attr">-d</span> <span class="str">"scope=read:data"</span></code></pre>
+        </div>
+
+        <h3>Example ID-JAG Payload (Decoded)</h3>
+        <div class="code-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre><code>{
+  <span class="attr">"sub"</span>: <span class="str">"user@company.com"</span>,
+  <span class="attr">"azp"</span>: <span class="str">"agent-app-client-id"</span>,
+  <span class="attr">"aud"</span>: <span class="str">"resource-app-audience"</span>,
+  <span class="attr">"scope"</span>: <span class="str">"read:data"</span>,
+  <span class="attr">"iat"</span>: <span class="num">1707753600</span>,
+  <span class="attr">"exp"</span>: <span class="num">1707753900</span>,
+  <span class="attr">"iss"</span>: <span class="str">"https://company.okta.com"</span>
+}</code></pre>
+        </div>
+
+        <h3>Objection Handling</h3>
+        <div class="objection-box">
+          <strong>"We can just use service accounts"</strong>
+          Service accounts have static creds, no user context, no audit trail. XAA preserves user identity through the chain—every agent action is attributed to a user.
+        </div>
+
+        <div class="objection-box">
+          <strong>"Microsoft Entra does token exchange too"</strong>
+          Entra's token exchange is intra-Microsoft only. XAA works across any SaaS ecosystem—Google, Salesforce, AWS, custom apps.
+        </div>
+
+        <div class="objection-box">
+          <strong>"This adds latency"</strong>
+          ID-JAG issuance is less than 50ms. Caching strategies available. Minimal tradeoff for complete auditability.
+        </div>
+      </div>
+    </section>
+
+    <!-- Token Vault Deep-Dive -->
+    <section id="token-vault" class="collapsible">
+      <div class="section-header collapsed">
+        <div style="flex: 1;">
+          <h2 style="margin: 0;">Token Vault</h2>
+          <p style="margin: 0.5rem 0 0 0; color: var(--c-text-secondary);">Secure storage for third-party OAuth tokens with automatic refresh</p>
+        </div>
+        <div class="collapse-icon">▼</div>
+      </div>
+      <div class="section-content">
+        <h3>What It Is</h3>
+        <p>Auth0's secure storage for third-party OAuth tokens. Agents never touch raw tokens. Auth0 handles storage, refresh, and exchange. Eliminates token sprawl.</p>
+
+        <h3>Sequence Diagram</h3>
+        <div class="sequence-diagram">
+          <div style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg); font-size: 0.85rem;">TOKEN VAULT FLOW</div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">1.</span>
+            <span class="sequence-step-actor">User</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Logs into GenAI App via Auth0 Universal Login</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">2.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Authenticates and connects to upstream IdP (Google, GitHub, Slack)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">3.</span>
+            <span class="sequence-step-actor">Upstream IdP</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Returns access token and refresh token</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">4.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Stores tokens encrypted in Token Vault (automatic)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">5.</span>
+            <span class="sequence-step-actor">Agent</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Requests token for third-party API (e.g., Google Calendar)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">6.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Checks validity. If expired, auto-refresh</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">7.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Returns fresh, scoped access token</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">8.</span>
+            <span class="sequence-step-actor">Agent</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Calls third-party API</span>
+          </div>
+        </div>
+
+        <h3>Key Technical Details</h3>
+        <ul>
+          <li><strong>Federated Token Exchange:</strong> Auth0 mediates between agent and upstream IdPs</li>
+          <li><strong>Automatic token refresh:</strong> No custom OAuth logic needed</li>
+          <li><strong>Scoping:</strong> Tokens scoped per-provider, per-user, per-connection</li>
+          <li><strong>CIAL:</strong> Client-Initiated Account Linking for adding provider connections post-login</li>
+        </ul>
+
+        <h3>Demo Script</h3>
+
+        <div style="background: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Prerequisites</div>
+          <ul>
+            <li>Auth0 tenant with Token Vault enabled</li>
+            <li>Third-party connection configured (e.g., Google, Slack, or Salesforce)</li>
+            <li>Sample AI agent app with Auth0 SDK installed</li>
+            <li>User account that has completed the CIAL linking flow</li>
+          </ul>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Walkthrough</div>
+
+        <div style="border-left: 2px solid var(--c-okta-blue); padding-left: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 1: Show Connection Setup</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to Auth0 Dashboard → Authentication → Enterprise Connections. Show the configured third-party connection with scopes defined. Point out how scopes are pre-configured for least-privilege access.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Auth0 connections page showing configured third-party providers</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 2: Show the Integration Code</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Display the getAccessTokenForConnection call in the IDE. Emphasize: "This is the entire integration — one function call. No token storage, no refresh logic, no credential handling."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Code snippet in IDE showing the simple one-line integration</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 3: Trigger the CIAL Flow</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Show user linking their identity (e.g., connecting their Google account). Walk through the OAuth consent screen and the callback. Demonstrate how the linked identity is now available for token exchange.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: OAuth consent screen during CIAL linking</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 4: Inspect Token Exchange</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Open browser dev tools → Network tab. Show the token exchange request and response. Point out the scoped access token with limited lifetime and the vault reference returned to the agent.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Network tab showing token exchange request and response</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 5: Make an API Call</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Show the agent using the vaulted token to access the third-party API (e.g., list Gmail messages, get Slack channels, query Salesforce records). Show the successful API response. Highlight that the agent never handled the actual token.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: API response showing successful third-party data access</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 6: Show Token Refresh Mechanism</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Explain the token refresh mechanism: as tokens approach expiry, Token Vault automatically refreshes them without any agent code involvement. Show this in the logs if tokens are expiring, or explain the automated refresh cycle.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Token refresh events in logs showing automatic refresh before expiry</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(46, 213, 115, 0.08); border: 1px solid rgba(46, 213, 115, 0.2); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);">
+          <strong style="color: var(--c-accent-green);">Talking Point:</strong> "Zero token handling code. No refresh logic. Tokens never touch your infrastructure. The vault handles everything."
+        </div>
+
+        <h3>Code Snippet</h3>
+        <div class="code-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre><code><span class="kw">import</span> { google } <span class="kw">from</span> <span class="str">"googleapis"</span>;
+<span class="kw">import</span> { auth0 } <span class="kw">from</span> <span class="str">"./auth0"</span>;
+
+<span class="kw">export async function</span> <span class="fn">getGoogleAuth</span>() {
+  <span class="cmt">// Get access token for Google social connection</span>
+  <span class="kw">const</span> { token } = <span class="kw">await</span> auth0.<span class="fn">getAccessTokenForConnection</span>({
+    <span class="attr">connection</span>: <span class="str">'google-oauth2'</span>
+  });
+  <span class="cmt">// Create Google OAuth client</span>
+  <span class="kw">const</span> googleOAuthClient = <span class="kw">new</span> google.auth.<span class="fn">OAuth2</span>();
+  googleOAuthClient.<span class="fn">setCredentials</span>({ <span class="attr">access_token</span>: token });
+  <span class="kw">return</span> googleOAuthClient;
+}</code></pre>
+        </div>
+
+        <h3>Objection Handling</h3>
+        <div class="objection-box">
+          <strong>"We already store tokens in our database"</strong>
+          Are they encrypted at rest? Auto-refreshed? Per-user scoped? Revocable? Token Vault handles all of this out of the box.
+        </div>
+
+        <div class="objection-box">
+          <strong>"What about enterprise IdPs?"</strong>
+          Works with SAML, OIDC, social providers. CIAL supports linking enterprise and social identities in a single user profile.
+        </div>
+      </div>
+    </section>
+
+    <!-- CIBA Deep-Dive -->
+    <section id="ciba" class="collapsible">
+      <div class="section-header collapsed">
+        <div style="flex: 1;">
+          <h2 style="margin: 0;">Async Authorization (CIBA)</h2>
+          <p style="margin: 0.5rem 0 0 0; color: var(--c-text-secondary);">Human-in-the-loop approval for sensitive agent actions</p>
+        </div>
+        <div class="collapse-icon">▼</div>
+      </div>
+      <div class="section-content">
+        <h3>What It Is</h3>
+        <p>CIBA enables human-in-the-loop approval for sensitive agent actions. Agent requests authorization, user gets push notification, approves or denies, agent proceeds. No browser redirect needed.</p>
+
+        <h3>Sequence Diagram</h3>
+        <div class="sequence-diagram">
+          <div style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg); font-size: 0.85rem;">CIBA APPROVAL FLOW</div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">1.</span>
+            <span class="sequence-step-actor">AI Agent</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Needs to perform sensitive action (buy stock, transfer funds)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">2.</span>
+            <span class="sequence-step-actor">Agent</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Sends CIBA request to Auth0: POST /bc-authorize</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">3.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Sends push notification to user's device</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">4.</span>
+            <span class="sequence-step-actor">User</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Reviews context and approves or denies</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">5.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Notifies agent via CIBA ping mode (webhook callback)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">6.</span>
+            <span class="sequence-step-actor">Auth0</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">If approved: issues access token with requested scopes</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">7.</span>
+            <span class="sequence-step-actor">Agent</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Executes the action</span>
+          </div>
+        </div>
+
+        <h3>Key Technical Details</h3>
+        <ul>
+          <li><strong>Based on:</strong> OpenID Connect CIBA (RFC 9126) and OAuth 2.0 RAR (RFC 9396)</li>
+          <li><strong>Ping mode:</strong> Auth0 calls agent's callback URL when user responds (preferred)</li>
+          <li><strong>Poll mode:</strong> Agent polls token endpoint (fallback)</li>
+          <li><strong>Binding message:</strong> Human-readable string — "Do you want to buy N shares of TICKER?"</li>
+          <li><strong>RAR:</strong> Rich Authorization Requests carry structured data (action, amount, resource)</li>
+          <li><strong>Timeout:</strong> Configurable expiry (default 300s), agent gets expired_token error</li>
+          <li><strong>Fallback:</strong> Secure link-based approval for users without push</li>
+        </ul>
+
+        <h3>Demo Script</h3>
+
+        <div style="background: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Prerequisites</div>
+          <ul>
+            <li>Auth0 tenant with CIBA enabled</li>
+            <li>Mobile device with Auth0 Guardian app installed</li>
+            <li>Sample AI agent app using withAsyncUserConfirmation</li>
+            <li>Test user enrolled in push notifications</li>
+          </ul>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Walkthrough</div>
+
+        <div style="border-left: 2px solid var(--c-okta-blue); padding-left: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 1: Show CIBA Configuration</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to Auth0 Dashboard → Authentication → Push Notifications. Show CIBA is enabled with push delivery mode configured. Point out the timeout settings (default 300 seconds) and binding message templates.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: CIBA config in dashboard showing push delivery mode</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 2: Show the Integration Code</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Display the withAsyncUserConfirmation wrapper around a sensitive tool. Explain: "One function wraps any sensitive tool call. The agent pauses until the human decides." Walk through the parameters: bindingMessage, scopes, and onUnauthorized callback.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Code with CIBA wrapper showing the integration pattern</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 3: Trigger a Sensitive Action</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Have the agent attempt a high-value operation (e.g., "Transfer $50,000 from account A to account B" or "Execute trade for 1000 shares"). Show the agent pausing and waiting for confirmation. Demonstrate the UI showing "Awaiting approval..."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Agent paused state in UI showing awaiting approval message</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 4: Show Push Notification</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">On the mobile device, show the push notification from Guardian with Rich Authorization Request details: action description, amount, accounts involved, and reason. Walk through the notification showing all context needed for informed decision-making.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Push notification on phone showing RAR details with action, amount, and accounts</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 5: Approve and Execute</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Approve the request on the phone. Show the agent immediately receiving the callback, obtaining the scoped token with the approval claim, and executing the operation. Display the successful response showing the action completed.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Agent executing after approval and showing operation success</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 6: Show Denial Flow</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Repeat with a denial. Show the agent receiving the AccessDeniedInterrupt exception, gracefully handling the rejection, logging the denial attempt, and offering alternatives to the user (e.g., "Transfer denied. Would you like to try a smaller amount?").</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Agent handling denial and offering user alternatives</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(46, 213, 115, 0.08); border: 1px solid rgba(46, 213, 115, 0.2); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);">
+          <strong style="color: var(--c-accent-green);">Talking Point:</strong> "The agent pauses, the human decides, the agent proceeds. For the most sensitive actions, the human stays in control — always."
+        </div>
+
+        <h3>Code Snippet</h3>
+        <div class="code-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre><code><span class="kw">const</span> auth0AI = <span class="kw">new</span> <span class="fn">Auth0AI</span>();
+
+<span class="kw">export const</span> buy = (context: Context) => {
+  <span class="kw">const</span> withAsyncAuthorization = auth0AI.<span class="fn">withAsyncUserConfirmation</span>({
+    <span class="attr">userID</span>: context.userID,
+    <span class="attr">bindingMessage</span>: <span class="kw">async</span> ({ ticker, qty }) =>
+      <span class="str">`Do you want to buy ${qty} shares of ${ticker}?`</span>,
+    <span class="attr">scopes</span>: [<span class="str">"openid"</span>, <span class="str">"stock:trade"</span>],
+    <span class="attr">audience</span>: process.env[<span class="str">"AUDIENCE"</span>]!,
+    <span class="attr">onAuthorizationRequest</span>: <span class="str">"block"</span>,
+    <span class="attr">onUnauthorized</span>: <span class="kw">async</span> (e: Error) => {
+      <span class="kw">if</span> (e <span class="kw">instanceof</span> AccessDeniedInterrupt) {
+        <span class="kw">return</span> <span class="str">"The user has denied the request"</span>;
+      }
+      <span class="kw">return</span> e.message;
+    },
+  });
+};</code></pre>
+        </div>
+
+        <h3>Objection Handling</h3>
+        <div class="objection-box">
+          <strong>"We can just use a confirmation dialog"</strong>
+          Agents run in background. No UI. CIBA works across channels—SMS, push, email—and persists decisions across agent restarts.
+        </div>
+
+        <div class="objection-box">
+          <strong>"What about timeout?"</strong>
+          Configurable. Clean error response, can retry or escalate. Timeout doesn't block the agent forever—it gets a clear signal.
+        </div>
+
+        <div class="objection-box">
+          <strong>"How is this different from MFA?"</strong>
+          MFA verifies identity. CIBA authorizes a specific action with rich context. Different stage of the flow, different purpose.
+        </div>
+      </div>
+    </section>
+
+    <!-- FGA Deep-Dive -->
+    <section id="fga" class="collapsible">
+      <div class="section-header collapsed">
+        <div style="flex: 1;">
+          <h2 style="margin: 0;">FGA for RAG</h2>
+          <p style="margin: 0.5rem 0 0 0; color: var(--c-text-secondary);">Relationship-based access control for RAG pipelines</p>
+        </div>
+        <div class="collapse-icon">▼</div>
+      </div>
+      <div class="section-content">
+        <h3>What It Is</h3>
+        <p>Auth0 FGA enforces relationship-based access control at retrieval time in RAG pipelines. Before an LLM sees a document, FGA checks: "Does this user have permission to view this document?"</p>
+
+        <h3>RAG Pipeline Flow</h3>
+        <div class="sequence-diagram">
+          <div style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg); font-size: 0.85rem;">FGA-PROTECTED RAG FLOW</div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">1.</span>
+            <span class="sequence-step-actor">User</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Asks: "Show my last appointment record"</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">2.</span>
+            <span class="sequence-step-actor">Agent</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Sends query to vector store retriever</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">3.</span>
+            <span class="sequence-step-actor">Vector store</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Returns candidate documents (semantic similarity)</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">4.</span>
+            <span class="sequence-step-actor">FGA Retriever</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Intercepts: checks auth for each doc</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">5.</span>
+            <span class="sequence-step-actor">FGA</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Evaluates relationship graph</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">6.</span>
+            <span class="sequence-step-actor">FGA Retriever</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Filters unauthorized documents out</span>
+          </div>
+
+          <div class="sequence-step">
+            <span class="sequence-step-num">7.</span>
+            <span class="sequence-step-actor">LLM</span>
+            <span class="sequence-arrow">→</span>
+            <span class="sequence-step-action">Generates answer using only authorized context</span>
+          </div>
+        </div>
+
+        <h3>Key Technical Details</h3>
+        <p><strong>ReBAC Model Example:</strong></p>
+        <div class="code-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre><code><span class="kw">model schema</span> <span class="num">1.1</span>
+
+<span class="kw">type</span> user
+
+<span class="kw">type</span> patient
+  <span class="kw">relations</span>
+    <span class="kw">define</span> _self: [user]
+
+<span class="kw">type</span> ai_agent
+  <span class="kw">relations</span>
+    <span class="kw">define</span> authorized_by: [patient]
+
+<span class="kw">type</span> medical_record
+  <span class="kw">relations</span>
+    <span class="kw">define</span> can_update: owner
+    <span class="kw">define</span> can_view: owner <span class="kw">or</span> delegated
+    <span class="kw">define</span> delegated: [ai_agent#authorized_by]
+    <span class="kw">define</span> owner: [patient]</code></pre>
+        </div>
+
+        <ul style="margin-top: var(--spacing-md);">
+          <li><strong>Tuples:</strong> (user:john_doe, medical_record:mr_333, owner)</li>
+          <li><strong>FGARetriever:</strong> SDK component wrapping vector store and FGA check</li>
+          <li><strong>Performance:</strong> Sub-millisecond authorization checks at scale</li>
+          <li><strong>Compatibility:</strong> Works with LangChain, Vercel AI, LlamaIndex</li>
+        </ul>
+
+        <h3>Demo Script</h3>
+
+        <div style="background: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Prerequisites</div>
+          <ul>
+            <li>Auth0 tenant with FGA enabled</li>
+            <li>FGA model defined with document types and relationships</li>
+            <li>Vector store with indexed documents (each tagged with document ID)</li>
+            <li>Sample RAG application using FGARetriever</li>
+          </ul>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Walkthrough</div>
+
+        <div style="border-left: 2px solid var(--c-okta-blue); padding-left: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 1: Show FGA Model</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Open the FGA playground. Display the relationship graph: Users → Documents → Folders with inheritance. Show the type definitions and explain how relationships define authorization rules (e.g., user has "can_view" on document).</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: FGA model visualization showing relationship types and hierarchy</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 2: Show Relationship Tuples</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Query the tuples. Show which users have can_view relationships on which documents. Demonstrate specific examples: "user:john_doe → doc:financial_report → viewer", "user:jane_doe → doc:healthcare_record → owner". Point out: "This is the authorization graph — the source of truth."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: FGA tuple list showing user-document relationships</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 3: Show the FGARetriever Code</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Display the FGARetriever wrapping the vector store retriever. Walk through the buildQuery callback that constructs FGA authorization queries from retrieved documents. Emphasize: "This is where vector search meets authorization."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: FGARetriever code showing the integration pattern</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 4: Query as User A</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Run a RAG query as User A. Show the retrieved documents and the LLM response. Note which documents were included based on User A's authorization relationships. Document the specific context window used.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: RAG results for User A showing authorized documents in response</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 5: Query as User B</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Run the same query as User B. Show different documents retrieved and a different LLM response. Highlight the contrast: "Same question, different user, different authorized context. The LLM gets completely different information."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: RAG results for User B showing different authorized documents</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 6: Show Access Denied</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Try to query a document User B doesn't have access to. Show FGA blocking the retrieval at the authorization layer. Demonstrate that the LLM never sees unauthorized content — it's excluded before the context window is constructed.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: FGA authorization check blocking unauthorized document retrieval</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(46, 213, 115, 0.08); border: 1px solid rgba(46, 213, 115, 0.2); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);">
+          <strong style="color: var(--c-accent-green);">Talking Point:</strong> "The LLM never sees documents the user shouldn't access. Authorization happens at retrieval time, before data enters the context window."
+        </div>
+
+        <h3>Code Snippet</h3>
+        <div class="code-wrapper">
+          <button class="copy-btn">Copy</button>
+          <pre><code><span class="kw">const</span> user = <span class="str">"user1"</span>;
+<span class="kw">const</span> documents = <span class="kw">await</span> <span class="fn">readDocuments</span>();
+
+<span class="kw">const</span> vectorStore = <span class="kw">await</span> MemoryVectorStore.<span class="fn">fromDocuments</span>(
+  documents,
+  <span class="kw">new</span> <span class="fn">OpenAIEmbeddings</span>({ <span class="attr">model</span>: <span class="str">"text-embedding-3-small"</span> })
+);
+
+<span class="kw">const</span> retriever = FGARetriever.<span class="fn">create</span>({
+  <span class="attr">retriever</span>: vectorStore.<span class="fn">asRetriever</span>(),
+  <span class="attr">buildQuery</span>: (doc) => ({
+    <span class="attr">user</span>: <span class="str">`user:${user}`</span>,
+    <span class="attr">object</span>: <span class="str">`doc:${doc.metadata.id}`</span>,
+    <span class="attr">relation</span>: <span class="str">"viewer"</span>,
+  }),
+});
+
+<span class="kw">const</span> fgaTool = retriever.<span class="fn">asJoinedStringTool</span>();
+<span class="kw">const</span> retrievalAgent = RetrievalAgent.<span class="fn">create</span>([fgaTool]);
+<span class="kw">const</span> answer = <span class="kw">await</span> retrievalAgent.<span class="fn">query</span>(
+  <span class="str">"Show my last appointment record"</span>
+);</code></pre>
+        </div>
+
+        <h3>Objection Handling</h3>
+        <div class="objection-box">
+          <strong>"We use RBAC already"</strong>
+          RBAC is too coarse for document-level access. FGA operates at object-level with relationship graphs—who owns what, who can delegate, etc.
+        </div>
+
+        <div class="objection-box">
+          <strong>"This will slow down retrieval"</strong>
+          Sub-millisecond checks. Batch available. Post-generation filtering is worse—LLM already saw the data.
+        </div>
+
+        <div class="objection-box">
+          <strong>"We'll build our own"</strong>
+          FGA is open standard (OpenFGA). Auth0's implementation is managed, scaled, and integrates natively with RAG frameworks.
+        </div>
+      </div>
+    </section>
+
+    <!-- Governance Deep-Dive -->
+    <section id="governance" class="collapsible">
+      <div class="section-header collapsed">
+        <div style="flex: 1;">
+          <h2 style="margin: 0;">Agent Discovery &amp; Governance</h2>
+          <p style="margin: 0.5rem 0 0 0; color: var(--c-text-secondary);">Complete lifecycle management for AI agents</p>
+        </div>
+        <div class="collapse-icon">▼</div>
+      </div>
+      <div class="section-content">
+        <h3>What It Is</h3>
+        <p>Okta's platform for discovering shadow AI agents, registering them as managed identities, enforcing policies, and monitoring behavior.</p>
+
+        <h3>Four Phases</h3>
+
+        <h4>1. Discover</h4>
+        <ul>
+          <li><strong>ISPM:</strong> Scans for non-human identities including AI agents</li>
+          <li><strong>SAM Plugin:</strong> Detects SaaS-embedded agents</li>
+          <li><strong>Shows:</strong> Which agents exist, what they access, credentials used</li>
+        </ul>
+
+        <h4>2. Register</h4>
+        <ul>
+          <li><strong>Universal Directory:</strong> Agent gets first-class identity</li>
+          <li><strong>Identity type:</strong> "AI Agent" with metadata (owner, purpose, risk level)</li>
+          <li><strong>Assignment:</strong> User-to-agent mapping</li>
+        </ul>
+
+        <h4>3. Protect</h4>
+        <ul>
+          <li><strong>Auth policies:</strong> MFA step-up for high-risk actions</li>
+          <li><strong>XAA:</strong> Scoped token exchange</li>
+          <li><strong>OPA:</strong> JIT elevated access for agents needing admin rights</li>
+        </ul>
+
+        <h4>4. Govern</h4>
+        <ul>
+          <li><strong>OIG:</strong> Certification campaigns for agent access</li>
+          <li><strong>System Logs:</strong> Every agent action logged with user context</li>
+          <li><strong>Universal Logout:</strong> Revoke agent sessions across all apps</li>
+          <li><strong>ITP:</strong> Anomaly detection for agent behavior</li>
+        </ul>
+
+        <h3>Demo Script</h3>
+
+        <div style="background: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Prerequisites</div>
+          <ul>
+            <li>Okta org with ISPM enabled</li>
+            <li>Multiple AI agents deployed across the environment (some registered, some shadow)</li>
+            <li>OIG configured with certification campaigns</li>
+            <li>System Logs configured with SIEM integration</li>
+          </ul>
+        </div>
+
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--spacing-sm);">Walkthrough</div>
+
+        <div style="border-left: 2px solid var(--c-okta-blue); padding-left: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 1: Run ISPM Discovery Scan</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to ISPM dashboard. Initiate or show results of an agent discovery scan. Display the inventory of detected agents with counts. Show which ones are registered vs. shadow agents. "In this environment, we found 47 non-human identities — 32 registered, 15 shadow."</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: ISPM agent inventory dashboard with discovery results</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 2: Show Shadow Agent Detection</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Highlight agents detected that are NOT registered in Universal Directory. Show risk scores for each shadow agent and blast radius analysis (how many resources can they access, how many users assigned, etc.). Demonstrate how ISPM flags these as governance gaps.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Shadow agent alerts with risk scores and blast radius</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 3: Register a Shadow Agent</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Take one shadow agent and walk through the registration flow: assign identity type (AI Agent), set owner (engineering team), issue credentials (certificate or key), and define permissions (scopes for specific resources). Show how registration brings it under governance.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Agent registration wizard showing identity setup</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 4: Show Access Certification</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to OIG → Certification Campaigns. Show an active campaign reviewing agent permissions. Walk through an approve/revoke decision for a specific agent's access. Demonstrate the audit trail showing who certified what and when.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Certification campaign for agents showing approve/revoke workflow</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 5: Show System Logs</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Navigate to System Logs. Filter by agent events (actor type = AI Agent). Show the comprehensive audit trail: authentication events, token exchanges, resource access, policy decisions, and user-agent delegation. Demonstrate how SIEM integration captures all events for external analysis.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: System log filtered by agent ID showing complete audit trail</div>
+          </div>
+
+          <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 6: Demonstrate Universal Logout</div>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Show how to terminate all active sessions for a compromised or retired agent. Navigate to the agent profile → click "Revoke All Sessions". Demonstrate the immediate effect: all tokens are invalidated, all active connections are terminated, access is blocked across all connected resources. Show logs confirming the revocation.</p>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Universal Logout confirmation and revocation logs</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(46, 213, 115, 0.08); border: 1px solid rgba(46, 213, 115, 0.2); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg);">
+          <strong style="color: var(--c-accent-green);">Talking Point:</strong> "Discover what you can't see, register what you find, govern everything. Complete lifecycle management for your AI agent workforce."
+        </div>
+
+        <h3>Objection Handling</h3>
+        <div class="objection-box">
+          <strong>"We track agents in a spreadsheet"</strong>
+          Manual tracking can't keep up. ISPM auto-discovers agents you don't know about, including shadow agents.
+        </div>
+
+        <div class="objection-box">
+          <strong>"We use service accounts"</strong>
+          No governance lifecycle, no certification, no user-context. Agent identities have full lifecycle management with audit.
+        </div>
+
+        <div class="objection-box">
+          <strong>"Astrix does discovery too"</strong>
+          Astrix only does discovery. No runtime enforcement, no auth, no governance. Okta covers full chain.
+        </div>
+      </div>
+    </section>
+
+    <!-- Integration Matrix -->
+    <section id="integration-matrix">
+      <h2>Integration Matrix</h2>
+      <p>Complete framework compatibility across user auth, token management, authorization, and agent orchestration platforms.</p>
+
+      <div style="overflow-x: auto;">
+        <table class="integration-table">
+          <thead>
+            <tr>
+              <th>Framework</th>
+              <th>User Auth</th>
+              <th>Token Vault</th>
+              <th>CIBA</th>
+              <th>FGA</th>
+              <th>SDK Languages</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>LangChain</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td>JS, Python</td>
+            </tr>
+            <tr>
+              <td><strong>LlamaIndex</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="dash">—</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td>Python</td>
+            </tr>
+            <tr>
+              <td><strong>Vercel AI</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td>JS</td>
+            </tr>
+            <tr>
+              <td><strong>CrewAI</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="dash">—</span></td>
+              <td>Python</td>
+            </tr>
+            <tr>
+              <td><strong>AutoGen</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="dash">—</span></td>
+              <td><span class="dash">—</span></td>
+              <td><span class="dash">—</span></td>
+              <td>Python</td>
+            </tr>
+            <tr>
+              <td><strong>Custom/REST</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td>JS, Python, Go</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Available Quickstarts</h3>
+      <ul>
+        <li><strong>User Authentication</strong> - Next.js, FastAPI</li>
+        <li><strong>Call Your APIs on User's Behalf</strong> - Next.js, Vercel AI</li>
+        <li><strong>Call Other's APIs on User's Behalf</strong> - Next.js, Vercel AI, FastAPI</li>
+        <li><strong>Asynchronous Authorization</strong> - Node.js, Vercel AI, LangChain</li>
+        <li><strong>Authorization for RAG</strong> - Node.js, Vercel AI, LangChain</li>
+      </ul>
+    </section>
+
+    <!-- Competitive War Room -->
+    <section id="competitive">
+      <h2>Competitive War Room</h2>
+      <p>Head-to-head comparison with leading competitors and tactical responses to common objections.</p>
+
+      <!-- Microsoft Entra -->
+      <div class="competitor-card">
+        <div class="competitor-name">Microsoft Entra</div>
+
+        <div class="competitor-item">
+          <div class="item-label">Has:</div>
+          <div class="item-has">Basic token exchange within Microsoft ecosystem, Entra ID Governance</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Lacks:</div>
+          <div class="item-lacks">Cross-ecosystem XAA, agent-native identity types, CIBA for agents, FGA/ReBAC</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Key Gap:</div>
+          <p style="margin: 0;">Token exchange only works within Microsoft's ecosystem. Enterprise uses multi-cloud and multi-SaaS.</p>
+        </div>
+
+        <div class="objection-box">
+          <strong>"We have Copilot Studio"</strong>
+          Copilot Studio builds agents. Okta governs ALL agents, not just Microsoft's. Any agent. Any cloud. Any SaaS.
+        </div>
+
+        <div class="objection-box">
+          <strong>"Entra does token exchange"</strong>
+          Only within Microsoft's ecosystem. XAA works across any OAuth-compliant resource—Google, Salesforce, AWS, custom apps, your legacy API.
+        </div>
+      </div>
+
+      <!-- Ping Identity -->
+      <div class="competitor-card">
+        <div class="competitor-name">Ping Identity</div>
+
+        <div class="competitor-item">
+          <div class="item-label">Has:</div>
+          <div class="item-has">Strong legacy IAM, API security (PingGateway)</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Lacks:</div>
+          <div class="item-lacks">Agent-native discovery, no token vault, no FGA, limited async auth</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Key Gap:</div>
+          <p style="margin: 0;">Built for human users, not AI agents. Ping doesn't know what an AI agent is.</p>
+        </div>
+
+        <div class="objection-box">
+          <strong>"PingOne is cloud-native"</strong>
+          Cloud-native IAM does not equal agent-native IAM. Where's agent discovery? Token vault? FGA for RAG?
+        </div>
+      </div>
+
+      <!-- Astrix -->
+      <div class="competitor-card">
+        <div class="competitor-name">Astrix Security</div>
+
+        <div class="competitor-item">
+          <div class="item-label">Has:</div>
+          <div class="item-has">Good ISPM/NHI discovery</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Lacks:</div>
+          <div class="item-lacks">Everything after discovery - no auth, no tokens, no governance, no SDKs</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Key Gap:</div>
+          <p style="margin: 0;">Detection without enforcement. They find the agent. Then what?</p>
+        </div>
+
+        <div class="objection-box">
+          <strong>"We found 10,000 non-human identities"</strong>
+          Great. Now what? Okta discovers AND manages the full lifecycle—registration, policies, tokens, audit. Astrix stops at discovery.
+        </div>
+      </div>
+
+      <!-- ServiceNow -->
+      <div class="competitor-card">
+        <div class="competitor-name">ServiceNow</div>
+
+        <div class="competitor-item">
+          <div class="item-label">Has:</div>
+          <div class="item-has">IT workflow automation, ITSM integration</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Lacks:</div>
+          <div class="item-lacks">Identity-native controls, no token exchange, no FGA, no CIBA</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Key Gap:</div>
+          <p style="margin: 0;">IT workflow tool, not identity platform. Different problem.</p>
+        </div>
+
+        <div class="objection-box">
+          <strong>"We manage AI agent workflows"</strong>
+          Workflow does not equal identity. Who authenticates the agent? Who governs its access? How do you audit? ServiceNow is for ops; Okta is for identity.
+        </div>
+      </div>
+    </section>
+
+    <!-- Troubleshooting & Edge Cases -->
+    <section id="troubleshooting">
+      <h2>Troubleshooting &amp; Edge Cases</h2>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">Token Expiration During Long-Running Tasks</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Problem:</strong> Agent is running a long task and token expires mid-execution.</p>
+            <p><strong>Solution:</strong></p>
+            <ul>
+              <li>Use Token Vault auto-refresh: Auth0 handles token refresh automatically.</li>
+              <li>For XAA, ID-JAG has short TTL—re-request from Okta if expired.</li>
+              <li>Implement retry logic in agent code to catch TokenExpiredError.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">FGA Rule Conflicts</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Problem:</strong> Overlapping FGA rules causing unexpected access denials.</p>
+            <p><strong>Solution:</strong></p>
+            <ul>
+              <li>Use FGA playground to visualize: fga-cli model test</li>
+              <li>Check tuple ordering — more specific rules first.</li>
+              <li>Test with check API: fga.check({ user, object, relation })</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">CIBA Timeout Tuning</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Problem:</strong> CIBA timeout too short; users don't have time to approve.</p>
+            <p><strong>Solution:</strong></p>
+            <ul>
+              <li>Default: 300s (5 min). Adjustable per flow.</li>
+              <li>Financial services: 600-900s recommended.</li>
+              <li>Fallback: link-based approval if user doesn't have push.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">Multi-Tenant Agent Isolation</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Problem:</strong> Agent in one tenant can see data from another tenant.</p>
+            <p><strong>Solution:</strong></p>
+            <ul>
+              <li>Use Auth0 Organizations for tenant separation.</li>
+              <li>Okta: Use unique agent identity per tenant, with org-scoped policies.</li>
+              <li>FGA: Tenant as relationship dimension: (agent:ai-123, tenant:acme, assigned_to)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">Debugging Toolkit</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Okta System Log:</strong></p>
+            <div class="code-wrapper">
+              <button class="copy-btn">Copy</button>
+              <pre><code>actor.type <span class="kw">eq</span> <span class="str">"AI_AGENT"</span></code></pre>
+            </div>
+
+            <p style="margin-top: var(--spacing-lg);"><strong>Auth0 Logs:</strong> Filter by client_id, look for fcx events (federated context)</p>
+
+            <p style="margin-top: var(--spacing-lg);"><strong>FGA Playground:</strong> Visual relationship graph, test check and list-objects</p>
+
+            <p style="margin-top: var(--spacing-lg);"><strong>CLI Tools:</strong></p>
+            <div class="code-wrapper" style="margin-top: var(--spacing-md);">
+              <button class="copy-btn">Copy</button>
+              <pre><code>okta-cli, auth0-cli, fga-cli</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">Hybrid Cloud Deployments</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Problem:</strong> Agent in AWS, resources in Azure. Cross-cloud token exchange?</p>
+            <p><strong>Solution:</strong> XAA works across clouds. Agent presents ID-JAG from Okta to any resource, regardless of cloud provider.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">Regulated Industries (HIPAA, PCI, SOC 2)</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <ul>
+              <li><strong>FGA:</strong> Document-level audit trail. Every access decision logged.</li>
+              <li><strong>CIBA:</strong> Explicit consent. User approves each sensitive action.</li>
+              <li><strong>System Logs:</strong> Compliance evidence. Every agent action attributed to user.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <h3 style="margin: 0;">Agent-to-Agent Chaining</h3>
+          <div class="accordion-icon">▼</div>
+        </div>
+        <div class="accordion-content">
+          <div class="accordion-body">
+            <p><strong>Problem:</strong> Agent A calls Agent B which calls API. How do we narrow scope?</p>
+            <p><strong>Solution:</strong> Each hop gets own ID-JAG with narrowing scopes. Agent A - ID-JAG with read and write. Agent B - ID-JAG with read only. User context preserved throughout.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Reference Cards -->
+    <section id="quick-ref">
+      <h2>Quick Reference Cards</h2>
+      <p>One-page summaries of each core feature for field reference.</p>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-label">Core Feature</div>
+          <div class="card-title">Cross-App Access</div>
+          <p style="margin-bottom: var(--spacing-md);">Enterprise token exchange protocol with user context preservation.</p>
+          <p><strong>Standard:</strong> OAuth 2.0 Token Exchange (RFC 8693)</p>
+          <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);"><strong>Key API:</strong> POST /oauth2/v1/token with urn:okta:oauth:token-type:id-jag</p>
+          <p style="color: var(--c-text-secondary);">Best for: Multi-app resource access with user audit trail</p>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Core Feature</div>
+          <div class="card-title">Token Vault</div>
+          <p style="margin-bottom: var(--spacing-md);">Secure federated token storage with auto-refresh.</p>
+          <p><strong>Standard:</strong> OAuth 2.0 Token Exchange and Connection Management</p>
+          <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);"><strong>Key SDK:</strong> auth0.getAccessTokenForConnection()</p>
+          <p style="color: var(--c-text-secondary);">Best for: Third-party API integration (Google, Slack, GitHub)</p>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Core Feature</div>
+          <div class="card-title">Async Authorization</div>
+          <p style="margin-bottom: var(--spacing-md);">Human-in-the-loop approval for sensitive actions.</p>
+          <p><strong>Standard:</strong> OpenID CIBA (RFC 9126) and RAR (RFC 9396)</p>
+          <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);"><strong>Key API:</strong> POST /bc-authorize with binding message</p>
+          <p style="color: var(--c-text-secondary);">Best for: Financial transactions, data access, high-stakes actions</p>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Core Feature</div>
+          <div class="card-title">Fine-Grained Authorization</div>
+          <p style="margin-bottom: var(--spacing-md);">Relationship-based access control for RAG.</p>
+          <p><strong>Standard:</strong> OpenFGA (ReBAC model)</p>
+          <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);"><strong>Key SDK:</strong> FGARetriever.create()</p>
+          <p style="color: var(--c-text-secondary);">Best for: Document-level access control in RAG pipelines</p>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Core Feature</div>
+          <div class="card-title">Agent Governance</div>
+          <p style="margin-bottom: var(--spacing-md);">Discovery, registration, policy, and audit for agents.</p>
+          <p><strong>Standard:</strong> Okta Universal Directory and ISPM</p>
+          <p style="margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);"><strong>Key Dashboard:</strong> Agent Identity management and System Logs</p>
+          <p style="color: var(--c-text-secondary);">Best for: Enterprise agent compliance and auditing</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Stats -->
+    <section id="stats">
+      <h2>Key Statistics</h2>
+      <p>Market context and business impact of AI agent identity governance.</p>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-number">580M</div>
+          <div class="stat-label">Access paths<br/>(1K agents x 58 tools x 10K users)</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-number">5.8B</div>
+          <div class="stat-label">Policy decisions annually<br/>(x10 conversations)</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-number">80%</div>
+          <div class="stat-label">Of breaches involve<br/>compromised credentials</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-number">51%</div>
+          <div class="stat-label">Of companies already<br/>use AI agents</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-number">44%</div>
+          <div class="stat-label">Have no governance<br/>in place</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-number">82%</div>
+          <div class="stat-label">Of orgs plan to integrate<br/>agents by 2026</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-number">100B+</div>
+          <div class="stat-label">GenAI market<br/>by 2032</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: var(--spacing-xl);">
+        <strong>The Governance Gap:</strong> 51% of companies use AI agents. 44% have no governance. That's a security and compliance crisis waiting to happen. Okta closes the gap with identity-native agent governance.
+      </div>
+    </section>
+
+    <!-- Financial Services Vertical Deep-Dive -->
+    <section id="fins-vertical">
+      <h2>Vertical Deep-Dives: Financial Services</h2>
+      <p>AI adoption across fraud detection, customer support, personalization, and operations—and why every use case requires identity governance.</p>
+
+      <!-- Headline Stats -->
+      <div style="margin-bottom: var(--spacing-xl);">
+        <h3 style="margin-bottom: var(--spacing-lg);">AI Adoption in Financial Services</h3>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-number">85%</div>
+            <div class="stat-label">Of financial firms<br/>actively applying AI</div>
+            <div style="font-size: 0.7rem; color: var(--c-text-secondary); margin-top: var(--spacing-xs); font-style: italic;">Resources Global Professionals, 2025</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">59%</div>
+            <div class="stat-label">Of banking employees<br/>use AI daily</div>
+            <div style="font-size: 0.7rem; color: var(--c-text-secondary); margin-top: var(--spacing-xs); font-style: italic;">Accenture, 2025</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">62%</div>
+            <div class="stat-label">Of customers lose<br/>confidence after breach</div>
+            <div style="font-size: 0.7rem; color: var(--c-text-secondary); margin-top: var(--spacing-xs); font-style: italic;">Accenture, 2025</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">43%</div>
+            <div class="stat-label">Choose to stop engaging<br/>altogether</div>
+            <div style="font-size: 0.7rem; color: var(--c-text-secondary); margin-top: var(--spacing-xs); font-style: italic;">Accenture, 2025</div>
+          </div>
+
+          <div class="stat-box">
+            <div class="stat-number">76%</div>
+            <div class="stat-label">Of customers expect AI<br/>in next 5 years</div>
+            <div style="font-size: 0.7rem; color: var(--c-text-secondary); margin-top: var(--spacing-xs); font-style: italic;">Salesforce, 2025</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Use Cases -->
+      <div style="margin-bottom: var(--spacing-xl);">
+        <h3 style="margin-bottom: var(--spacing-lg);">Key AI Use Cases</h3>
+        <p style="margin-bottom: var(--spacing-lg); color: var(--c-text-secondary);">Four high-impact areas driving value in financial services:</p>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-label">Use Case</div>
+            <div class="card-title">Fraud Detection</div>
+            <p style="margin-bottom: var(--spacing-md);">AI reduces false positives and identifies fraud faster with up to <strong>50% higher detection rates</strong>.</p>
+            <p><strong>Okta Role:</strong> Fraud detection agents need least-privilege access to transaction databases. Without identity binding, a compromised agent has unfettered access to all sensitive data.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem; margin-top: var(--spacing-sm);">Source: Deloitte: FSI Fighting Financial Fraud with Deep Learning</p>
+          </div>
+
+          <div class="card">
+            <div class="card-label">Use Case</div>
+            <div class="card-title">Customer Support</div>
+            <p style="margin-bottom: var(--spacing-md);">AI summarizes context and history, enabling <strong>~10% faster resolution times</strong> and <strong>14% higher productivity</strong>.</p>
+            <p><strong>Okta Role:</strong> Support agents need user-delegated access (CIBA) for approvals on high-value actions like wire transfers or account changes.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem; margin-top: var(--spacing-sm);">Source: McKinsey: How Banks can Use Generative AI to Enhance Customer Service</p>
+          </div>
+
+          <div class="card">
+            <div class="card-label">Use Case</div>
+            <div class="card-title">Personalized Interactions</div>
+            <p style="margin-bottom: var(--spacing-md);">AI tailors product recommendations using customer behavior, driving <strong>5–15% higher campaign revenue</strong>.</p>
+            <p><strong>Okta Role:</strong> Personalization agents need Fine-Grained Authorization (FGA) to ensure only authorized customer data flows into RAG pipelines.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem; margin-top: var(--spacing-sm);">Source: McKinsey: The Personalization Opportunity for Banks</p>
+          </div>
+
+          <div class="card">
+            <div class="card-label">Use Case</div>
+            <div class="card-title">Operations & Automation</div>
+            <p style="margin-bottom: var(--spacing-md);">AI streamlines document processing, reconciliation, and reporting to lower operating costs by <strong>15–20%</strong>.</p>
+            <p><strong>Okta Role:</strong> Operations agents need governance (OIG) for audit trails in regulated environments. Every action logged, traceable, auditable.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem; margin-top: var(--spacing-sm);">Source: McKinsey: Extracting Value from AI in Banking</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Okta Positioning -->
+      <div class="callout" style="margin-bottom: var(--spacing-xl);">
+        <strong>Why Every Financial Services AI Use Case Requires Identity:</strong>
+        <ul style="margin-top: var(--spacing-md); margin-left: var(--spacing-lg); padding-left: 0;">
+          <li>Fraud detection agents access transaction databases → least-privilege identity required</li>
+          <li>Customer support agents approve high-value actions → user-delegated access (CIBA) required</li>
+          <li>Personalization agents use customer data in RAG → Fine-Grained Authorization (FGA) required</li>
+          <li>Operations agents process regulated data → governance & audit trail (OIG) required</li>
+        </ul>
+        <p style="margin-top: var(--spacing-md);"><strong>Okta Solution:</strong> Cross-platform identity governance that works everywhere your agents do—Salesforce, ServiceNow, Bloomberg, internal APIs, and cloud services.</p>
+      </div>
+
+      <!-- Objection Handling -->
+      <div style="margin-top: var(--spacing-xl);">
+        <h3 style="margin-bottom: var(--spacing-lg);">Addressing Compliance Concerns</h3>
+
+        <div class="accordion-item">
+          <div class="accordion-header" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--spacing-sm); cursor: pointer; font-weight: 500; margin-bottom: var(--spacing-md);">
+            <span>Objection: "We already have fraud detection AI"</span>
+          </div>
+          <div class="accordion-body" style="padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: var(--c-bg-tertiary); border-left: 4px solid var(--c-primary);">
+            <p><strong>Response:</strong> But who governs the agent's access? Without identity binding, a compromised fraud detection agent has unfettered access to all transaction data. Okta's least-privilege identity model ensures agents only access what they need—fraud detection data, not customer PII, not wire transfer systems.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--spacing-sm); cursor: pointer; font-weight: 500; margin-bottom: var(--spacing-md);">
+            <span>Objection: "Our compliance team won't approve AI agents"</span>
+          </div>
+          <div class="accordion-body" style="padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: var(--c-bg-tertiary); border-left: 4px solid var(--c-primary);">
+            <p><strong>Response:</strong> That's exactly why Okta's governance layer matters. Every agent action logged, every access auditable, every delegation traceable. In financial services, compliance becomes an enabler, not a blocker. With Okta, your compliance team can approve AI agents confidently—they have full audit visibility and control.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--spacing-sm); cursor: pointer; font-weight: 500; margin-bottom: var(--spacing-md);">
+            <span>Objection: "We're a Microsoft shop"</span>
+          </div>
+          <div class="accordion-body" style="padding: var(--spacing-md); background-color: var(--c-bg-tertiary); border-left: 4px solid var(--c-primary);">
+            <p><strong>Response:</strong> Entra covers Azure-native agents. But your agents talk to Salesforce, ServiceNow, Bloomberg, internal APIs, payment systems. Okta provides cross-platform identity that works everywhere your agents do. Financial services aren't monolithic—your AI infrastructure is a hybrid ecosystem. Okta is the neutral identity layer.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust & Regulation -->
+      <div class="callout" style="margin-top: var(--spacing-xl); background-color: var(--c-bg-secondary);">
+        <strong>The Trust Imperative:</strong> 62% of customers lose confidence in their bank after a breach. 43% choose to stop engaging altogether. In financial services, trust is your moat. Every AI agent you deploy must be identity-governed—for security, for compliance, and for customer confidence.
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <section style="margin-top: var(--spacing-xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--c-border);">
+      <p style="color: var(--c-text-secondary); font-size: 0.9rem;">
+        This documentation is for internal Okta Sales Engineering use only. Last updated: February 2026.
+      </p>
+      <p style="color: var(--c-text-secondary); font-size: 0.9rem; margin-top: var(--spacing-md);">
+        For questions or updates, contact the Sales Engineering team.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    // Search functionality with safe text content approach
+    const searchInput = document.getElementById('searchInput');
+    let currentSearchTerm = '';
+
+    function clearHighlights() {
+      const highlighted = document.querySelectorAll('.search-highlight');
+      highlighted.forEach(el => {
+        const parent = el.parentNode;
+        while (el.firstChild) {
+          parent.insertBefore(el.firstChild, el);
+        }
+        parent.removeChild(el);
+      });
+    }
+
+    function performSearch(searchTerm) {
+      clearHighlights();
+
+      if (searchTerm.length < 2) return;
+
+      const walker = document.createTreeWalker(
+        document.querySelector('.content-wrapper'),
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+      );
+
+      const nodesToReplace = [];
+      let node;
+
+      while (node = walker.nextNode()) {
+        if (node.nodeValue.toLowerCase().includes(searchTerm.toLowerCase())) {
+          nodesToReplace.push(node);
+        }
+      }
+
+      nodesToReplace.forEach(textNode => {
+        const span = document.createElement('span');
+        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        const parts = textNode.nodeValue.split(regex);
+
+        parts.forEach((part, index) => {
+          if (index % 2 === 1) {
+            const highlight = document.createElement('span');
+            highlight.className = 'search-highlight';
+            highlight.textContent = part;
+            span.appendChild(highlight);
+          } else {
+            span.appendChild(document.createTextNode(part));
+          }
+        });
+
+        textNode.parentNode.replaceChild(span, textNode);
+      });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      currentSearchTerm = e.target.value.trim();
+      const mobileInput = document.getElementById('mobileSearchInput');
+      if (mobileInput) mobileInput.value = currentSearchTerm;
+      performSearch(currentSearchTerm);
+    });
+
+    // Sidebar navigation with IntersectionObserver
+    const sections = document.querySelectorAll('section[id]');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          sidebarLinks.forEach(link => link.classList.remove('active'));
+          const activeLink = document.querySelector(`.sidebar-link[data-section="${entry.target.id}"]`);
+          if (activeLink) {
+            activeLink.classList.add('active');
+          }
+        }
+      });
+    }, {
+      rootMargin: '-100px 0px -66%'
+    });
+
+    sections.forEach(section => observer.observe(section));
+
+    // Sidebar link click scrolling
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sectionId = link.getAttribute('data-section');
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+          sidebarLinks.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Collapsible sections
+    document.querySelectorAll('.section-header').forEach(header => {
+      header.addEventListener('click', (e) => {
+        const section = header.closest('section');
+        const content = section.querySelector('.section-content');
+        header.classList.toggle('collapsed');
+        content.classList.toggle('expanded');
+      });
+    });
+
+    // Accordion items
+    document.querySelectorAll('.accordion-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const item = header.closest('.accordion-item');
+        item.classList.toggle('expanded');
+      });
+    });
+
+    // Hamburger menu toggle
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('visible');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      sidebarOverlay.classList.remove('visible');
+    }
+
+    hamburgerBtn.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // Close sidebar when a nav link is clicked on mobile
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', closeSidebar);
+    });
+
+    // Mobile search syncs with desktop search
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    mobileSearchInput.addEventListener('input', (e) => {
+      currentSearchTerm = e.target.value.trim();
+      searchInput.value = currentSearchTerm;
+      performSearch(currentSearchTerm);
+    });
+
+    // Copy-to-clipboard functionality
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const codeBlock = btn.nextElementSibling;
+        const code = codeBlock.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          const originalText = btn.textContent;
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
