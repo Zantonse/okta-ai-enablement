@@ -14,18 +14,20 @@
     }
 
     :root {
-      --c-bg: #0b0b10;
-      --c-surface: #121219;
-      --c-surface-alt: #16161f;
-      --c-border: #2a2a35;
-      --c-text: #e8e8f0;
-      --c-text-secondary: #a8a8b8;
-      --c-okta-blue: #0066cc;
+      --c-bg: #f8f8fa;
+      --c-surface: #ffffff;
+      --c-surface-alt: #f0f0f5;
+      --c-bg-secondary: #f4f4f8;
+      --c-border: #d8d8e0;
+      --c-text: #1a1a2e;
+      --c-text-secondary: #5a5a70;
+      --c-okta-blue: #0052a3;
       --c-auth0-purple: #6742d5;
-      --c-accent-amber: #f5a623;
-      --c-accent-green: #2ed573;
-      --c-accent-red: #ff4757;
-      --c-accent-cyan: #00d4ff;
+      --c-accent-amber: #d48a00;
+      --c-accent-green: #1faa58;
+      --c-accent-red: #e03e4d;
+      --c-accent-cyan: #0099bb;
+      --c-header-bg: rgba(248, 248, 250, 0.95);
       --spacing-xs: 0.5rem;
       --spacing-sm: 1rem;
       --spacing-md: 1.5rem;
@@ -37,9 +39,28 @@
       --radius-sm: 4px;
       --radius-md: 8px;
       --radius-lg: 12px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+      --transition: all 0.2s ease;
+    }
+
+    html[data-theme="dark"] {
+      --c-bg: #0b0b10;
+      --c-surface: #121219;
+      --c-surface-alt: #16161f;
+      --c-bg-secondary: #16161f;
+      --c-border: #2a2a35;
+      --c-text: #e8e8f0;
+      --c-text-secondary: #a8a8b8;
+      --c-okta-blue: #0066cc;
+      --c-auth0-purple: #6742d5;
+      --c-accent-amber: #f5a623;
+      --c-accent-green: #2ed573;
+      --c-accent-red: #ff4757;
+      --c-accent-cyan: #00d4ff;
+      --c-header-bg: rgba(18, 18, 25, 0.95);
       --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
       --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-      --transition: all 0.2s ease;
     }
 
     /* Typography */
@@ -67,14 +88,24 @@
       height: 100%;
       background: repeating-linear-gradient(
         0deg,
-        rgba(255, 255, 255, 0.03) 0px,
-        rgba(255, 255, 255, 0.03) 1px,
+        rgba(255, 255, 255, 0.15) 0px,
+        rgba(255, 255, 255, 0.15) 1px,
         transparent 1px,
         transparent 2px
       );
       pointer-events: none;
       z-index: 1;
       mix-blend-mode: overlay;
+    }
+
+    html[data-theme="dark"] body::before {
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.4) 0px,
+        rgba(255, 255, 255, 0.4) 1px,
+        transparent 1px,
+        transparent 2px
+      );
     }
 
     h1, h2, h3, h4, h5, h6 {
@@ -126,20 +157,21 @@
     code {
       font-family: var(--font-mono);
       font-size: 0.9rem;
-      background: var(--c-surface-alt);
+      background: #16161f;
       padding: 0.2rem 0.4rem;
       border-radius: var(--radius-sm);
-      color: var(--c-accent-cyan);
+      color: #e8e8f0;
     }
 
     pre {
-      background: var(--c-surface-alt);
-      border: 1px solid var(--c-border);
+      background: #16161f;
+      border: 1px solid #2a2a3e;
       border-radius: var(--radius-md);
       padding: var(--spacing-md);
       overflow-x: auto;
       margin-bottom: var(--spacing-md);
       position: relative;
+      color: #e8e8f0;
     }
 
     pre code {
@@ -149,12 +181,12 @@
     }
 
     /* Syntax highlighting classes */
-    .kw { color: var(--c-auth0-purple); font-weight: 600; }
-    .str { color: var(--c-accent-green); }
-    .num { color: var(--c-accent-amber); }
-    .cmt { color: var(--c-text-secondary); font-style: italic; }
-    .fn { color: var(--c-accent-cyan); }
-    .attr { color: var(--c-okta-blue); }
+    .kw { color: #b8a1ff; font-weight: 600; }
+    .str { color: #7ad655; }
+    .num { color: #ffa862; }
+    .cmt { color: #888899; font-style: italic; }
+    .fn { color: #4dd9ff; }
+    .attr { color: #5a9fd4; }
 
     /* Internal Banner */
     .internal-banner {
@@ -163,7 +195,7 @@
       left: 0;
       right: 0;
       height: 32px;
-      background: linear-gradient(90deg, #1a1a1f, #16161f);
+      background: linear-gradient(90deg, var(--c-surface), var(--c-surface-alt));
       border-bottom: 1px solid var(--c-border);
       display: flex;
       align-items: center;
@@ -192,7 +224,7 @@
       left: 240px;
       right: 0;
       height: 72px;
-      background: linear-gradient(180deg, rgba(18, 18, 25, 0.95), rgba(12, 12, 16, 0.9));
+      background: var(--c-header-bg);
       border-bottom: 1px solid var(--c-border);
       display: flex;
       align-items: center;
@@ -506,9 +538,9 @@
       position: absolute;
       top: 0.75rem;
       right: 0.75rem;
-      background: var(--c-border);
-      border: 1px solid var(--c-border);
-      color: var(--c-text-secondary);
+      background: #2a2a3e;
+      border: 1px solid #3a3a4e;
+      color: #b8b8c8;
       padding: 0.5rem 1rem;
       border-radius: var(--radius-sm);
       cursor: pointer;
@@ -519,14 +551,15 @@
     }
 
     .copy-btn:hover {
-      background: var(--c-surface-alt);
-      color: var(--c-text);
+      background: #3a3a4e;
+      color: #e8e8f0;
+      border-color: #4a4a5e;
     }
 
     .copy-btn.copied {
-      background: var(--c-accent-green);
-      color: #000;
-      border-color: var(--c-accent-green);
+      background: #7ad655;
+      color: #1a1a2e;
+      border-color: #7ad655;
     }
 
     /* Table */
@@ -960,6 +993,9 @@
       <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="Search documentation...">
     </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light/dark mode" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--radius-md);border:1px solid var(--c-border);cursor:pointer;background:transparent;color:var(--c-text-secondary);font-size:18px;line-height:1;transition:var(--transition);">
+      <span class="theme-icon">&#x263E;</span>
+    </button>
   </div>
 
   <!-- Mobile search -->
@@ -2588,7 +2624,7 @@
           <div class="accordion-header" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--spacing-sm); cursor: pointer; font-weight: 500; margin-bottom: var(--spacing-md);">
             <span>Objection: "We already have fraud detection AI"</span>
           </div>
-          <div class="accordion-body" style="padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: var(--c-bg-tertiary); border-left: 4px solid var(--c-primary);">
+          <div class="accordion-body" style="padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: var(--c-bg-secondary); border-left: 4px solid var(--c-okta-blue);">
             <p><strong>Response:</strong> But who governs the agent's access? Without identity binding, a compromised fraud detection agent has unfettered access to all transaction data. Okta's least-privilege identity model ensures agents only access what they need—fraud detection data, not customer PII, not wire transfer systems.</p>
           </div>
         </div>
@@ -2597,7 +2633,7 @@
           <div class="accordion-header" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--spacing-sm); cursor: pointer; font-weight: 500; margin-bottom: var(--spacing-md);">
             <span>Objection: "Our compliance team won't approve AI agents"</span>
           </div>
-          <div class="accordion-body" style="padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: var(--c-bg-tertiary); border-left: 4px solid var(--c-primary);">
+          <div class="accordion-body" style="padding: var(--spacing-md); margin-bottom: var(--spacing-md); background-color: var(--c-bg-secondary); border-left: 4px solid var(--c-okta-blue);">
             <p><strong>Response:</strong> That's exactly why Okta's governance layer matters. Every agent action logged, every access auditable, every delegation traceable. In financial services, compliance becomes an enabler, not a blocker. With Okta, your compliance team can approve AI agents confidently—they have full audit visibility and control.</p>
           </div>
         </div>
@@ -2606,7 +2642,7 @@
           <div class="accordion-header" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border: 1px solid var(--c-border); border-radius: var(--spacing-sm); cursor: pointer; font-weight: 500; margin-bottom: var(--spacing-md);">
             <span>Objection: "We're a Microsoft shop"</span>
           </div>
-          <div class="accordion-body" style="padding: var(--spacing-md); background-color: var(--c-bg-tertiary); border-left: 4px solid var(--c-primary);">
+          <div class="accordion-body" style="padding: var(--spacing-md); background-color: var(--c-bg-secondary); border-left: 4px solid var(--c-okta-blue);">
             <p><strong>Response:</strong> Entra covers Azure-native agents. But your agents talk to Salesforce, ServiceNow, Bloomberg, internal APIs, payment systems. Okta provides cross-platform identity that works everywhere your agents do. Financial services aren't monolithic—your AI infrastructure is a hybrid ecosystem. Okta is the neutral identity layer.</p>
           </div>
         </div>
@@ -2794,6 +2830,38 @@
         });
       });
     });
+
+    // Theme toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      document.querySelectorAll('.theme-icon').forEach(icon => {
+        if (theme === 'dark') {
+          icon.textContent = '\u2600';
+        } else {
+          icon.textContent = '\u263E';
+        }
+      });
+    }
+
+    // Initialize theme (syncs with index.html via localStorage)
+    (function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+      updateThemeIcon(savedTheme);
+    })();
+
+    // Wire up theme toggle button
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
   </script>
 </body>
 </html>

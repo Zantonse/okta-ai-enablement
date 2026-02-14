@@ -11,6 +11,36 @@
 /* ─── Reset & Variables ─── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-seller-bg:#fef9f0;
+  --c-seller-border:#e0d5c0;
+  --c-seller-accent:#d48a00;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --c-auth0-gradient-end:#f0eef8;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(60px,8vw,120px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
   --c-bg:#0a0a0f;
   --c-bg-elevated:#12121a;
   --c-bg-card:#18182299;
@@ -29,12 +59,9 @@
   --c-seller-bg:#1a1710;
   --c-seller-border:#3d3520;
   --c-seller-accent:#f5a623;
-  --font-display:'Instrument Serif',Georgia,serif;
-  --font-body:'DM Sans',system-ui,sans-serif;
-  --font-mono:'JetBrains Mono',monospace;
-  --nav-h:64px;
-  --section-pad:clamp(60px,8vw,120px);
-  --max-w:1200px;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+  --c-auth0-gradient-end:#0e0b18;
 }
 html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
 body{
@@ -81,14 +108,15 @@ body{
 body::before{
   content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
   background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  opacity:0.4;
+  opacity:0.15;
 }
+html[data-theme="dark"] body::before{opacity:0.4}
 
 /* ─── Navigation ─── */
 .nav{
   position:fixed;top:0;left:0;right:0;z-index:1000;
   height:var(--nav-h);
-  background:rgba(10,10,15,0.85);
+  background:var(--c-nav-bg);
   backdrop-filter:blur(20px);
   border-bottom:1px solid var(--c-border);
   display:flex;align-items:center;
@@ -194,6 +222,19 @@ body::before{
   width:100%;justify-content:center;
   padding:10px 14px;min-height:44px;
 }
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:8px;
+  border:1px solid var(--c-border);
+  cursor:pointer;transition:all 0.3s;
+  background:transparent;color:var(--c-text-muted);
+  font-size:18px;line-height:1;
+  padding:0;
+  margin-right:8px;
+}
+.theme-toggle:hover{border-color:var(--c-okta-blue);color:var(--c-text)}
 
 /* ─── Seller Mode Toggle ─── */
 .seller-toggle{
@@ -388,7 +429,7 @@ section:nth-child(even){background:var(--c-bg-elevated)}
 
 /* ─── Auth0 Section ─── */
 .auth0-section{
-  background:linear-gradient(180deg,var(--c-bg) 0%,#0e0b18 100%) !important;
+  background:linear-gradient(180deg,var(--c-bg) 0%,var(--c-auth0-gradient-end) 100%) !important;
 }
 .feature-card{
   background:rgba(103,66,213,0.06);
@@ -485,7 +526,7 @@ button,a[href*="#"],input[type="number"],input[type="text"],select{
 .pattern-card .use-case{font-size:13px;color:var(--c-text-muted);margin-bottom:12px}
 .pattern-flow{
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  padding:12px;background:rgba(0,0,0,0.3);border-radius:8px;
+  padding:12px;background:var(--c-inset-bg);border-radius:8px;
   margin-top:12px;
 }
 .flow-step{
@@ -567,7 +608,7 @@ blockquote cite{
 }
 .calc-field input,.calc-field select{
   width:100%;padding:12px 16px;
-  background:rgba(0,0,0,0.3);
+  background:var(--c-inset-bg);
   border:1px solid var(--c-seller-border);
   border-radius:8px;color:var(--c-text);
   font-family:var(--font-body);font-size:16px;
@@ -783,6 +824,9 @@ blockquote cite{
       <li><a href="#token-flow">Token Flow</a></li>
       <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid var(--c-seller-border);border-radius:6px;">SE Technical Deep-Dive &rarr;</a></li>
     </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode">
+      <span class="theme-icon">☾</span>
+    </button>
     <button class="seller-toggle" id="sellerToggle" onclick="toggleSellerMode()">
       <span class="toggle-dot"></span>
       Seller Mode
@@ -804,6 +848,9 @@ blockquote cite{
       <li><a href="technical.html">SE Technical Deep-Dive →</a></li>
     </ul>
     <div class="nav-drawer-separator"></div>
+    <button class="theme-toggle" id="themeToggleMobile" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode" style="width:100%;justify-content:center;margin-bottom:12px">
+      <span class="theme-icon">☾</span>
+    </button>
     <button class="seller-toggle" id="sellerToggleMobile" onclick="toggleSellerModeMobile()">
       <span class="toggle-dot"></span>
       Seller Mode
@@ -1536,6 +1583,32 @@ blockquote cite{
 </footer>
 
 <script>
+/* ─── Theme Toggle ─── */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+  const icons = document.querySelectorAll('.theme-icon');
+  icons.forEach(icon => {
+    icon.textContent = theme === 'dark' ? '\u2600' : '\u263E';
+  });
+}
+
+// Initialize theme from localStorage (default is light)
+(function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  updateThemeIcon(savedTheme);
+})();
+
 /* ─── Mobile Menu ─── */
 function openNavDrawer() {
   const drawer = document.getElementById('navDrawer');
