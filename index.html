@@ -140,11 +140,11 @@ html[data-theme="dark"] body::before{opacity:0.4}
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
 }
-.nav-links{display:flex;align-items:center;gap:8px;list-style:none}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
 .nav-links a{
-  color:var(--c-text-muted);text-decoration:none;font-size:13px;
-  padding:6px 12px;border-radius:6px;transition:all 0.2s;
-  font-weight:500;
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;
+  font-weight:500;white-space:nowrap;
 }
 .nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
 
@@ -822,8 +822,9 @@ blockquote cite{
       <li><a href="#auth0">Auth0 for AI</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#token-flow">Token Flow</a></li>
-      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid var(--c-seller-border);border-radius:6px;">SE Technical Deep-Dive &rarr;</a></li>
-      <li><a href="concepts.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px;">Concepts Guide &rarr;</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid var(--c-seller-border);border-radius:6px;">Technical &rarr;</a></li>
+      <li><a href="concepts.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px;">Concepts &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px;">Use Cases &rarr;</a></li>
     </ul>
     <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode">
       <span class="theme-icon">☾</span>
@@ -848,6 +849,7 @@ blockquote cite{
       <li><a href="#token-flow">Token Flow</a></li>
       <li><a href="technical.html">SE Technical Deep-Dive →</a></li>
       <li><a href="concepts.html">Concepts Guide →</a></li>
+      <li><a href="usecases.html">Use Cases →</a></li>
     </ul>
     <div class="nav-drawer-separator"></div>
     <button class="theme-toggle" id="themeToggleMobile" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode" style="width:100%;justify-content:center;margin-bottom:12px">
