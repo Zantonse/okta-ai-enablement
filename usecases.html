@@ -1145,45 +1145,576 @@
     <!-- Healthcare -->
     <section id="health">
       <h2>Healthcare</h2>
-      <p style="color: var(--c-text-secondary);">Secure AI agents supporting clinical workflows, patient intake, and health records management.</p>
-      <div class="stats-grid" id="health-stats"></div>
+      <p>Healthcare AI agents handle the most sensitive data in any industry — patient health information (PHI). HIPAA, FDA regulations, and clinical safety requirements make identity governance non-negotiable.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">73%</div>
+          <div class="stat-label">Of health systems investing in AI (HIMSS, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">$187B</div>
+          <div class="stat-label">Expected healthcare AI market by 2030 (Grand View Research)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">78%</div>
+          <div class="stat-label">Of physicians say AI could reduce burnout (AMA, 2024)</div>
+        </div>
+      </div>
     </section>
 
     <section id="health-clinical">
       <h3>Clinical Decision Support Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Dr. Sarah Chen</h4>
+        <p>ER physician, 40+ patients per shift. Needs instant drug interaction checks and clinical guidelines.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Agent can access any patient's full record regardless of treating physician. Night-shift physician queries celebrity patient — agent returns it. No treating-physician access control.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Dr. Chen sees chest pain patient,</strong> asks: "Check drug interactions for this patient's medications against proposed thrombolytics"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates,</strong> token exchange with Dr. Chen's ID token</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>FGA: Does Dr. Chen have treating-physician relationship</strong> with this patient? → Yes</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Agent accesses EHR via Token Vault</strong> — scoped to this patient's medication list only</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Cross-references drug interaction database</strong> (read-only, no patient data sent)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Returns interaction analysis</strong> — flags contraindication with blood thinner</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Dr. Chen uses alternative treatment.</strong> Decision logged with full delegation chain.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Any patient record accessible → celebrity snooping → HIPAA violation → $1.5M+ fine</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Scoped to treating physician's patients → unauthorized queries blocked → HIPAA compliant</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Drug interaction checks: 8 minutes → 15 seconds</li>
+          <li>Zero unauthorized patient access</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: HIPAA §164.312(a) Unique Identification</h4>
+        <p>HIPAA §164.312(a) requires unique user identification — <code>act</code> claim proves which physician authorized each access. "Your EHR controls who logs in. Okta controls what the AI agent does after login."</p>
+      </div>
     </section>
 
     <section id="health-intake">
       <h3>Patient Intake Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Michael</h4>
+        <p>Front-desk coordinator, 150 check-ins/day, 30% have incomplete insurance/demographic info.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Intake agent has clinic-wide insurance API credentials. Exposed in misconfigured env variable → attacker verifies insurance for 50,000 patients → massive PHI breach.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Patient checks in at kiosk.</strong> Intake agent activates.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates,</strong> token exchange — scoped to this patient's session only</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Pulls patient demographics from EHR</strong> via Token Vault</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Verifies insurance via payer API</strong> (XAA — scoped to this patient, this visit)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Identifies missing allergies field</strong> and pre-appointment questionnaire</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Sends patient secure link</strong> to complete missing info (consent-based)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Michael reviews completed intake package,</strong> confirms patient ready</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Clinic-wide credentials → leak = 50,000 queries → no per-patient audit</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Per-session scoped → leak = current session only → full per-patient audit</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>60% less incomplete intake data</li>
+          <li>Check-in: 12 min → 4 min</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Eliminate Environment Variable Attack Surface</h4>
+        <p>CTO: "How many API credentials does your clinic store in env variables? Token Vault eliminates that attack surface."</p>
+      </div>
     </section>
 
     <section id="health-records">
-      <h3>Records Management Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Medical Records RAG Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Dr. Rodriguez</h4>
+        <p>Primary care physician, preparing annual wellness visit. Needs 3 years of specialist notes, labs, imaging from multiple systems.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>RAG pipeline retrieves psychiatric notes, substance abuse records, HIV status — protected by 42 CFR Part 2 and state mental health privacy laws. Dr. Rodriguez's referral doesn't include behavioral health authorization.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Dr. Rodriguez asks:</strong> "Summarize patient Johnson's care history — cardiology, endocrinology, recent labs"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates,</strong> token exchange</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>RAG searches across EHR document store</strong></p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>FGA check on every document:</strong> Can Dr. Rodriguez (primary care) view this?</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Document filtering:</strong> Cardiology → ✅. Endocrinology → ✅. Psychiatric notes → ❌ (42 CFR Part 2). Labs → ✅.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Only authorized docs in LLM context.</strong> Agent generates wellness summary.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Summary notes:</strong> "Behavioral health records excluded per access policy — refer to behavioral health team if needed."</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">RAG Authorization</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>RAG returns all docs → psychiatric notes in summary → 42 CFR Part 2 violation → federal penalty</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA filters by document type + authorization → only permitted records → compliant summary</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Record synthesis: 25 min → 90 seconds</li>
+          <li>Zero unauthorized behavioral health disclosures</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: 42 CFR Part 2 Compliance</h4>
+        <p>42 CFR Part 2 specifically restricts substance abuse records. Your EHR controls who opens the chart, but who controls what the AI puts INTO the LLM context? That's FGA.</p>
+      </div>
     </section>
 
     <!-- Retail -->
     <section id="retail">
       <h2>Retail</h2>
-      <p style="color: var(--c-text-secondary);">AI-powered shopping, inventory, and returns agents with secure customer data access.</p>
-      <div class="stats-grid" id="retail-stats"></div>
+      <p>Retail AI agents handle payments, customer PII, and real-time inventory across thousands of SKUs and locations. Scale and speed make identity governance critical.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">72%</div>
+          <div class="stat-label">Of retailers investing in AI (NRF, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">$31B</div>
+          <div class="stat-label">Retail AI market by 2028 (Mordor Intelligence)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">35%</div>
+          <div class="stat-label">Of online revenue from personalized recommendations (McKinsey)</div>
+        </div>
+      </div>
     </section>
 
     <section id="retail-shopping">
-      <h3>Shopping Assistant Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Personalized Shopping Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Emma</h4>
+        <p>Frequent online shopper, loyalty profile, payment methods on file, 2 years browsing history.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Agent accesses full customer database for personalization. LLM provider breach → customer purchase histories, payment preferences, home addresses exposed — agent was sending full profiles as LLM context.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Emma asks:</strong> "Find running shoes similar to last year but under $120"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates,</strong> establishes customer session</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Token Vault retrieves loyalty profile</strong> from CRM (scoped to Emma only)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>FGA: Agent can access purchase history and preferences,</strong> NOT payment methods or address</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Searches product catalog</strong> (no customer data sent — only product query)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Returns 5 recommendations</strong> based on brand, size, style</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Emma selects. CIBA:</strong> "Confirm purchase: Nike Air Zoom, $109.99, to saved address?" → approves</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Full profile to LLM → breach = millions of profiles → CCPA violation</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Only permitted fields → breach = only preferences → no PII leakage</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>28% higher conversion</li>
+          <li>Zero PII exposure through LLM</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: CCPA Liability</h4>
+        <p>CCPA hook: "If your agent sends emails to an LLM and it's breached, you're liable for every California customer. FGA ensures PII never enters the LLM context."</p>
+      </div>
     </section>
 
     <section id="retail-inventory">
-      <h3>Inventory Optimization Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Inventory Management Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Carlos</h4>
+        <p>Regional supply chain manager, 45 stores, 3 warehouses, 200+ suppliers.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>AI inventory agent has full write access to procurement. Prompt injection through compromised supplier EDI feed → agent auto-approves $2M fraudulent PO.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Carlos asks:</strong> "Southeast stores at risk of jacket stockout this week?"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates,</strong> token exchange — scoped to Southeast region</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Queries inventory system via XAA</strong> — only Southeast, only Carlos's categories</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Identifies 8 at-risk stores,</strong> recommends inter-store transfers</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Drafts transfer order + supplemental PO</strong></p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Transfer under $10K → auto-approved.</strong> PO over $10K → CIBA: "Approve PO #4521: 500 jackets, $28,500" → Carlos approves</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>All actions logged:</strong> agent, delegation, amounts, approval chain</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">OIG</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Write access all procurement → fraudulent PO auto-approved → $2M loss</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Scoped to region + category → threshold approval → fraudulent PO blocked</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Stockouts reduced 34%</li>
+          <li>$0 unauthorized procurement</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Procurement Risk Quantification</h4>
+        <p>$2M fraudulent PO lands with CFOs. What's the max damage your agent can do in 5 minutes? CIBA thresholds cap it.</p>
+      </div>
     </section>
 
     <section id="retail-returns">
-      <h3>Returns Processing Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Customer Service Returns Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Aisha</h4>
+        <p>Customer returning damaged item, frustrated, wants quick resolution.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Returns agent can issue refunds of any amount to anyone. Social engineering → caller claims to be high-value customer → agent processes $5,000 fake return.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Aisha authenticates via retailer's app</strong> (Okta SSO)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Returns agent activates</strong> — scoped to Aisha's order history</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Aisha:</strong> "Return damaged coffee maker from last Tuesday"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Agent verifies:</strong> Order #7892, coffee maker, delivered 5 days ago, within window → ✅</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Policy check:</strong> full refund or replacement. Amount: $89.99</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Under $100 → auto-approved.</strong> Processes refund to original payment.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>If over $500 → CIBA to human agent:</strong> "Approve refund $529.99 to Aisha M. for Order #7892"</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Any refund claim processed → social engineering = fake refunds → no customer-order verification</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Scoped to authenticated customer's orders → only real orders → thresholds for approval</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Returns processing 65% faster</li>
+          <li>Fraudulent returns reduced 89%</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Return Fraud Prevention</h4>
+        <p>How many support agents can issue unlimited refunds right now? That's what your AI agent has too — unless you add CIBA thresholds.</p>
+      </div>
     </section>
 
     <!-- Technology -->
