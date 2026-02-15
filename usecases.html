@@ -794,29 +794,352 @@
     <!-- Cross-Industry Patterns -->
     <section id="cross-industry-patterns">
       <h2>Cross-Industry Patterns</h2>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <p>Before diving into specific industries, here are the five agent archetypes you'll see across every vertical. Each maps to a specific set of Okta capabilities.</p>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-label">Archetype 1</div>
+          <h4 class="card-title">Customer-Facing Agents</h4>
+          <div class="card-content">
+            <p>Agents that interact with end customers.</p>
+            <p><strong>Primary:</strong> Token Vault + CIBA</p>
+            <p><strong>Industries:</strong> FinServ, Retail, Insurance, Healthcare</p>
+            <p><strong>Risk:</strong> Agent accesses all customer data regardless of authorization.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Archetype 2</div>
+          <h4 class="card-title">Internal Knowledge Agents</h4>
+          <div class="card-content">
+            <p>Search and synthesize internal docs.</p>
+            <p><strong>Primary:</strong> FGA + RAG Authorization</p>
+            <p><strong>Industries:</strong> Technology, Government, Manufacturing</p>
+            <p><strong>Risk:</strong> Confidential docs leak into any employee's LLM context.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Archetype 3</div>
+          <h4 class="card-title">Compliance & Audit Agents</h4>
+          <div class="card-content">
+            <p>Monitor regulations, generate reports.</p>
+            <p><strong>Primary:</strong> OIG + System Logs + ISPM</p>
+            <p><strong>Industries:</strong> FinServ, Healthcare, Insurance, Gov</p>
+            <p><strong>Risk:</strong> Compliance agent becomes ungoverned access point.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Archetype 4</div>
+          <h4 class="card-title">Multi-System Orchestration</h4>
+          <div class="card-content">
+            <p>Coordinate across SaaS + internal APIs.</p>
+            <p><strong>Primary:</strong> XAA + MCP + Token Vault</p>
+            <p><strong>Industries:</strong> Technology, Manufacturing, Retail</p>
+            <p><strong>Risk:</strong> Single compromise cascades across all systems.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Archetype 5</div>
+          <h4 class="card-title">Human-Approved Workflows</h4>
+          <div class="card-content">
+            <p>High-value actions requiring sign-off.</p>
+            <p><strong>Primary:</strong> CIBA + Delegation Chain</p>
+            <p><strong>Industries:</strong> FinServ, Healthcare, Insurance, Gov</p>
+            <p><strong>Risk:</strong> Agent auto-approves wire transfers, medication changes, etc.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Financial Services -->
     <section id="fins">
       <h2>Financial Services</h2>
-      <p style="color: var(--c-text-secondary);">AI adoption across fraud detection, wealth advisory, and regulatory compliance.</p>
-      <div class="stats-grid" id="fins-stats"></div>
+      <p>Financial services leads AI adoption — and faces the strictest regulatory requirements. Every agent workflow involves regulated data, cross-border compliance, and customer trust.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">85%</div>
+          <div class="stat-label">Of financial firms actively applying AI (Resources Global Professionals, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">$3.2T</div>
+          <div class="stat-label">Potential annual value from AI in banking (McKinsey, 2024)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">59%</div>
+          <div class="stat-label">Of banking employees use AI daily (Accenture, 2025)</div>
+        </div>
+      </div>
     </section>
 
     <section id="fins-fraud">
       <h3>Fraud Detection Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Maria</h4>
+        <p>Fraud analyst at mid-size bank. Monitors 50,000+ daily transactions. Currently experiences 60% false positive rate.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Bank deploys AI fraud agent. Without identity, agent has service account with read access to ALL transactions. Compromised via supply chain attack → attacker accesses every transaction. Audit log shows "svc-fraud."</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Maria logs in</strong> via Okta SSO with MFA.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Asks agent:</strong> "Analyze unusual patterns in high-value wire transfers this week."</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Agent authenticates</strong> with certificate (Agent Identity).</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Token exchange:</strong> credentials + Maria's ID token → scoped ID-JAG.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Queries transaction DB</strong> — only wire transfers, only Maria's accounts, only this week.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Returns analysis.</strong> Maria flags 3 transactions.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>CIBA request:</strong> "Freeze account #4521 pending investigation" → Maria approves on phone.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Service account → full DB → compromise = all transactions → "svc-fraud" in logs</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Delegation → scoped to analyst's accounts → compromise = 5-min window → "agent:fraud-detector acting as maria@bank.com"</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>50% reduction in false positives</li>
+          <li>Blast radius reduced from "all transactions" to "5-minute window"</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Blast-Radius Advantage</h4>
+        <p>Lead with blast-radius comparison. CISOs understand risk reduction. If "we already have fraud AI" → "Who governs its access? Can you prove unauthorized access was blocked?"</p>
+      </div>
     </section>
 
     <section id="fins-wealth">
       <h3>Wealth Advisory Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: James</h4>
+        <p>Wealth advisor managing 200 high-net-worth portfolios. Spends 40% of day pulling data from 6 different systems.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>AI assistant aggregates 6 systems. Agent stores James's credentials in config. Vacation → another advisor queries client estate plan → audit shows James accessed it.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>James asks:</strong> "Prepare quarterly review for client Chen Wei."</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates</strong> with certificate.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Token exchange</strong> → scoped ID-JAG.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Token Vault:</strong> Retrieve tokens for Salesforce (contacts), Bloomberg (market), internal API (holdings).</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>FGA check:</strong> Can James view Chen Wei's estate planning? → Yes (assigned advisor).</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Compiles package.</strong> James reviews and sends.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Vacation → delegation</strong> shifts to covering advisor, scoped to their clients.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Stored credentials → all clients → wrong audit trail → leak = 200 portfolios</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Delegation → scoped to advisor's clients → proper handoff → Token Vault manages tokens</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>40% less time gathering data across 6 systems</li>
+          <li>Zero cross-client exposure</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Token Vault Efficiency</h4>
+        <p>VP Eng: "Token Vault handles 6 systems. Developers write getAccessTokenForConnection, not custom OAuth."</p>
+      </div>
     </section>
 
     <section id="fins-compliance">
       <h3>Regulatory Compliance Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Priya</h4>
+        <p>Head of Compliance managing team of 5. 200+ regulatory updates per month. Currently 3 months behind on processing.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>AI scans regulatory feeds. Without governance, stores analysis in shared drive. Junior analyst finds draft enforcement assessment — restricted to compliance committee.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Priya asks:</strong> "OCC guidance changes affecting commercial lending, past 30 days."</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates</strong> with certificate.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Accesses regulatory APIs</strong> via XAA (scoped to commercial lending).</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>RAG search</strong> of internal policies — FGA scopes to Priya's authorized policies.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Generates draft</strong> impact assessment.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Stores in compliance-restricted folder</strong> — FGA enforces committee access only.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>OIG quarterly:</strong> "Should agent still access enforcement-sensitive docs?" → Priya confirms.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">OIG</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Shared drive → anyone sees enforcement drafts → no review → years of stale access</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA-protected storage → committee only → quarterly OIG → access audited</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>80% faster regulatory processing</li>
+          <li>Zero unauthorized access</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Compliance Traceability</h4>
+        <p>Compliance Officer: "EU AI Act Article 12 requires traceability." OIG certification is the differentiator. Position as regulatory enablement, not overhead.</p>
+      </div>
     </section>
 
     <!-- Healthcare -->
