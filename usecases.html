@@ -2297,45 +2297,574 @@
     <!-- Government -->
     <section id="gov">
       <h2>Government</h2>
-      <p style="color: var(--c-text-secondary);">Citizen-facing and interagency agents compliant with federal access and audit requirements.</p>
-      <div class="stats-grid" id="gov-stats"></div>
+      <p>Government AI agents operate under the strictest transparency requirements in any sector. Every action must be auditable, explainable, and compliant with FedRAMP, FISMA, and executive orders on AI safety.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">64%</div>
+          <div class="stat-label">Of federal agencies piloting AI (GAO, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">$3.3B</div>
+          <div class="stat-label">US federal AI spending FY2025</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">FedRAMP</div>
+          <div class="stat-label">Authorization required for all cloud AI tools</div>
+        </div>
+      </div>
     </section>
 
     <section id="gov-citizen">
       <h3>Citizen Services Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Maria</h4>
+        <p>Single mother applying for SNAP benefits through state online portal. Complex multi-agency process.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Benefits agent has broad access to citizen records across programs. Query to SNAP returns child protective services history — data SNAP workers can't see. Violates inter-program data sharing restrictions.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Maria authenticates to benefits portal</strong> (Login.gov via Okta)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Benefits agent activates</strong> — scoped to Maria's application session</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Pulls existing records from eligibility system</strong> (FGA: SNAP data only, not CPS, not Medicaid)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Identifies missing documentation:</strong> proof of income, household size</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Pre-fills from existing records,</strong> asks Maria to upload remaining</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Submits completed application to eligibility queue</strong></p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Eligibility worker reviews</strong> — agent provides summary scoped to worker's authorized info</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>All programs accessible → CPS history visible to SNAP workers → privacy violation → federal audit finding</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA enforces program boundaries → SNAP agent sees SNAP data only → compliant</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Application completion +45%</li>
+          <li>Zero cross-program data access violations</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Inter-Program Data Boundaries</h4>
+        <p>"Inter-program data sharing is the #1 audit finding in state benefits systems. FGA enforces the boundaries policy requires but legacy systems can't."</p>
+      </div>
     </section>
 
     <section id="gov-grants">
-      <h3>Grants Administration Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Grant Processing Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: David</h4>
+        <p>Grants program officer, $50M in federal research grants, 200 applications per cycle, 15 federal compliance checks each.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Agent can read all applications including those where David has conflicts of interest (his former university submitted). Agent ranks it highly — but review should have been routed to another officer.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>David asks:</strong> "Show next batch of applications for clean energy program"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates, token exchange</strong></p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>FGA: filter out applications</strong> where David has declared conflict → former university excluded</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Pulls next 10 applications,</strong> runs compliance pre-check against federal requirements</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Flags:</strong> "Application #4521 missing SAM.gov registration. #4522 budget exceeds ceiling."</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>David reviews batch.</strong> Asks agent for deeper analysis on borderline application.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Agent generates detailed assessment.</strong> David submits reviews to panel.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>All applications visible → conflict oversight missed → IG investigation</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA auto-excludes conflicted applications → bias prevented before review</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Compliance pre-check 70% faster</li>
+          <li>Zero conflict-of-interest incidents</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: IG Audit Prevention</h4>
+        <p>"IG offices audit AI-assisted grant reviews. If your agent showed a reviewer an application they had conflict with, that's an IG finding. FGA prevents it."</p>
+      </div>
     </section>
 
     <section id="gov-interagency">
-      <h3>Interagency Coordination Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Inter-Agency Data Sharing Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Agent Harris</h4>
+        <p>Federal analyst coordinating hurricane disaster response across FEMA, HHS, state emergency management. Real-time data sharing needed.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Data sharing agent has standing MOU-level access to all partner agencies. After disaster response ends, agent continues accessing partner data for routine queries — violating time-limited data sharing agreement.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Emergency declared.</strong> Harris activates inter-agency coordination agent</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates</strong> — token exchange establishes clearance level and agency affiliation</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>MCP Authorization: discovers data tools</strong> from FEMA (shelter capacity), HHS (medical resources), state (evacuation routes)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Queries each agency via MCP tools</strong> — scoped to disaster event ID and authorized categories</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Synthesizes situational report</strong> across three agencies</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Harris reviews and shares</strong> with coordination team</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Disaster declaration ends</strong> → OIG automatically revokes cross-agency access. No standing permissions persist.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">MCP Authorization</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">OIG</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Standing cross-agency access → persists after emergency → unauthorized access → MOU violation</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Time-limited access tied to declaration → auto-revocation → compliant sharing</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Cross-agency synthesis: 4 hours → 20 minutes</li>
+          <li>Zero post-emergency unauthorized access</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: MOU Compliance Automation</h4>
+        <p>"MOUs define time-limited data sharing. Your agent doesn't read MOUs. OIG auto-revocation enforces the MOU timeline automatically."</p>
+      </div>
     </section>
 
     <!-- Manufacturing -->
     <section id="mfg">
       <h2>Manufacturing</h2>
-      <p style="color: var(--c-text-secondary);">Quality, supply chain, and maintenance agents with sensor data integration and audit trails.</p>
-      <div class="stats-grid" id="mfg-stats"></div>
+      <p>Manufacturing AI agents interact with operational technology (OT) systems, ERP platforms, and supply chain networks. When an agent can modify a production line or approve a purchase order, identity governance is a safety requirement — not just a security one.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">67%</div>
+          <div class="stat-label">Of manufacturers using AI in production (Deloitte, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">$16B</div>
+          <div class="stat-label">Manufacturing AI market by 2028 (MarketsandMarkets)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">25%</div>
+          <div class="stat-label">Reduction in unplanned downtime with predictive AI (McKinsey)</div>
+        </div>
+      </div>
     </section>
 
     <section id="mfg-quality">
-      <h3>Quality Control Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Quality Inspection Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Jun</h4>
+        <p>QC manager at automotive parts manufacturer. 10,000 parts/day across 3 production lines.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Agent has write access to MES and can halt any line. False positive in AI vision → auto-halts Line 2 producing rush orders → 4-hour halt costs $200K in penalties.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Agent monitors camera feeds</strong> and measurement data from all 3 lines</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Detects potential defect on Line 2</strong> — burr formation on 3 consecutive parts</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Agent authenticates, token exchange</strong> — scoped to Line 2 quality data, Jun's shift</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Alerts Jun:</strong> "Potential burr defect on Line 2. 3 consecutive parts flagged. Recommend inspection."</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Jun reviews agent's analysis</strong> including images and measurements</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Agent recommends halt.</strong> Line halt = destructive action → CIBA: "Approve Line 2 halt for tool inspection?" → Jun approves</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Line halted. Tool replaced.</strong> Agent monitors restart quality. All actions logged.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Auto-halts line → false positive = $200K penalty → no human review</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Recommends halt → human approves via CIBA → false positives caught before costly action</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Defect detection +35%</li>
+          <li>$0 in unnecessary production halts</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: OT Safety Interlock</h4>
+        <p>"OT systems: when an agent makes a mistake, it costs money per minute. CIBA is the safety interlock preventing AI mistakes from becoming production incidents."</p>
+      </div>
     </section>
 
     <section id="mfg-supply">
-      <h3>Supply Chain Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+      <h3>Supply Chain Optimization Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Rachel</h4>
+        <p>Supply chain director, 150 suppliers across 12 countries. Tariffs, lead times, quality certifications.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Agent accesses all supplier data including pricing and contracts. Generates comparison report that accidentally includes competitor supplier's pricing → unfair negotiation leverage → NDA violation.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (6 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Rachel asks:</strong> "Compare lead times and quality for top 5 ceramic suppliers in APAC"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates, token exchange</strong></p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>FGA: Rachel has relationships with these 5 suppliers</strong> → access granted</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>FGA also enforces:</strong> Agent cannot access Supplier A's pricing while comparing with Supplier A's competitors (NDA field isolation)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Generates comparison:</strong> lead times, quality certs, on-time delivery — no pricing cross-contamination</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Rachel reviews, schedules calls with top 2.</strong></p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>All supplier data accessible → NDA pricing leaked → contract violation → legal liability</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA enforces relationship boundaries + NDA field isolation → clean comparisons</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Supplier evaluation 60% faster</li>
+          <li>Zero NDA violations</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: NDA Field Isolation</h4>
+        <p>"If your AI surfaces Supplier A's pricing while negotiating with Supplier B, that's a contract breach. FGA prevents it at the data layer."</p>
+      </div>
     </section>
 
     <section id="mfg-maintenance">
       <h3>Predictive Maintenance Agent</h3>
-      <p style="color: var(--c-text-secondary);">Content coming soon.</p>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Marcus</h4>
+        <p>Maintenance supervisor, 200 pieces of equipment at chemical processing plant. Unplanned downtime = $50K/hour.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Agent has access to all equipment including safety-critical chemical processing. Compromised agent modifies maintenance schedule for reactor vessel → skips required safety inspection → pressure vessel failure.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Agent monitors sensor data</strong> (vibration, temperature, pressure) continuously</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Detects anomaly:</strong> Pump #47 vibration trending up → predicts bearing failure in 72 hours</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Agent authenticates, token exchange</strong> — scoped to pump equipment class (NOT reactors or safety-critical)</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Generates work order:</strong> "Replace bearing on Pump #47. Priority: Medium. Window: Next planned downtime."</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Work order for non-safety equipment</strong> → routes to Marcus for review</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Marcus approves.</strong> Maintenance team schedules repair.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>ANY modification to safety-critical equipment</strong> → CIBA escalation to plant safety officer. Dual-approval required.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">System Logs</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before & After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Agent modifies any schedule → safety inspection skipped → pressure vessel failure → plant shutdown</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>Restricted from safety-critical equipment → dual-approval → missed inspections impossible</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Unplanned downtime reduced 25%</li>
+          <li>Zero missed safety inspections</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: VP Operations Buyer</h4>
+        <p>"In manufacturing, the CISO isn't your buyer — the VP Operations is. $50K/hour downtime and safety stories resonate with plant managers, not IT."</p>
+      </div>
     </section>
 
     <!-- Footer -->
