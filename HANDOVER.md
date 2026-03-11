@@ -2,119 +2,124 @@
 
 **Date:** 2026-03-11
 **Branch:** `main`
-**Latest commit:** `6773760` — feat: add Gartner governance stat, CyberArk and SailPoint battlecards
+**Latest commit:** `447df2a` — feat: add ISPM to index.html nav and mobile drawer
 **Deployed at:** https://okta-ai-enablement.vercel.app
 **GitHub:** https://github.com/Zantonse/okta-ai-enablement
+**Total commits this session:** 14
+**Total deploys this session:** 8
 
 ---
 
 ## 1. Session Summary
 
-Massive session covering nav restructure, UI fixes, content accuracy, deep research, and content expansion for the Okta AI Enablement Hub. Started with a 7-phase implementation plan (two-tier nav, cross-navigation, favicon, footer standardization, oidc.html double-document fix). Then ran three Ralph Loops: UI consistency review (found/fixed page-nav positioning bug), content accuracy review (fixed EU AI Act reference and CIBA spec citation), and deep research loop (updated feature status, SDK matrix, MCP spec evolution, standards bodies). Added three major new content sections (OBO flows, Autonomous flows, A2A protocol). Ran gap analysis identifying 15 priority content additions. Implemented P0 quick wins (Gartner stat, CyberArk/SailPoint battlecards). Three new pages (OPA, Agentforce integrations, ITP) were planned but not yet built due to context limits.
+Comprehensive overhaul of the Okta AI Enablement Hub — from 9 pages to 13 pages, 21 use cases to 27, and a complete content roadmap executed end-to-end. Session covered: nav restructuring (two-tier layout), UI bug fixes, content accuracy verification (3 Ralph Loops), deep research with parallel specialist agents + Gemini synthesis, gap analysis identifying 15 priority additions, and implementation of all P0/P1/P2 items. The hub now covers every major Okta/Auth0 AI agent capability, 8 competitive battlecards, 9 industry verticals, OWASP Agentic Top 10 mapping, US + EU compliance frameworks, and platform integration patterns for all major AI agent platforms.
 
 ---
 
 ## 2. What Got Done
 
-### Nav Restructure & UI Fixes (7 phases)
-- **`index.html`**: Added `--c-accent-cyan` CSS variable, delayed count-up animation by 620ms, split 13-item nav into two-tier layout (5 anchors + 8 colored deep-dive pills), completed mobile drawer with all 13 links
-- **`technical.html`, `concepts.html`, `usecases.html`**: Added `.page-nav` horizontal pill row (fixed position at top:104px), removed back links, added missing deep-dive pages to sidebar cross-links
-- **`oauth.html`**: Added 4 missing pages to mobile drawer
-- **`oidc.html`**: Stripped 2 nested `<!DOCTYPE>` documents while preserving styles and content
-- **All 9 HTML files**: Added inline SVG favicon, standardized footers to March 2026
+### Phase 1: Nav Restructure & UI Fixes (commits fde6b9d, 5055d70)
+- Two-tier nav on index.html (anchors + 12 deep-dive pills)
+- Page-nav pill row on sidebar pages (fixed at top:104px)
+- Mobile drawers completed with all pages
+- oidc.html double-document stripped
+- Favicon + footers standardized across all pages
 
-### Content Accuracy Fixes
-- **`index.html`**: "EU AI Act Section 14" to "Article 14"
-- **`technical.html`**: CIBA "RFC 9126" to "OpenID Connect CIBA Core 1.0" (RFC 9126 is PAR)
-- Verified all RFC references across 9 pages
+### Phase 2: Content Accuracy (commits 2ca256d, a71a85a)
+- EU AI Act "Section 14" → "Article 14"
+- CIBA "RFC 9126" → "OpenID Connect CIBA Core 1.0"
+- `withAsyncUserConfirmation` → `withAsyncAuthorization` (SDK v5.0+ rename)
+- SDK integration matrix updated (Genkit, Cloudflare Agents added)
+- Feature status corrected (Okta AI Agents is EA, not GA)
 
-### Deep Research Updates
-- **`technical.html`**: Added Genkit + Cloudflare Agents to SDK matrix; corrected feature status (EA not GA); ISPM SAM plugin details; XAA xaa.dev playground; fixed withAsyncAuthorization method rename
-- **`agent-identity.html`**: Added OIDF AIIM Community Group, Google A2A protocol
-- **`concepts.html`**: Added MCP spec 2025-11-25 evolution (CIMD, RFC 8707, step-up auth)
+### Phase 3: Deep Research & Standards (commits c04eff3, f7329f4)
+- OIDF AIIM Community Group + whitepaper added to agent-identity.html
+- Google A2A protocol section added to agent-identity.html
+- MCP spec 2025-11-25 evolution (CIMD, RFC 8707, step-up auth) added to concepts.html
+- OBO Flows, Autonomous Flows, A2A Protocol — three major new sections in concepts.html
 
-### New Content Sections
-- **`concepts.html`**: OBO Flows, Autonomous (M2M) Flows, A2A Protocol sections with sidebar nav
+### Phase 4: P0 Quick Wins (commit 6773760)
+- Gartner "40% of agent projects fail without governance" urgency stat in index.html
+- CyberArk competitive battlecard in technical.html
+- SailPoint "Agent Identity Security" battlecard in technical.html
 
-### P0 Quick Wins
-- **`index.html`**: Gartner "40% of agentic projects fail without governance" callout
-- **`technical.html`**: CyberArk + SailPoint competitive battlecards
+### Phase 5: New Pages (commits abf81f2, f3f69e2)
+- **opa.html** — Okta Privileged Access for agent secrets (1,184 lines)
+- **itp.html** — Identity Threat Protection for agents (1,109 lines)
+- **integrations.html** — Platform integration patterns (1,047 lines): Agentforce, Copilot Studio, Bedrock AgentCore, Vertex AI, ServiceNow
 
----
+### Phase 6: P1 Quick Wins (commit 4f8c776)
+- OWASP Agentic Top 10 control mapping table in concepts.html
+- NIST AI RMF + Colorado SB24-205 + PCI DSS 4.0 in compliance mapping
+- Auth0 Actions (Client Credentials Exchange trigger) in agent-identity.html
 
-## 3. What Didn't Work / Bugs Encountered
-
-- **Page-nav hidden behind fixed header**: Static `.page-nav` rendered under the 104px fixed header on sidebar pages. Fixed by making it `position: fixed; top: 104px; left: 240px`.
-- **Ralph Loop shell parsing**: Parentheses in prompt caused zsh errors. Fixed by removing them.
-- **Playwright snapshot overflow**: Large pages exceeded token limits. Used screenshots instead.
-
----
-
-## 4. Key Decisions Made
-
-- **Two-tier nav**: Tier 1 (64px) for anchors, Tier 2 (40px) for deep-dive pills. Mobile hides tier 2.
-- **CIBA is not an RFC**: It's OpenID Foundation spec (OIDC CIBA Core 1.0). RFC 9126 is PAR.
-- **A2A complementary to MCP**: MCP = agent-to-resource, A2A = agent-to-agent, XAA = governance.
-- **Auth0 AI Agents GA vs Okta EA**: Auth0 features GA since Nov 2025; Okta platform features still EA.
-
----
-
-## 5. Lessons Learned / Gotchas
-
-- EU AI Act uses "Articles" not "Sections" (European legislative convention)
-- Auth0 SDK renamed `withAsyncUserConfirmation` to `withAsyncAuthorization` in v5.0+ (Oct 2025)
-- MCP spec CIMD replaces DCR as of Nov 2025 — major DX improvement worth highlighting
-- XAA has xaa.dev playground (Jan 2026) — instant demo capability for SEs
+### Phase 7: P2 Items (commits a96fac5, 447df2a)
+- **ispm.html** — ISPM Agent Discovery deep-dive (1,166 lines)
+- MCP tool poisoning defense section in concepts.html
+- Aembit + HashiCorp Vault "Better Together" in technical.html
+- Education + Telecom industry use cases in usecases.html (6 new scenarios)
 
 ---
 
-## 6. Current State
+## 3. Current State
 
-- **Builds:** Yes (static HTML, no build step)
+- **Pages:** 13 HTML files (index, technical, concepts, usecases, oauth, agent-identity, fga, ai-gateway, oidc, opa, itp, integrations, ispm)
+- **Use cases:** 27 across 9 industries (FinServ, Healthcare, Retail, Tech, Insurance, Gov, Manufacturing, Education, Telecom)
+- **Competitive:** 6 battlecards (Entra, Ping, Astrix, ServiceNow, CyberArk, SailPoint) + 2 ecosystem partners (Aembit, HashiCorp Vault)
 - **Deployed:** https://okta-ai-enablement.vercel.app
 - **GitHub:** https://github.com/Zantonse/okta-ai-enablement
-- **Uncommitted:** `.gitignore`, this `HANDOVER.md`, 17 screenshot PNGs (cleanup candidates)
-- **Branch:** `main`, up to date with origin
+- **Uncommitted:** .gitignore, this HANDOVER.md, 17 screenshot PNGs from browser testing
+- **Branch:** main, up to date with origin
 
 ---
 
-## 7. Clear Next Steps
+## 4. Key Architecture Decisions
 
-### P0 — Build New Pages (use oauth.html as template)
-1. **`opa.html`** — Okta Privileged Access for agent secrets. Secrets brokering, rotation, ZSP, CyberArk/HashiCorp comparison.
-2. **`integrations.html`** — Platform integrations. Salesforce Agentforce, Copilot Studio, ServiceNow AI Agents, Bedrock AgentCore + Auth0.
-3. **`itp.html`** — Identity Threat Protection for agents. Post-auth risk, token theft detection, Universal Logout, CrowdStrike/Zscaler signals.
-
-### P1 — Quick Wins
-4. NIST AI RMF + Colorado SB24-205 compliance mapping in `concepts.html`
-5. OWASP Agentic Top 10 control mapping table in `concepts.html`
-6. Auth0 Actions (Client Credentials Exchange trigger) in `agent-identity.html`
-7. MCP tool poisoning defense in `concepts.html`
-
-### P2 — Future Content
-8. Aembit + HashiCorp Vault "better together" in `technical.html`
-9. Education + Telecom industry use cases in `usecases.html`
-10. ISPM Agent Discovery deep-dive page (`ispm.html`)
-
-### Nav Updates
-When new pages are built, add them to index.html sub-nav, mobile drawers, and page-nav pill rows.
+- **Two-tier nav** with horizontally scrollable sub-bar (12 pills) — hides on mobile, drawer takes over
+- **Page-nav on sidebar pages** as `position:fixed` at `top:104px` to clear the 32px banner + 72px header
+- **New pages** use ai-gateway.html as the CSS template (same design system, nav structure, dark mode)
+- **A2A/MCP/XAA positioning:** MCP = agent-to-resource, A2A = agent-to-agent, XAA = governance layer. All use OAuth — Okta is the center.
+- **CyberArk/SailPoint differentiation:** CyberArk = vault-native (secrets), SailPoint = governance-time (certification). Okta = runtime enforcement (token issuance). Complementary layers.
 
 ---
 
-## 8. Important Files Map
+## 5. Obsidian Research Notes
 
-| File | Description |
-|------|-------------|
-| `index.html` | Main hub — two-tier nav, hero, Gartner urgency callout, 5 sections |
-| `technical.html` | SE deep-dive — features, SDK matrix, competitive (6 vendors), troubleshooting |
-| `concepts.html` | Reference — OAuth, OBO/Autonomous/A2A flows, delegation, FGA, CIBA, MCP, threat model |
-| `usecases.html` | 21 industry use cases across 7 verticals |
-| `oauth.html` | OAuth 2.1 spec — grants, extensions, MCP+OAuth, Okta impl |
-| `agent-identity.html` | Agent identity — RFC 8693, consent, attestation, OIDF, A2A, NIST |
-| `fga.html` | FGA — Zanzibar, OpenFGA, MCP tool auth, RAG security |
-| `ai-gateway.html` | AI Gateway — API security, content security, Zero Trust |
-| `oidc.html` | OIDC — flows, discovery, session management, Okta impl |
-| Obsidian: `Claude-Research/okta-ai-agents-research-2026-03.md` | Deep research from 4 parallel agents |
-| Obsidian: `Claude-Research/enablement-hub-content-roadmap-2026-03.md` | 15-item prioritized content roadmap |
-| Obsidian: `Claude-Research/AI-Agent-Authorization-OBO-vs-Autonomous.md` | OBO vs Autonomous research |
-| Obsidian: `Claude-Research/A2A-Protocol-Deep-Dive.md` | A2A protocol technical deep dive |
+| Note | Content |
+|------|---------|
+| `Claude-Research/okta-ai-agents-research-2026-03.md` | Deep research from 4 parallel agents on Okta features, SDKs, ISPM, MCP/standards |
+| `Claude-Research/enablement-hub-content-roadmap-2026-03.md` | 15-item prioritized content roadmap (all items now complete) |
+| `Claude-Research/AI-Agent-Authorization-OBO-vs-Autonomous.md` | OBO vs Autonomous flows research with code examples |
+| `Claude-Research/A2A-Protocol-Deep-Dive.md` | A2A protocol technical deep dive with Agent Card examples |
+
+---
+
+## 6. Files Map
+
+| File | Lines | Description |
+|------|-------|-------------|
+| index.html | ~1900 | Main hub — two-tier nav, Gartner urgency stat, 5 sections, pricing calc |
+| technical.html | ~2900 | SE deep-dive — features, SDK matrix, 6 competitive cards, ecosystem partners |
+| concepts.html | ~3500 | Reference — OBO/Autonomous/A2A flows, MCP tool poisoning, OWASP Agentic Top 10, compliance mapping |
+| usecases.html | ~3400 | 27 use cases across 9 industries including Education and Telecom |
+| oauth.html | ~2900 | OAuth 2.1 spec — grants, extensions, MCP+OAuth, Okta impl |
+| agent-identity.html | ~2100 | Agent identity — RFC 8693, OIDF, A2A, NIST, Auth0 Actions, Okta impl |
+| fga.html | ~2800 | FGA — Zanzibar, OpenFGA, MCP tool auth, RAG security |
+| ai-gateway.html | ~2600 | AI Gateway — API security, content security, Zero Trust |
+| oidc.html | ~3100 | OIDC — flows, discovery, session management |
+| opa.html | ~1200 | NEW — OPA for agent secrets, ZSP, CyberArk/Vault comparison |
+| itp.html | ~1100 | NEW — ITP for agents, detection patterns, Universal Logout |
+| integrations.html | ~1050 | NEW — Agentforce, Copilot Studio, Bedrock, Vertex AI, ServiceNow |
+| ispm.html | ~1200 | NEW — ISPM Agent Discovery, SAM plugin, NHI detection library |
+
+---
+
+## 7. Next Steps (if continuing)
+
+1. **Nav consistency audit** — Ensure all 13 pages have consistent nav bars and mobile drawers pointing to all other pages (the newer pages built by agents may not link to each other perfectly)
+2. **Cross-page link audit** — Verify sidebar cross-links on technical/concepts/usecases reference the 4 new pages
+3. **Content review loop** — Run another Ralph Loop to verify the new pages' content accuracy
+4. **Additional verticals** — Energy/Utilities, Legal, Media use cases (identified in gap analysis but not yet built)
+5. **Additional competitive** — Oasis Security, Silverfort cards (medium priority from gap analysis)
+6. **Okta Workflows** — Agent lifecycle automation section (identified but not built)
+7. **Google ADK + Semantic Kernel** — Framework integration sections (identified but not built)
