@@ -1137,8 +1137,8 @@
           <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Feb 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-accent-green); color: #000; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">New Feature</span>
         </div>
-        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Okta for AI Agents GA</h3>
-        <p style="color: var(--c-text-secondary); line-height: 1.6;">Okta for AI Agents is now generally available. Discover, register, protect, and govern AI agents as first-class identities in Universal Directory. Includes XAA, Token Vault integration, and CIBA support.</p>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">ISPM Agent Discovery &amp; SAM Browser Plugin</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">ISPM Agent Discovery (EA, Feb 2026) detects shadow AI across enterprise platforms including Copilot, Agentforce, Bedrock, and Vertex AI. The new SAM Browser Plugin monitors Chrome for OAuth grants to unsanctioned AI tools. Maps agent-to-resource blast radius with 25+ OWASP NHI risk detections.</p>
       </div>
 
       <!-- Changelog Entry: Feb 2026 — Auth0 AI SDKs for LangChain & LlamaIndex -->
@@ -1148,7 +1148,7 @@
           <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-accent-green); color: #000; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">New Feature</span>
         </div>
         <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Auth0 AI SDKs for LangChain & LlamaIndex</h3>
-        <p style="color: var(--c-text-secondary); line-height: 1.6;">Official Auth0 AI SDK packages for LangChain and LlamaIndex are now available. Includes FGARetriever for RAG authorization, withAsyncUserConfirmation for CIBA, and getAccessTokenForConnection for Token Vault.</p>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">Official Auth0 AI SDK packages for LangChain and LlamaIndex are now available. Includes FGARetriever for RAG authorization, withAsyncAuthorization for CIBA, and getAccessTokenForConnection for Token Vault.</p>
       </div>
 
       <!-- Changelog Entry: Feb 2026 — MCP Authorization Support -->
@@ -1167,18 +1167,18 @@
           <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Feb 2026</span>
           <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-auth0-purple); color: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Preview</span>
         </div>
-        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Cross-App Access (XAA) with ID-JAG</h3>
-        <p style="color: var(--c-text-secondary); line-height: 1.6;">Public preview of Cross-App Access using Identity Assertion JWT (ID-JAG) tokens. Enables enterprise-managed delegation for agent-to-resource access following RFC 8693.</p>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Cross-App Access (XAA) Self-Service EA</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">XAA now in self-service Early Access (Jan 2026). Uses ID-JAG tokens via RFC 8693 token exchange. The xaa.dev playground (Beta, Jan 20) enables instant testing without local setup. Launch partners include AWS, Salesforce, Google Cloud, Box, and Glean.</p>
       </div>
 
       <!-- Changelog Entry: Jan 2026 — ISPM Agent Discovery -->
       <div style="border-left: 3px solid var(--c-okta-blue); background: var(--c-surface); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);">
         <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
           <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-text-secondary); text-transform: uppercase; letter-spacing: 1px;">Jan 2026</span>
-          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-okta-blue); color: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Enhancement</span>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-okta-blue); color: #fff; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Early Access</span>
         </div>
-        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">ISPM Agent Discovery</h3>
-        <p style="color: var(--c-text-secondary); line-height: 1.6;">Identity Security Posture Management now detects and classifies AI agents across your environment. Identifies shadow agents, maps blast radius, and prioritizes remediation.</p>
+        <h3 style="font-size: 1.1rem; margin-bottom: var(--spacing-sm);">Okta for AI Agents Phase 1</h3>
+        <p style="color: var(--c-text-secondary); line-height: 1.6;">Phase 1 of Okta for AI Agents in Early Access: agent registration in Universal Directory as workload principals, token exchange via org authorization server, and XAA with Managed Connections. Auth0 for AI Agents reached GA in November 2025.</p>
       </div>
     </section>
 
@@ -1753,7 +1753,7 @@
           <ul>
             <li>Auth0 tenant with CIBA enabled</li>
             <li>Mobile device with Auth0 Guardian app installed</li>
-            <li>Sample AI agent app using withAsyncUserConfirmation</li>
+            <li>Sample AI agent app using withAsyncAuthorization</li>
             <li>Test user enrolled in push notifications</li>
           </ul>
         </div>
@@ -1769,7 +1769,7 @@
 
           <div style="margin-bottom: var(--spacing-lg);">
             <div style="font-weight: 600; margin-bottom: var(--spacing-xs);">Step 2: Show the Integration Code</div>
-            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Display the withAsyncUserConfirmation wrapper around a sensitive tool. Explain: "One function wraps any sensitive tool call. The agent pauses until the human decides." Walk through the parameters: bindingMessage, scopes, and onUnauthorized callback.</p>
+            <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-xs);">Display the withAsyncAuthorization wrapper around a sensitive tool. Explain: "One function wraps any sensitive tool call. The agent pauses until the human decides." Walk through the parameters: bindingMessage, scopes, and onUnauthorized callback.</p>
             <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-accent-amber); margin-top: var(--spacing-xs);">📸 Screenshot opportunity: Code with CIBA wrapper showing the integration pattern</div>
           </div>
 
@@ -1808,7 +1808,7 @@
           <pre><code><span class="kw">const</span> auth0AI = <span class="kw">new</span> <span class="fn">Auth0AI</span>();
 
 <span class="kw">export const</span> buy = (context: Context) => {
-  <span class="kw">const</span> withAsyncAuthorization = auth0AI.<span class="fn">withAsyncUserConfirmation</span>({
+  <span class="kw">const</span> withAsyncAuthorization = auth0AI.<span class="fn">withAsyncAuthorization</span>({
     <span class="attr">userID</span>: context.userID,
     <span class="attr">bindingMessage</span>: <span class="kw">async</span> ({ ticker, qty }) =>
       <span class="str">`Do you want to buy ${qty} shares of ${ticker}?`</span>,
@@ -2217,6 +2217,22 @@
               <td><span class="dash">—</span></td>
               <td><span class="dash">—</span></td>
               <td>Python</td>
+            </tr>
+            <tr>
+              <td><strong>Genkit</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td>JS</td>
+            </tr>
+            <tr>
+              <td><strong>Cloudflare Agents</strong></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td><span class="check-mark">✓</span></td>
+              <td>JS</td>
             </tr>
             <tr>
               <td><strong>Custom/REST</strong></td>
