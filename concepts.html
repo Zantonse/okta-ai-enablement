@@ -266,15 +266,20 @@
     }
 
     .page-nav {
+      position: fixed;
+      top: 104px;
+      left: 240px;
+      right: 0;
+      z-index: 850;
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 0 24px;
-      margin-top: -8px;
-      margin-bottom: 8px;
+      padding: 6px 24px;
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-border);
     }
     .page-nav::-webkit-scrollbar { display: none; }
     .page-nav a {
@@ -379,7 +384,7 @@
     /* Main Content */
     .content-wrapper {
       margin-left: 240px;
-      margin-top: 104px;
+      margin-top: 140px;
       padding: var(--spacing-xl);
       max-width: 1200px;
     }
@@ -716,6 +721,10 @@
 
       .content-wrapper {
         margin-left: 200px;
+      }
+
+      .page-nav {
+        left: 200px;
       }
     }
 
