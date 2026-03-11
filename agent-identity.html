@@ -1575,6 +1575,37 @@ Content-Type: application/json
     </div>
     <p><strong>Reference:</strong> <a href="https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization" target="_blank">https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization</a></p>
   </div>
+
+  <!-- OIDF AIIM Community Group -->
+  <div class="concept-card">
+    <h3>OpenID Foundation — AI Identity Management (AIIM) Community Group</h3>
+    <p>The OIDF Board commissioned work on agentic AI identity in April 2025. The <strong>Artificial Intelligence Identity Management (AIIM) Community Group</strong> was formally established in June 2025, chaired by Atul Tulshibagwale (SGNL) and Jeff Lombardo (AWS). Meets weekly.</p>
+    <p>Their October 2025 whitepaper <em>"Identity Management for Agentic AI"</em> identified critical gaps:</p>
+    <ul>
+      <li>Current OAuth/OIDC frameworks assume synchronous, single-domain operations — inadequate for multi-agent recursive delegation</li>
+      <li>Token structures designed for user-to-IdP flows don't represent agent-to-agent authorization context</li>
+      <li>Governance and auditability for autonomous agent actions lack formal standards</li>
+      <li>~45 billion non-human identities by end of 2025 — the window to establish interoperable standards before proprietary fragmentation is closing</li>
+    </ul>
+    <div class="key-point">
+      The whitepaper recommends treating agents as first-class IAM citizens and using MCP's separation-of-concerns model (dedicated auth server, not per-system custom auth). This directly validates Okta's architectural approach.
+    </div>
+    <p><strong>Reference:</strong> <a href="https://openid.net/cg/aiim/" target="_blank">openid.net/cg/aiim</a></p>
+  </div>
+
+  <!-- Google A2A Protocol -->
+  <div class="concept-card">
+    <h3>Google Agent2Agent (A2A) Protocol — April 2025</h3>
+    <p>Google announced the <strong>A2A protocol</strong> with 50+ partners (Atlassian, Box, Salesforce, SAP, ServiceNow, Workday, LangChain, and consulting firms). A2A is <strong>complementary to MCP</strong>, not competitive:</p>
+    <ul>
+      <li><strong>MCP</strong> = agent-to-resource (how an agent connects to tools and data)</li>
+      <li><strong>A2A</strong> = agent-to-agent (how agents delegate to and collaborate with each other)</li>
+    </ul>
+    <p>Both protocols use OAuth 2.0 Bearer tokens for authentication, meaning <strong>Okta/Auth0 sits at the center as the authorization server for both MCP and A2A flows</strong>.</p>
+    <div class="key-point">
+      <strong>SE positioning:</strong> When customers ask "Should we use MCP or A2A?" — the answer is "You'll likely use both. MCP for tool connections, A2A for agent orchestration. Okta secures the tokens for both."
+    </div>
+  </div>
 </section>
 
 <!-- SECTION 6: Okta & Auth0 Implementation -->

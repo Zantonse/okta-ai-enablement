@@ -1789,6 +1789,26 @@
       <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-green);">
         <strong>Security Benefit:</strong> MCP is tool-agnostic — it's the protocol, not the tool. By adding Okta authorization to MCP, you get a consistent security model across all 6,500+ MCP servers. One policy engine controls all agent tool access.
       </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">MCP Spec Evolution (2025-11-25)</h3>
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-top: var(--spacing-md);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-accent-amber);">Client ID Metadata Documents (CIMD) Replace DCR</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">As of the Nov 2025 spec, Dynamic Client Registration (RFC 7591) is deprecated. MCP clients now use an HTTPS URL they control as their <code>client_id</code>. The authorization server fetches the URL to verify identity — trust is grounded in DNS/HTTPS, not API key management. This is vastly simpler for developers.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-accent-amber);">Resource Indicators (RFC 8707) Now Mandatory</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">MCP clients must include the <code>resource</code> parameter to bind tokens to specific MCP servers. Prevents confused-deputy attacks — a compromised server cannot replay a token at a different service. Token passthrough is explicitly forbidden.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-accent-amber);">Step-Up Authorization</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">MCP servers can now request additional scopes at runtime via <code>HTTP 403</code> with <code>insufficient_scope</code> — enabling progressive consent. The agent re-authorizes for just the additional permissions needed.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-auth0-purple);">
+        <strong>MCP + A2A:</strong> Google's Agent2Agent (A2A) protocol (April 2025, 50+ partners) is <strong>complementary to MCP</strong>. MCP handles agent-to-resource connections; A2A handles agent-to-agent delegation. Both use OAuth Bearer tokens — Okta/Auth0 is the authorization server for both.
+      </div>
     </section>
 
     <!-- RAG Security Section -->
