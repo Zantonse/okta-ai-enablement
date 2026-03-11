@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Platform Integration Patterns — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-red);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-red);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Section Headers ─── */
+.section-block{margin-bottom:64px}
+.section-block-header{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:28px;padding-bottom:16px;
+  border-bottom:2px solid var(--c-border);
+}
+.section-num{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;font-family:var(--font-mono);
+  color:#fff;flex-shrink:0;
+}
+.num-blue{background:var(--c-okta-blue)}
+.num-purple{background:var(--c-auth0-purple)}
+.num-green{background:var(--c-accent-green)}
+.num-amber{background:var(--c-accent-amber)}
+.num-cyan{background:var(--c-accent-cyan)}
+.num-red{background:var(--c-accent-red)}
+.num-dim{background:var(--c-text-muted)}
+.section-block-header h2{
+  font-family:var(--font-display);font-size:clamp(22px,3vw,30px);
+  font-weight:400;letter-spacing:-0.01em;
+}
+
+/* ─── Content Components ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+.concept-card ul{color:var(--c-text-muted);padding-left:20px}
+.concept-card ul li{margin-bottom:6px;line-height:1.6}
+
+/* ─── Accent borders ─── */
+.card-blue{border-left:4px solid var(--c-okta-blue)}
+.card-purple{border-left:4px solid var(--c-auth0-purple)}
+.card-green{border-left:4px solid var(--c-accent-green)}
+.card-amber{border-left:4px solid var(--c-accent-amber)}
+.card-cyan{border-left:4px solid var(--c-accent-cyan)}
+.card-red{border-left:4px solid var(--c-accent-red)}
+
+/* ─── Card Grid ─── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+.card-grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.mcp-note,.se-note,.warning-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.warning-note{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.se-note{background:rgba(31,170,88,0.06);border-left:3px solid var(--c-accent-green)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+.table-wrap{overflow-x:auto;margin:16px 0}
+
+/* ─── Platform Chips ─── */
+.platform-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+  font-family:var(--font-mono);
+}
+.chip-sf{background:rgba(0,82,163,0.1);color:var(--c-okta-blue);border:1px solid rgba(0,82,163,0.2)}
+.chip-ms{background:rgba(103,66,213,0.1);color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.2)}
+.chip-aws{background:rgba(212,138,0,0.1);color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.2)}
+.chip-gcp{background:rgba(31,170,88,0.1);color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.2)}
+.chip-sn{background:rgba(0,153,187,0.1);color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.2)}
+
+/* ─── Architecture Flow ─── */
+.arch-flow{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:20px 24px;margin:20px 0;
+  font-family:var(--font-mono);font-size:13px;line-height:2;
+  overflow-x:auto;
+}
+.arch-flow .arrow{color:var(--c-text-dim)}
+.arch-flow .node-user{color:var(--c-accent-amber)}
+.arch-flow .node-platform{color:var(--c-okta-blue)}
+.arch-flow .node-okta{color:var(--c-accent-red)}
+.arch-flow .node-resource{color:var(--c-accent-green)}
+
+/* ─── Steps List ─── */
+.steps-list{list-style:none;padding:0;margin:16px 0}
+.steps-list li{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:12px 0;border-bottom:1px solid var(--c-border);
+}
+.steps-list li:last-child{border-bottom:none}
+.step-circle{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-okta-blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;font-family:var(--font-mono);
+  flex-shrink:0;margin-top:2px;
+}
+.step-content{flex:1}
+.step-content strong{display:block;margin-bottom:4px;font-size:14px}
+.step-content span{font-size:13px;color:var(--c-text-muted)}
+
+/* ─── Discovery Questions ─── */
+.discovery-list{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:20px 24px;margin:16px 0;
+}
+.discovery-list h4{font-size:13px;font-weight:600;color:var(--c-text-muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.discovery-list ol{padding-left:20px}
+.discovery-list ol li{font-size:14px;margin-bottom:10px;color:var(--c-text-muted);line-height:1.6}
+.discovery-list ol li strong{color:var(--c-text)}
+
+/* ─── Decision Matrix ─── */
+.decision-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:20px 24px;margin-bottom:16px;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.decision-card:hover{border-color:var(--c-text-muted);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.decision-card-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.decision-card-platform{font-size:16px;font-weight:600}
+.decision-card ul{list-style:none;padding:0}
+.decision-card ul li{
+  padding:6px 0;font-size:14px;color:var(--c-text-muted);
+  border-bottom:1px solid var(--c-border);display:flex;align-items:flex-start;gap:8px;
+}
+.decision-card ul li:last-child{border-bottom:none}
+.decision-card ul li::before{content:'→';color:var(--c-okta-blue);font-weight:700;flex-shrink:0}
+
+/* ─── TOC Bar ─── */
+.toc-bar{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:10px;padding:14px 20px;margin-bottom:40px;
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+}
+.toc-bar a{
+  font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);text-decoration:none;
+  padding:4px 12px;border-radius:16px;border:1px solid var(--c-border);
+  transition:all 0.15s;
+}
+.toc-bar a:hover{background:var(--c-surface);color:var(--c-text)}
+.toc-bar-label{font-size:11px;font-family:var(--font-mono);
+  text-transform:uppercase;letter-spacing:2px;color:var(--c-text-dim)}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .comparison-grid{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
+  .card-grid-3{grid-template-columns:1fr}
+  .arch-flow{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OIDC &rarr;</a></li>
+      <li><a href="integrations.html" class="current">Integrations &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+      <li><a href="integrations.html" style="font-weight:600;color:var(--c-accent-red)">Platform Integration Patterns</a></li>
+      <li><a href="opa.html">OPA</a></li>
+      <li><a href="itp.html">ITP</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      Agentforce &middot; Copilot Studio &middot; Bedrock &middot; Vertex AI
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">Platform Integration Patterns</h1>
+    <p class="section-subtitle">How Okta and Auth0 integrate with every major AI agent platform — securing agents regardless of where they're built or deployed.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+  <!-- TOC -->
+  <nav class="toc-bar" aria-label="Page sections">
+    <span class="toc-bar-label">Jump to</span>
+    <a href="#overview">Overview</a>
+    <a href="#agentforce">Agentforce</a>
+    <a href="#copilot">Copilot Studio</a>
+    <a href="#bedrock">Bedrock AgentCore</a>
+    <a href="#vertex">Vertex AI</a>
+    <a href="#servicenow">ServiceNow</a>
+    <a href="#decision">Decision Guide</a>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 1 — Integration Overview
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="overview">
+    <div class="section-block-header">
+      <div class="section-num num-blue">1</div>
+      <h2>Integration Overview</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:20px">Every major AI agent platform needs an identity layer. Okta and Auth0 serve as the <strong style="color:var(--c-text)">neutral identity plane</strong> that integrates with all of them — so customers aren't locked into any single vendor's auth model, and security teams govern all agent identities from one place.</p>
+
+    <div class="table-wrap">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>IdP Layer</th>
+            <th>Auth Pattern</th>
+            <th>Key Okta/Auth0 Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="platform-chip chip-sf">Salesforce Agentforce</span></td>
+            <td>Okta as SSO + OAuth governance layer</td>
+            <td>OAuth 2.0 client credentials; OIG certification; ISPM discovery</td>
+            <td>Governs all agent credentials + enables cross-platform delegation via XAA</td>
+          </tr>
+          <tr>
+            <td><span class="platform-chip chip-ms">Microsoft Copilot Studio</span></td>
+            <td>Okta as external OAuth 2.0 IdP</td>
+            <td>OAuth 2.0 external provider configuration; PKCE flows for user auth</td>
+            <td>Handles auth for all non-Azure resources; bridges Entra + non-Microsoft estate</td>
+          </tr>
+          <tr>
+            <td><span class="platform-chip chip-aws">Amazon Bedrock AgentCore</span></td>
+            <td>Auth0 as OIDC IdP</td>
+            <td>OIDC discovery; DCR; Token Vault; CIBA; FGA</td>
+            <td>Full Auth0 for AI agents stack — beats IAM Identity Center for cross-cloud scenarios</td>
+          </tr>
+          <tr>
+            <td><span class="platform-chip chip-gcp">Google Vertex AI / ADK</span></td>
+            <td>Auth0 as external OAuth / OIDC provider</td>
+            <td>ADK built-in OAuth; OIDC tool auth; A2A protocol partnership</td>
+            <td>Auth0 as OIDC provider for ADK tools; Okta/Auth0 A2A spec co-author</td>
+          </tr>
+          <tr>
+            <td><span class="platform-chip chip-sn">ServiceNow AI Agents</span></td>
+            <td>Okta API integration</td>
+            <td>OAuth-governed API credentials; ITSM provisioning workflows</td>
+            <td>Source of truth for identity; governs credentials ServiceNow agents use to call Okta APIs</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">The Core Message</div>
+      Okta and Auth0 are <strong>platform-agnostic</strong>. Whether a customer builds on Salesforce, Microsoft, AWS, Google, or ServiceNow — or all five at once — there is a documented, production-ready integration pattern to secure agent identities from a single control plane.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 2 — Salesforce Agentforce + Okta
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="agentforce">
+    <div class="section-block-header">
+      <div class="section-num num-blue">2</div>
+      <h2>Salesforce Agentforce + Okta</h2>
+    </div>
+
+    <div class="concept-card card-blue" style="margin-bottom:24px">
+      <h3><span class="platform-chip chip-sf">What is Agentforce?</span></h3>
+      <p>Salesforce's enterprise AI agent platform — as of 2026, the most widely deployed AI agent runtime in large enterprises. Agentforce agents automate sales, service, marketing, and commerce workflows. They act with Salesforce data, but increasingly reach outside Salesforce to HR systems, ERPs, and internal APIs. This is where Okta governance is essential.</p>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Integration Architecture</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-blue">
+        <h4>OAuth Governance</h4>
+        <p>Agentforce agents authenticate via OAuth 2.0. Okta governs client credentials for each agent — controlling which scopes, resources, and APIs the agent can access, with full token lifecycle management.</p>
+      </div>
+      <div class="concept-card card-amber">
+        <h4>ISPM Agent Discovery</h4>
+        <p>Okta ISPM discovers shadow Agentforce agents deployed without IT approval. The Agentforce connector surfaces unauthorized agent deployments alongside your managed agent inventory.</p>
+      </div>
+      <div class="concept-card card-purple">
+        <h4>OIG Access Certification</h4>
+        <p>Okta Identity Governance runs access certification campaigns on Agentforce agent permissions. Quarterly reviews ensure agents only retain the access they still need — with full audit trail.</p>
+      </div>
+      <div class="concept-card card-green">
+        <h4>XAA Cross-Platform Delegation</h4>
+        <p>Okta's Cross-App Authentication (XAA) enables Agentforce agents to access non-Salesforce resources — HR systems, ERPs, custom APIs — with governed, time-limited token delegation without credential exposure.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Configuration Steps</h3>
+
+    <ul class="steps-list">
+      <li>
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <strong>Register the Agentforce app in Okta Admin Console</strong>
+          <span>Create an OAuth 2.0 application representing the Agentforce org. Use the client credentials grant type for machine-to-machine authentication. Assign to the appropriate group or authorization server.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <strong>Configure OAuth scopes for agent capabilities</strong>
+          <span>Define granular scopes that map to agent capabilities: <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">agent:read:crm</code>, <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">agent:write:cases</code>, <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">agent:call:erp</code>. Principle of least privilege applies to agents the same as to humans.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <strong>Enable ISPM Agentforce connector for agent discovery</strong>
+          <span>Connect the Agentforce org to Okta ISPM. The connector continuously scans for agent deployments, surfacing both managed and shadow agents in the ISPM inventory dashboard.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-circle">4</div>
+        <div class="step-content">
+          <strong>Set up OIG certification campaign for quarterly reviews</strong>
+          <span>Configure an access certification campaign targeting Agentforce agent permissions. Assign campaign owners (typically security team or Salesforce admins). Set quarterly cadence with automatic remediation for missed reviews.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="se-note">
+      <div class="callout-title">SE Positioning — Agentforce Deals</div>
+      <strong>"Salesforce builds the agent. Okta governs ALL the agent's connections — inside and outside Salesforce."</strong>
+      <br><br>
+      Agentforce gives you agent intelligence. But the moment that agent needs to touch HR data, call an ERP, or access a custom internal API, Salesforce can't govern that. Okta can. This is not an either/or — it's additive to every Agentforce deployment.
+    </div>
+
+    <div class="discovery-list">
+      <h4>Discovery Questions for Agentforce Deals</h4>
+      <ol>
+        <li><strong>How many Agentforce agents are currently deployed in your org — and do you have an accurate inventory of all of them?</strong> (ISPM angle)</li>
+        <li><strong>When an Agentforce agent calls your HR system or ERP, what credential does it use?</strong> (XAA / credential governance angle)</li>
+        <li><strong>Who reviews and certifies what Agentforce agents can access?</strong> (OIG angle)</li>
+        <li><strong>Have you had a situation where a department deployed an Agentforce agent without IT knowing?</strong> (ISPM shadow agent angle)</li>
+        <li><strong>What's your process for revoking an Agentforce agent's access when a project ends?</strong> (Lifecycle management angle)</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 3 — Microsoft Copilot Studio + Okta
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="copilot">
+    <div class="section-block-header">
+      <div class="section-num num-purple">3</div>
+      <h2>Microsoft Copilot Studio + Okta</h2>
+    </div>
+
+    <div class="concept-card card-purple" style="margin-bottom:24px">
+      <h3><span class="platform-chip chip-ms">What is Copilot Studio?</span></h3>
+      <p>Microsoft's low-code platform for building AI agents (formerly Power Virtual Agents). Copilot Studio supports plugging in ANY OAuth 2.0 identity provider — it is not locked to Entra ID. This is the key insight for Okta positioning: even in Microsoft-heavy environments, Okta secures all the non-Azure connections.</p>
+    </div>
+
+    <div class="key-point" style="margin-bottom:24px">
+      <div class="callout-title">The Key Insight</div>
+      Copilot Studio supports <strong>external OAuth 2.0 providers</strong> for custom connector authentication. This means Okta can be configured as the IdP for any Copilot Studio agent that needs to call non-Microsoft APIs. Entra handles Azure-native auth; Okta handles everything else.
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Integration Pattern</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-purple">
+        <h4>Okta as External OAuth2 Provider</h4>
+        <p>Configure Okta as the external OAuth 2.0 provider in Copilot Studio. Agents authenticate users via Okta Universal Login — enabling MFA, adaptive policies, and full Okta session governance for agent interactions.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h4>XAA Token Exchange</h4>
+        <p>When a Copilot agent needs to call non-Microsoft resources, XAA handles the token exchange through Okta — issuing scoped, time-limited tokens for each target API without embedding long-lived credentials in the agent.</p>
+      </div>
+      <div class="concept-card card-green">
+        <h4>Entra + Okta Coexistence</h4>
+        <p>Entra ID continues to handle Azure-native authentication. Okta handles the Salesforce, ServiceNow, internal APIs, and any other non-Microsoft resources the agent needs to reach. No migration required.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 12px">Architecture Flow</h3>
+
+    <div class="arch-flow">
+      <span class="node-user">User</span>
+      <span class="arrow"> ──→ </span>
+      <span class="node-platform">Copilot Studio Agent</span>
+      <span class="arrow"> ──→ </span>
+      <span class="node-okta">Okta OAuth 2.0</span>
+      <span class="arrow"> ──→ </span>
+      <span class="node-resource">Salesforce / ServiceNow / Internal APIs</span>
+      <br>
+      <span style="color:var(--c-text-dim);font-size:11px;padding-left:160px">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Entra handles Azure resources in parallel
+      </span>
+    </div>
+
+    <div class="se-note">
+      <div class="callout-title">SE Positioning — Microsoft Objection Handler</div>
+      <strong>Objection: "We're a Microsoft shop — we use Entra for everything."</strong>
+      <br><br>
+      Response: "Your agents don't only talk to Azure. When that Copilot agent calls Salesforce to pull a customer record, or ServiceNow to open a ticket, or your internal HR API — that's not Azure. That's where Okta fills the gap Entra doesn't cover. Copilot Studio already supports external OAuth providers by design. This is the Microsoft-sanctioned integration pattern."
+    </div>
+
+    <div class="discovery-list">
+      <h4>Discovery Questions for Microsoft Deals</h4>
+      <ol>
+        <li><strong>Which non-Microsoft systems will your Copilot agents need to call?</strong> (XAA / cross-platform delegation angle)</li>
+        <li><strong>How do you handle MFA and adaptive authentication for users interacting with Copilot agents?</strong> (Okta Universal Login angle)</li>
+        <li><strong>Does your Entra environment cover your Salesforce, ServiceNow, and legacy apps?</strong> (Surface the gap)</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 4 — Amazon Bedrock AgentCore + Auth0
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="bedrock">
+    <div class="section-block-header">
+      <div class="section-num num-amber">4</div>
+      <h2>Amazon Bedrock AgentCore + Auth0</h2>
+    </div>
+
+    <div class="concept-card card-amber" style="margin-bottom:24px">
+      <h3><span class="platform-chip chip-aws">What is Bedrock AgentCore?</span></h3>
+      <p>AWS's managed runtime for hosting AI agents — launched in 2025. AgentCore provides built-in identity integration via AgentCore Identity, a Token Vault for third-party credential management, and native CIBA support for human-in-the-loop approvals. Auth0 is the documented reference IdP for AgentCore deployments.</p>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Auth0 as the IdP for AgentCore</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-amber">
+        <h4>OIDC Discovery</h4>
+        <p>User authenticates via Auth0 Universal Login. Access token is validated by AgentCore Identity against Auth0's OIDC discovery endpoint — standard OIDC trust establishment, no custom integration code required.</p>
+      </div>
+      <div class="concept-card card-purple">
+        <h4>Dynamic Client Registration (DCR)</h4>
+        <p>AgentCore auto-registers OAuth clients in Auth0 via DCR. Each agent instance gets its own client registration — no manual app provisioning. Auth0's DCR API handles the full client lifecycle.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h4>Token Vault Integration</h4>
+        <p>AgentCore's Token Vault stores and retrieves third-party OAuth tokens (Salesforce, GitHub, etc.) without exposing raw credentials to the agent runtime. Auth0 issues the initial token; AgentCore vaults it.</p>
+      </div>
+      <div class="concept-card card-green">
+        <h4>CIBA for Elevated Actions</h4>
+        <p>When an agent attempts a high-risk action, AgentCore triggers a CIBA request through Auth0. This sends a Guardian push notification to the user — they approve or deny the action from their phone before the agent proceeds.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">The Three Test Scenarios</h3>
+
+    <p style="color:var(--c-text-muted);margin-bottom:16px">Auth0's reference implementation for Bedrock AgentCore covers three key test scenarios that demonstrate the full identity stack:</p>
+
+    <ul class="steps-list">
+      <li>
+        <div class="step-circle" style="background:var(--c-accent-amber)">1</div>
+        <div class="step-content">
+          <strong>Token Vault: Agent retrieves third-party tokens without credential exposure</strong>
+          <span>The agent requests a Salesforce access token from the AgentCore Token Vault. The vault exchanges the Auth0-issued token for a Salesforce token using stored OAuth credentials. The agent never sees the raw credentials — only the scoped, time-limited token.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-circle" style="background:var(--c-accent-amber)">2</div>
+        <div class="step-content">
+          <strong>CIBA: Agent triggers Auth0 Guardian push for elevated actions</strong>
+          <span>When the agent attempts to delete a production record or transfer funds, it initiates a CIBA flow. Auth0 sends a push notification to the user. The agent is blocked until the user explicitly approves — demonstrating human-in-the-loop for high-stakes automation.</span>
+        </div>
+      </li>
+      <li>
+        <div class="step-circle" style="background:var(--c-accent-amber)">3</div>
+        <div class="step-content">
+          <strong>FGA: Access denied when authorization tuple is removed mid-session</strong>
+          <span>An Auth0 FGA authorization tuple grants the agent access to a sensitive dataset. During an active session, the tuple is deleted. The next resource request returns a 403 — demonstrating real-time FGA enforcement without token revocation.</span>
+        </div>
+      </li>
+    </ul>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Configuration Reference</h3>
+
+    <div class="card-grid">
+      <div class="concept-card">
+        <h4>Enable My Account API</h4>
+        <p>Enable Auth0's My Account API in tenant settings. This is required for AgentCore's user self-service token management flow.</p>
+      </div>
+      <div class="concept-card">
+        <h4>Set azp Custom Claim</h4>
+        <p>Configure a custom claim rule to include <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">azp</code> (authorized party) in access tokens. AgentCore Identity uses this to verify the requesting agent's identity.</p>
+      </div>
+      <div class="concept-card">
+        <h4>Configure Enterprise Connection</h4>
+        <p>Set up Okta as an enterprise connection within Auth0 for organizations that use Okta as their corporate IdP. Users SSO through Okta; agents authenticate against Auth0.</p>
+      </div>
+    </div>
+
+    <div class="se-note">
+      <div class="callout-title">SE Positioning — Beat IAM Identity Center</div>
+      AWS IAM Identity Center is scoped to AWS-native resources. Auth0 handles cross-cloud scenarios — the same agent that calls AWS services can also call Salesforce, Google Workspace, or an on-prem ERP. Show the multi-cloud token delegation scenario in the demo to make this concrete.
+    </div>
+
+    <div class="okta-note">
+      <div class="callout-title">Reference Documentation</div>
+      Full integration guide: <strong>auth0.com/blog/securing-amazon-bedrock-agentcore-agents-auth0-for-ai-agents/</strong>
+      — covers the complete Auth0 for AI Agents stack including DCR, Token Vault, CIBA, and FGA configuration for AgentCore.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 5 — Google Vertex AI + Auth0
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="vertex">
+    <div class="section-block-header">
+      <div class="section-num num-green">5</div>
+      <h2>Google Vertex AI + Auth0</h2>
+    </div>
+
+    <div class="concept-card card-green" style="margin-bottom:24px">
+      <h3><span class="platform-chip chip-gcp">What is Vertex AI / ADK?</span></h3>
+      <p>Google's platform for developing and hosting AI agents. The Agent Development Kit (ADK) is Google's open-source SDK for building multi-agent systems. Vertex AI Agent Engine is the managed hosting environment. Google Agentspace is the enterprise deployment layer for Google Workspace users. Auth0 integrates at each level.</p>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Auth0 Integration Pattern</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-green">
+        <h4>ADK Built-in OAuth 2.0</h4>
+        <p>ADK has native support for OAuth 2.0 authentication on tools that require auth. Configure Auth0 as the OIDC provider in the ADK tool definition — the framework handles the OAuth flow automatically when the tool is invoked.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h4>Vertex AI Agent Engine Identity</h4>
+        <p>In the hosted Agent Engine environment, Auth0 provides the OIDC trust root. Agent Engine validates user-context tokens against Auth0's JWKS endpoint — enabling identity-aware agent execution on Google infrastructure.</p>
+      </div>
+      <div class="concept-card card-purple">
+        <h4>Google Agentspace + Auth0 OAuth</h4>
+        <p>For enterprise Agentspace deployments, Auth0 OAuth handles authentication for agents that reach outside Google Workspace — connecting to Salesforce, ServiceNow, internal APIs, and other enterprise systems.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">A2A Protocol: Okta/Auth0 + Google Partnership</h3>
+
+    <div class="mcp-note">
+      <div class="callout-title">Agent-to-Agent (A2A) Protocol — May 2025</div>
+      Okta and Auth0 co-authored the A2A authentication specification alongside Google in May 2025. The A2A protocol defines how AI agents authenticate <em>to each other</em> across platforms and vendors — addressing the trust problem when a Vertex AI agent needs to invoke an Agentforce agent, or vice versa.
+      <br><br>
+      This partnership makes Okta/Auth0 the natural identity layer for multi-vendor, multi-platform agent orchestration. Reference: <strong>google.github.io/adk-docs/tools-custom/authentication/</strong>
+    </div>
+
+    <div class="card-grid">
+      <div class="concept-card card-green">
+        <h4>ADK Tool Authentication</h4>
+        <p>Configure Auth0 credentials in ADK tool definitions. When the ADK framework invokes a tool requiring auth, it handles the OAuth 2.0 flow — requesting user consent, obtaining tokens, and passing them to the tool.</p>
+      </div>
+      <div class="concept-card card-amber">
+        <h4>Cross-Platform Agent Trust</h4>
+        <p>Using A2A, a Vertex AI agent can invoke a tool hosted by an Agentforce agent — with Auth0/Okta providing the trust assertion between the two platforms. This is the future state of enterprise multi-agent orchestration.</p>
+      </div>
+    </div>
+
+    <div class="se-note">
+      <div class="callout-title">SE Positioning — Google Deals</div>
+      Lead with the A2A partnership. Google and Okta/Auth0 are co-authoring the authentication standard for agent-to-agent communication. Customers building on Vertex AI or ADK who also have Salesforce or Microsoft deployments need a neutral identity layer — and Okta/Auth0 is the co-author of the spec for exactly that scenario.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 6 — ServiceNow AI Agents + Okta
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="servicenow">
+    <div class="section-block-header">
+      <div class="section-num num-cyan">6</div>
+      <h2>ServiceNow AI Agents + Okta</h2>
+    </div>
+
+    <div class="concept-card card-cyan" style="margin-bottom:24px">
+      <h3><span class="platform-chip chip-sn">The Dual Role</span></h3>
+      <p>ServiceNow occupies a unique position: it is both a potential competitor in the identity governance space AND a documented integration partner. ServiceNow AI agents have native connectors to Okta APIs — ServiceNow agents call Okta to provision users, manage groups, and automate IT service workflows. Okta governs the credentials those agents use.</p>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">ServiceNow AI Agents That Integrate with Okta</h3>
+
+    <div class="card-grid-3">
+      <div class="concept-card card-cyan">
+        <h4>Okta Application Management AI Agent</h4>
+        <p>Available in ServiceNow Yokohama Patch 3. This pre-built AI agent automates Okta application provisioning, deprovisioning, and management through natural language ITSM requests.</p>
+      </div>
+      <div class="concept-card card-cyan">
+        <h4>Okta Group Management AI Agent</h4>
+        <p>Automates Okta group membership changes via ServiceNow workflows. IT staff submit change requests in ServiceNow; the AI agent executes the Okta API calls with governed OAuth credentials.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h4>ITSM Provisioning Workflows</h4>
+        <p>Broader ServiceNow ITSM workflows that invoke Okta APIs for joiner/mover/leaver scenarios — onboarding, role changes, offboarding. Okta is the execution engine; ServiceNow is the orchestration layer.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Integration Pattern</h3>
+
+    <div class="arch-flow">
+      <span class="node-user">ITSM Request</span>
+      <span class="arrow"> ──→ </span>
+      <span class="node-platform">ServiceNow AI Agent</span>
+      <span class="arrow"> ──→ </span>
+      <span class="node-okta">Governed OAuth Credentials (Okta)</span>
+      <span class="arrow"> ──→ </span>
+      <span class="node-resource">Okta API (Provisioning / Group Management)</span>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-top:16px">The ServiceNow AI agent holds OAuth 2.0 client credentials issued and governed by Okta. All API calls from ServiceNow to Okta use these scoped credentials — enabling full audit trail, scope enforcement, and revocation from the Okta Admin Console without touching ServiceNow configuration.</p>
+
+    <div class="se-note">
+      <div class="callout-title">SE Positioning — ServiceNow Competitive Scenarios</div>
+      <strong>"ServiceNow automates the workflow. Okta governs the identity. You need both."</strong>
+      <br><br>
+      ServiceNow IGA is a competitive threat in access request and certification workflows. But ServiceNow's own AI agents use Okta APIs. When you see ServiceNow IGA, lead with the integration story: "Your ServiceNow AI agents already call Okta. The question is whether those connections are governed — or just using static admin credentials no one is auditing."
+    </div>
+
+    <div class="security-note">
+      <div class="callout-title">Competitive Handling</div>
+      If a customer is evaluating ServiceNow IGA to replace OIG: show that ServiceNow's own Okta AI agents depend on a healthy Okta API integration. Replacing OIG with ServiceNow doesn't eliminate Okta — it makes the Okta-ServiceNow integration more critical, not less.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 7 — Integration Decision Guide
+  ════════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="decision">
+    <div class="section-block-header">
+      <div class="section-num num-red">7</div>
+      <h2>Integration Decision Guide</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:28px">Use this quick-reference guide when a customer asks about their specific platform. Each card gives you the 3-bullet positioning story and the lead product motion.</p>
+
+    <div class="decision-card">
+      <div class="decision-card-header">
+        <span class="platform-chip chip-sf">Salesforce Agentforce</span>
+        <span class="decision-card-platform"></span>
+      </div>
+      <ul>
+        <li>ISPM discovers all Agentforce agents — including shadow deployments no one approved</li>
+        <li>OIG runs certification campaigns on agent permissions — quarterly reviews with audit trail</li>
+        <li>XAA enables agents to call non-Salesforce APIs with governed, time-limited token delegation</li>
+      </ul>
+      <div style="margin-top:12px">
+        <span style="font-size:12px;font-family:var(--font-mono);color:var(--c-text-dim)">LEAD PRODUCT:</span>
+        <span style="font-size:12px;color:var(--c-okta-blue);font-weight:600"> ISPM + OIG + XAA</span>
+      </div>
+    </div>
+
+    <div class="decision-card">
+      <div class="decision-card-header">
+        <span class="platform-chip chip-ms">Microsoft Copilot Studio</span>
+      </div>
+      <ul>
+        <li>Copilot Studio natively supports external OAuth 2.0 providers — Okta is a drop-in replacement for Entra on non-Azure resources</li>
+        <li>Okta Universal Login handles MFA and adaptive auth for all agent-user interactions</li>
+        <li>XAA bridges the Entra estate and the Okta estate — one governance layer for all agent connections</li>
+      </ul>
+      <div style="margin-top:12px">
+        <span style="font-size:12px;font-family:var(--font-mono);color:var(--c-text-dim)">LEAD PRODUCT:</span>
+        <span style="font-size:12px;color:var(--c-auth0-purple);font-weight:600"> XAA + Universal Login + Workforce Identity Cloud</span>
+      </div>
+    </div>
+
+    <div class="decision-card">
+      <div class="decision-card-header">
+        <span class="platform-chip chip-aws">Amazon Bedrock AgentCore</span>
+      </div>
+      <ul>
+        <li>Auth0 is the reference OIDC IdP for AgentCore — full DCR, Token Vault, CIBA, and FGA stack available out of the box</li>
+        <li>CIBA enables human-in-the-loop approvals (Guardian push) for high-stakes agent actions</li>
+        <li>Cross-cloud token delegation beats IAM Identity Center for any customer with non-AWS resources</li>
+      </ul>
+      <div style="margin-top:12px">
+        <span style="font-size:12px;font-family:var(--font-mono);color:var(--c-text-dim)">LEAD PRODUCT:</span>
+        <span style="font-size:12px;color:var(--c-accent-amber);font-weight:600"> Auth0 for AI Agents (DCR + Token Vault + CIBA + FGA)</span>
+      </div>
+    </div>
+
+    <div class="decision-card">
+      <div class="decision-card-header">
+        <span class="platform-chip chip-gcp">Google Vertex AI / ADK</span>
+      </div>
+      <ul>
+        <li>Auth0 is the OIDC provider for ADK tool authentication — native framework integration, no custom code</li>
+        <li>Okta/Auth0 co-authored the A2A agent authentication spec with Google — the trust standard for multi-vendor agent communication</li>
+        <li>Cross-platform scenarios (Vertex AI agent calling Salesforce or ServiceNow tools) need Okta as the neutral identity broker</li>
+      </ul>
+      <div style="margin-top:12px">
+        <span style="font-size:12px;font-family:var(--font-mono);color:var(--c-text-dim)">LEAD PRODUCT:</span>
+        <span style="font-size:12px;color:var(--c-accent-green);font-weight:600"> Auth0 for AI Agents + A2A Protocol</span>
+      </div>
+    </div>
+
+    <div class="decision-card">
+      <div class="decision-card-header">
+        <span class="platform-chip chip-sn">ServiceNow AI Agents</span>
+      </div>
+      <ul>
+        <li>ServiceNow's own Okta AI agents (Yokohama Patch 3) call Okta APIs — these credentials need governance</li>
+        <li>Lead with the integration story to neutralize IGA competitive threats — ServiceNow needs Okta regardless</li>
+        <li>Okta governs all credentials ServiceNow agents use to call any downstream API — not just Okta's own</li>
+      </ul>
+      <div style="margin-top:12px">
+        <span style="font-size:12px;font-family:var(--font-mono);color:var(--c-text-dim)">LEAD PRODUCT:</span>
+        <span style="font-size:12px;color:var(--c-accent-cyan);font-weight:600"> OIG + Workforce Identity Cloud + API Access Management</span>
+      </div>
+    </div>
+
+    <div class="key-point" style="margin-top:32px">
+      <div class="callout-title">The Universal Positioning Statement</div>
+      "It doesn't matter which AI agent platform your customer chose. If that agent needs to authenticate a user, call an API, or take an action on behalf of a human — Okta or Auth0 is the identity layer that makes that happen securely. We have documented, production-ready integrations for every major platform, and we co-author the standards that define how agents authenticate to each other."
+    </div>
+  </div>
+
+</div><!-- /content-area -->
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>Platform Integration Patterns &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers Salesforce Agentforce, Microsoft Copilot Studio, Amazon Bedrock AgentCore, Google Vertex AI / ADK, and ServiceNow AI agent integration patterns with Okta and Auth0.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Privileged Access for AI Agents — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-red);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-red);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Section Blocks ─── */
+.section-block{margin-bottom:72px}
+.section-block-header{
+  display:flex;align-items:center;gap:16px;margin-bottom:28px;
+  padding-bottom:16px;border-bottom:2px solid var(--c-border);
+}
+.section-block-number{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--c-okta-blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;font-family:var(--font-mono);flex-shrink:0;
+}
+.section-block-title{
+  font-family:var(--font-display);font-size:clamp(22px,3vw,32px);
+  line-height:1.2;letter-spacing:-0.01em;
+}
+
+/* ─── Concept Cards ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+.concept-card ul{padding-left:20px;color:var(--c-text-muted);line-height:1.8;font-size:14px}
+
+/* ─── Card Grid ─── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:20px}
+.card-accent-red{border-left:4px solid var(--c-accent-red)}
+.card-accent-amber{border-left:4px solid var(--c-accent-amber)}
+.card-accent-blue{border-left:4px solid var(--c-okta-blue)}
+.card-accent-green{border-left:4px solid var(--c-accent-green)}
+.card-accent-cyan{border-left:4px solid var(--c-accent-cyan)}
+.card-accent-purple{border-left:4px solid var(--c-auth0-purple)}
+
+/* ─── Flow Diagram ─── */
+.flow-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.flow-diagram-title{
+  padding:16px 20px;font-weight:600;font-size:15px;
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-parties{
+  display:flex;justify-content:space-around;padding:16px 20px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+}
+.party{padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;color:#fff}
+.party-client{background:var(--c-okta-blue)}
+.party-auth{background:var(--c-auth0-purple)}
+.party-resource{background:var(--c-accent-green)}
+.party-vault{background:var(--c-accent-amber)}
+.party-opa{background:#1a3a6b}
+
+.flow-steps{padding:8px}
+.flow-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;margin:4px 8px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;border:1px solid transparent;
+}
+.flow-step:hover{background:var(--c-surface);border-color:var(--c-border)}
+.flow-step.active{background:var(--c-surface);border-color:var(--c-okta-blue)}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);
+  flex-shrink:0;transition:all 0.2s;
+}
+.flow-step.active .step-num{background:var(--c-okta-blue);color:#fff;border-color:var(--c-okta-blue)}
+.step-arrow{font-size:16px;color:var(--c-text-dim);flex-shrink:0}
+.step-label{font-size:14px;font-weight:500}
+.step-label-sub{font-size:12px;color:var(--c-text-muted);margin-left:auto}
+
+.step-detail{
+  display:none;margin:0 12px 8px;padding:16px 20px;
+  background:var(--c-surface);border-radius:8px;
+  border-left:3px solid var(--c-okta-blue);
+  animation:fadeIn 0.2s ease;
+}
+.step-detail.visible{display:block}
+.step-explain{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Badges ─── */
+.badge{
+  display:inline-block;font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:10px;white-space:nowrap;
+}
+.badge-blue{background:rgba(0,82,163,0.10);color:var(--c-okta-blue)}
+.badge-green{background:rgba(31,170,88,0.10);color:var(--c-accent-green)}
+.badge-red{background:rgba(224,62,77,0.10);color:var(--c-accent-red)}
+.badge-amber{background:rgba(212,138,0,0.10);color:var(--c-accent-amber)}
+.badge-purple{background:rgba(103,66,213,0.10);color:var(--c-auth0-purple)}
+.badge-cyan{background:rgba(0,153,187,0.10);color:var(--c-accent-cyan)}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Demo Steps ─── */
+.demo-step{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:20px 24px;margin-bottom:16px;
+  display:flex;gap:20px;align-items:flex-start;
+  transition:border-color 0.2s;
+}
+.demo-step:hover{border-color:var(--c-okta-blue)}
+.demo-step-num{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--c-okta-blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;font-family:var(--font-mono);
+  flex-shrink:0;
+}
+.demo-step-body h4{font-size:15px;font-weight:600;margin-bottom:8px}
+.demo-step-body p{color:var(--c-text-muted);font-size:14px;line-height:1.7;margin-bottom:8px}
+.demo-step-body .talking-points{
+  font-size:13px;color:var(--c-text-muted);
+  background:var(--c-surface);border-radius:8px;padding:12px 16px;
+  border-left:3px solid var(--c-okta-blue);margin-top:8px;
+}
+.demo-step-body .talking-points strong{color:var(--c-text);display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
+
+/* ─── ZSP Comparison ─── */
+.zsp-comparison{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0}
+.zsp-box{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:20px;
+}
+.zsp-box.traditional{border-top:3px solid var(--c-accent-red)}
+.zsp-box.opa{border-top:3px solid var(--c-accent-green)}
+.zsp-box h4{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.zsp-box ul{padding-left:20px;color:var(--c-text-muted);font-size:14px;line-height:1.8}
+
+/* ─── Arch Diagram ─── */
+.arch-diagram{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:12px;padding:28px 32px;margin:20px 0;
+  overflow-x:auto;font-family:var(--font-mono);font-size:13px;
+  line-height:1.8;color:var(--c-text-muted);
+}
+html[data-theme="dark"] .arch-diagram{background:#0d0d14}
+
+/* ─── Objection Cards ─── */
+.objection-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin-bottom:16px;
+}
+.objection-q{
+  padding:16px 20px;background:var(--c-surface);
+  font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--c-border);
+}
+.objection-a{padding:16px 20px;font-size:14px;color:var(--c-text-muted);line-height:1.7}
+.objection-a p{margin-bottom:8px}
+.objection-a p:last-child{margin-bottom:0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .flow-parties{flex-wrap:wrap;gap:6px;justify-content:center}
+  .comparison-grid{grid-template-columns:1fr}
+  .zsp-comparison{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OIDC &rarr;</a></li>
+      <li><a href="opa.html" class="current">OPA &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+      <li><a href="opa.html" style="font-weight:600;color:var(--c-accent-red)">Privileged Access for AI Agents</a></li>
+      <li><a href="itp.html">Identity Threat Protection</a></li>
+      <li><a href="integrations.html">Integrations</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      Secrets Vaulting &middot; Zero Standing Privileges &middot; Credential Rotation
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">Privileged Access for AI Agents</h1>
+    <p class="section-subtitle">Where do the agent's secrets live? OPA vaults credentials, enforces just-in-time access, and eliminates standing privileges for autonomous workloads.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+  <!-- ─── Section 1: The Secrets Problem ─── -->
+  <section class="section-block" id="secrets-problem">
+    <div class="section-block-header">
+      <div class="section-block-number">1</div>
+      <h2 class="section-block-title">The Secrets Problem for AI Agents</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px;">AI agents are not passive scripts — they call APIs, query databases, write files, and trigger external workflows. Each action requires a credential. The problem: most organizations treat agent credentials the same way they treated service account passwords in 2012. That is a serious security debt.</p>
+
+    <div class="removed-feature" style="margin-bottom:24px">
+      <div class="callout-title">&#9888; Verizon DBIR: 80% of Breaches Involve Compromised Credentials</div>
+      Non-human identities (service accounts, API keys, bots) are the fastest-growing attack surface in enterprise environments. Agents amplify the risk because they hold credentials for dozens of downstream systems simultaneously.
+    </div>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-red">
+        <h3>Hardcoded Secrets</h3>
+        <p>API keys embedded in environment variables, config files, or source code are static — they never rotate, never expire, and are frequently over-shared. One leaked .env file exposes everything the agent can reach.</p>
+      </div>
+      <div class="concept-card card-accent-amber">
+        <h3>Credential Sprawl</h3>
+        <p>A single agent framework may hold keys for OpenAI, Salesforce, Jira, Slack, and three internal APIs. Multiply by 1,000 agents and 10 tools each — that is 10,000 credentials to track, rotate, and audit. No spreadsheet survives this at scale.</p>
+      </div>
+      <div class="concept-card card-accent-amber">
+        <h3>No Audit Trail</h3>
+        <p>Static API keys provide no attribution. If an agent calls Salesforce with a shared service account password, the log shows the service account — not which agent, which task, or on whose behalf. Forensics become impossible.</p>
+      </div>
+      <div class="concept-card card-accent-red">
+        <h3>No Revocation Path</h3>
+        <p>When a compromised agent is shut down, its secrets live on — in other agents that inherited the same config, in CI/CD pipelines, in backups. Without a central vault, "revoking" access means hunting across dozens of systems manually.</p>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">Scale Reality Check</div>
+      Enterprise agentic deployments already reach thousands of agent instances. At 1,000 agents &times; 10 tool integrations each, an organization manages 10,000 live credentials with no central governance — unless they have a secrets vault. OPA is that vault, built natively into the Okta identity fabric.
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 12px">What "Proper" Agent Secrets Management Looks Like</h3>
+    <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:16px;">The requirements are non-negotiable for any enterprise-grade agentic deployment:</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Requirement</th>
+          <th>Why It Matters</th>
+          <th>Without It</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Central vault</strong></td>
+          <td>Single place to manage, rotate, and audit all credentials</td>
+          <td>Credentials scattered across env vars, k8s secrets, config files</td>
+        </tr>
+        <tr>
+          <td><strong>Just-in-time issuance</strong></td>
+          <td>Agent receives credential only when executing a specific task</td>
+          <td>Long-lived credentials persist between tasks, expanding blast radius</td>
+        </tr>
+        <tr>
+          <td><strong>Automatic rotation</strong></td>
+          <td>Passwords and API keys rotate on schedule without agent code changes</td>
+          <td>Credentials age indefinitely; rotation requires coordinated downtime</td>
+        </tr>
+        <tr>
+          <td><strong>Full audit log</strong></td>
+          <td>Every credential checkout is logged with agent ID, task, and delegating user</td>
+          <td>Breaches are uninvestigable; no attribution beyond service account name</td>
+        </tr>
+        <tr>
+          <td><strong>Identity-linked access</strong></td>
+          <td>Credential access is gated on agent identity, not just possession of a vault token</td>
+          <td>Any process with vault access can read any secret</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+  <!-- ─── Section 2: How OPA Works ─── -->
+  <section class="section-block" id="how-opa-works">
+    <div class="section-block-header">
+      <div class="section-block-number">2</div>
+      <h2 class="section-block-title">How OPA Works for Agents</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px;">Okta Privileged Access is a PAM (Privileged Access Management) product built directly into the Okta platform. For AI agents, it provides three core capabilities: secrets vaulting, just-in-time credential brokering, and automatic rotation — all tied to agent identity through the Okta token exchange flow.</p>
+
+    <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+      <div class="concept-card card-accent-blue">
+        <h3>&#128274; Secrets Vaulting</h3>
+        <p>API keys, service account passwords, database connection strings, and TLS certificates stored in OPA's encrypted vault. Agents never hold credentials in memory beyond the duration of a single task.</p>
+      </div>
+      <div class="concept-card card-accent-amber">
+        <h3>&#9201; JIT Credential Brokering</h3>
+        <p>An agent presents its Okta access token, OPA verifies identity and policy, and issues a time-limited credential — checked out for the task, checked in automatically on expiry.</p>
+      </div>
+      <div class="concept-card card-accent-green">
+        <h3>&#128260; Automatic Rotation</h3>
+        <p>OPA discovers servers (via ISPM or manual configuration), schedules password rotation, and updates the vault without any agent code changes. Zero-downtime rotation for service accounts.</p>
+      </div>
+      <div class="concept-card card-accent-cyan">
+        <h3>&#128250; Session Recording</h3>
+        <p>SSH and RDP sessions brokered through OPA are recorded. For agent-to-server access, the full command log is stored for forensics, compliance, and anomaly detection by ITP.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:32px 0 12px">Three Credential Types via Token Exchange (RFC 8693)</h3>
+    <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:20px;">When an agent needs a secret, it performs a token exchange at the Okta authorization server. The exchange produces one of three credential types depending on what the downstream resource requires:</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Credential Type</th>
+          <th>Flow</th>
+          <th>Output</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-blue">Authorization Server</span></td>
+          <td>ID-JAG assertion &rarr; token exchange &rarr; access token</td>
+          <td>OAuth 2.0 access token (JWT)</td>
+          <td>Agent calls another OAuth-protected API (Salesforce, internal microservice)</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-amber">Secret (Static)</span></td>
+          <td>Okta access token &rarr; OPA credential checkout</td>
+          <td>API key, password string, certificate</td>
+          <td>Agent calls legacy API or database requiring static credentials</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">Service Account</span></td>
+          <td>Okta access token &rarr; OPA + Universal Directory</td>
+          <td>Service account username + rotated password</td>
+          <td>Agent authenticates to Windows servers, Active Directory, or LDAP-bound systems</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:17px;font-weight:600;margin:32px 0 16px">Architecture: Agent &rarr; OPA &rarr; Time-Limited Secret &rarr; Resource</h3>
+
+    <div class="flow-diagram">
+      <div class="flow-diagram-title">
+        &#128274; OPA Credential Brokering Flow
+      </div>
+      <div class="flow-parties">
+        <span class="party party-client">AI Agent</span>
+        <span class="party party-auth">Okta AS</span>
+        <span class="party party-opa" style="background:#1a3a6b">OPA Vault</span>
+        <span class="party party-vault" style="background:var(--c-accent-amber)">Secret Store</span>
+        <span class="party party-resource">Target Resource</span>
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+          <div class="step-num">1</div>
+          <span class="step-arrow">&rarr;</span>
+          <span class="step-label">Agent presents its Okta access token to OPA</span>
+          <span class="step-label-sub">Agent &rarr; OPA</span>
+        </div>
+        <div class="step-detail" data-for-step="1">
+          <div class="step-explain">The agent authenticates to OPA using its own Okta access token (issued via Client Credentials or ID-JAG). OPA validates the token signature, issuer (<code>https://tenant.okta.com/oauth2/&lt;authServerId&gt;</code>), and audience. The token carries <code>agent_id</code>, <code>task_id</code>, and <code>actor</code> (delegating user) as custom claims.</div>
+        </div>
+
+        <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+          <div class="step-num">2</div>
+          <span class="step-arrow">&rarr;</span>
+          <span class="step-label">OPA evaluates access policy — does this agent have permission to this secret?</span>
+          <span class="step-label-sub">OPA &rarr; Policy Engine</span>
+        </div>
+        <div class="step-detail" data-for-step="2">
+          <div class="step-explain">OPA's policy engine checks: (a) Is the agent's identity registered and active in Universal Directory? (b) Does the agent's group membership grant access to the requested secret? (c) Is the request within allowed time windows? (d) Has the agent already exceeded its checkout quota? Policy is managed in the OPA Admin Console under Managed Connections.</div>
+        </div>
+
+        <div class="flow-step" data-step="3" onclick="toggleStep(this)">
+          <div class="step-num">3</div>
+          <span class="step-arrow">&rarr;</span>
+          <span class="step-label">OPA retrieves the credential from the encrypted vault</span>
+          <span class="step-label-sub">OPA &rarr; Vault</span>
+        </div>
+        <div class="step-detail" data-for-step="3">
+          <div class="step-explain">OPA fetches the current credential from its internal encrypted store. For service accounts with rotation enabled, OPA may first rotate the password, then return the new value. The credential is decrypted in memory — it is never stored in plaintext at rest.</div>
+        </div>
+
+        <div class="flow-step" data-step="4" onclick="toggleStep(this)">
+          <div class="step-num">4</div>
+          <span class="step-arrow">&rarr;</span>
+          <span class="step-label">OPA returns a time-limited credential to the agent</span>
+          <span class="step-label-sub">OPA &rarr; Agent</span>
+        </div>
+        <div class="step-detail" data-for-step="4">
+          <div class="step-explain">The credential is returned with an explicit TTL (e.g., 1 hour). OPA logs the checkout event to the Okta System Log: agent identity, task context, secret name, timestamp, and delegating user. The agent uses the credential immediately for its task.</div>
+        </div>
+
+        <div class="flow-step" data-step="5" onclick="toggleStep(this)">
+          <div class="step-num">5</div>
+          <span class="step-arrow">&rarr;</span>
+          <span class="step-label">Agent calls target resource; credential auto-expires after TTL</span>
+          <span class="step-label-sub">Agent &rarr; Resource</span>
+        </div>
+        <div class="step-detail" data-for-step="5">
+          <div class="step-explain">The agent uses the credential to authenticate to the target resource (database, API, server). When the TTL expires, the credential is invalid — no explicit check-in is required. For session-based access (SSH/RDP), OPA terminates the session automatically and the recording is stored. If the agent is revoked mid-task, Universal Logout invalidates the OPA session immediately.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-diagram">
+      <pre>
+┌─────────────────────────────────────────────────────────────────────┐
+│  Okta Identity Fabric                                               │
+│                                                                     │
+│  ┌──────────────┐    Token Exchange     ┌─────────────────────┐    │
+│  │  AI Agent    │ ─── (RFC 8693) ─────► │  Okta Auth Server   │    │
+│  │              │                       │  (ID-JAG / CC flow) │    │
+│  │  agent_id:   │ ◄── access token ──── │                     │    │
+│  │  "svc-agent- │                       └─────────────────────┘    │
+│  │   crm-001"   │                                                   │
+│  │              │    Credential Request  ┌─────────────────────┐    │
+│  │              │ ─── + access token ──► │  OPA Vault          │    │
+│  │              │                       │  ┌───────────────┐   │    │
+│  │              │ ◄── time-limited ───── │  │ Salesforce Key│   │    │
+│  │              │     credential        │  │ DB Password   │   │    │
+│  │              │     (TTL: 1h)         │  │ SSH Cert      │   │    │
+│  └──────────────┘                       │  └───────────────┘   │    │
+│         │                               └─────────────────────┘    │
+│         │  Use credential (1h window)                              │
+│         ▼                                                           │
+│  ┌────────────────────────────────────────────┐                    │
+│  │  Target Resources                          │                    │
+│  │  Salesforce API │ PostgreSQL │ SSH Server  │                    │
+│  └────────────────────────────────────────────┘                    │
+└─────────────────────────────────────────────────────────────────────┘</pre>
+    </div>
+
+  </section>
+
+  <!-- ─── Section 3: Zero Standing Privileges ─── -->
+  <section class="section-block" id="zsp">
+    <div class="section-block-header">
+      <div class="section-block-number">3</div>
+      <h2 class="section-block-title">Zero Standing Privileges (ZSP)</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px;">Zero Standing Privileges is the security principle that no identity — human or machine — should hold persistent access to privileged resources. Agents amplify the value of ZSP: a compromised agent with a static API key is a persistent breach; a compromised agent with no stored credentials is a contained incident.</p>
+
+    <div class="key-point">
+      <div class="callout-title">ZSP Defined for AI Agents</div>
+      An agent operating under ZSP has <strong>zero credentials stored anywhere at rest</strong>. It requests a credential at task start, uses it for the duration of the task, and the credential expires automatically. If the agent is shut down, compromised, or cloned — the attacker gets nothing. There are no secrets to steal.
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Traditional Credentials vs OPA Zero Standing Privileges</h3>
+
+    <div class="zsp-comparison">
+      <div class="zsp-box traditional">
+        <h4><span style="color:var(--c-accent-red)">&#10007;</span> Traditional: Static API Key</h4>
+        <ul>
+          <li>Stored in environment variable or config file</li>
+          <li>Same key used for every API call, every task</li>
+          <li>Expiry: 365 days (or never)</li>
+          <li>Rotation: manual, requires agent restart</li>
+          <li>If leaked: full API access until manually revoked</li>
+          <li>Audit: no per-agent attribution — just key hash</li>
+          <li>Blast radius: any process with env access can use it</li>
+        </ul>
+      </div>
+      <div class="zsp-box opa">
+        <h4><span style="color:var(--c-accent-green)">&#10003;</span> OPA: Dynamic Secret Checkout</h4>
+        <ul>
+          <li>Never stored at rest — fetched at task start</li>
+          <li>Unique checkout per task (can be scoped per request)</li>
+          <li>Expiry: 1 hour (configurable down to minutes)</li>
+          <li>Rotation: automatic, zero-downtime</li>
+          <li>If leaked: expires within TTL; revocable instantly</li>
+          <li>Audit: full System Log entry with agent ID, task, actor</li>
+          <li>Blast radius: single task, single agent, single TTL window</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 12px">How OPA Implements ZSP for Agents</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-blue">
+        <h3>Credential Checkout + Auto Check-In</h3>
+        <p>Agents check out credentials for a defined TTL. There is no manual check-in required. When the TTL expires, the credential is invalidated server-side — even if the agent is still running.</p>
+      </div>
+      <div class="concept-card card-accent-green">
+        <h3>Session Recording</h3>
+        <p>For infrastructure access (SSH, RDP, database consoles), OPA records the session. Every command an agent runs on a server is logged, searchable, and available for anomaly detection via ITP.</p>
+      </div>
+      <div class="concept-card card-accent-amber">
+        <h3>Just-in-Time Elevation</h3>
+        <p>Certain privileged operations (e.g., production database write access) require real-time approval. OPA supports JIT elevation workflows — a human approves the request before the credential is issued, with a tight TTL after approval.</p>
+      </div>
+    </div>
+
+    <div class="security-note">
+      <div class="callout-title">&#128270; Attacker Perspective</div>
+      Under ZSP, an attacker who compromises an AI agent binary gets: the agent's access token (expires in 1 hour), the in-memory credential for the current task (expires at task end), and nothing else. They cannot move laterally to other systems the agent is authorized to reach — they would need to issue a new OPA credential checkout, which requires a valid Okta token and triggers an anomaly alert in ITP.
+    </div>
+
+  </section>
+
+  <!-- ─── Section 4: OPA vs CyberArk vs HashiCorp Vault ─── -->
+  <section class="section-block" id="comparison">
+    <div class="section-block-header">
+      <div class="section-block-number">4</div>
+      <h2 class="section-block-title">OPA vs CyberArk vs HashiCorp Vault</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px;">Customers rarely come to OPA as a greenfield PAM decision. Most have CyberArk for privileged human access, HashiCorp Vault for infrastructure secrets, or both. The conversation is always "why OPA too?" — not "why OPA instead." Here is how to frame it.</p>
+
+    <div class="key-point" style="margin-bottom:28px">
+      <div class="callout-title">Key Framing: Three Different Trust Anchors</div>
+      <strong>OPA is identity-native</strong> — it runs inside Okta's security fabric, and every access decision is rooted in a verified Okta identity. <strong>CyberArk is vault-native</strong> — a standalone PAM platform optimized for human privileged access and safe-vaulting. <strong>HashiCorp Vault is infra-native</strong> — a DevOps-first secret store optimized for programmatic access by infrastructure tooling (Terraform, Kubernetes, CI/CD). They solve related but distinct problems.
+    </div>
+
+    <div style="overflow-x:auto">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>OPA</th>
+            <th>CyberArk</th>
+            <th>HashiCorp Vault</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Secrets vaulting</strong></td>
+            <td><span class="badge badge-green">Yes</span> — API keys, passwords, certs</td>
+            <td><span class="badge badge-green">Yes</span> — enterprise-grade safe vaulting</td>
+            <td><span class="badge badge-green">Yes</span> — secrets engine for all types</td>
+          </tr>
+          <tr>
+            <td><strong>Password rotation</strong></td>
+            <td><span class="badge badge-green">Yes</span> — auto-discovery + scheduled rotation</td>
+            <td><span class="badge badge-green">Yes</span> — CPM-based rotation, mature</td>
+            <td><span class="badge badge-green">Yes</span> — dynamic secrets for many backends</td>
+          </tr>
+          <tr>
+            <td><strong>Session recording</strong></td>
+            <td><span class="badge badge-green">Yes</span> — SSH, RDP, DB console</td>
+            <td><span class="badge badge-green">Yes</span> — PSM is CyberArk's strongest feature</td>
+            <td><span class="badge badge-red">No</span> — not a session management product</td>
+          </tr>
+          <tr>
+            <td><strong>Identity-native integration</strong></td>
+            <td><span class="badge badge-green">Yes</span> — built into Okta; UD, policies, tokens</td>
+            <td><span class="badge badge-amber">Partial</span> — Okta SAML federation available</td>
+            <td><span class="badge badge-amber">Partial</span> — OIDC auth method available</td>
+          </tr>
+          <tr>
+            <td><strong>Token exchange (RFC 8693)</strong></td>
+            <td><span class="badge badge-green">Yes</span> — first-class support, ID-JAG flow</td>
+            <td><span class="badge badge-red">No</span> — not an OAuth AS</td>
+            <td><span class="badge badge-red">No</span> — separate auth, not token exchange</td>
+          </tr>
+          <tr>
+            <td><strong>OBO delegation chain</strong></td>
+            <td><span class="badge badge-green">Yes</span> — <code>actor</code> claim propagated end-to-end</td>
+            <td><span class="badge badge-red">No</span> — session-level attribution only</td>
+            <td><span class="badge badge-red">No</span> — entity identity, not delegation</td>
+          </tr>
+          <tr>
+            <td><strong>CIBA step-up</strong></td>
+            <td><span class="badge badge-green">Yes</span> — integrates with Okta CIBA for JIT approval</td>
+            <td><span class="badge badge-amber">Custom</span> — workflow approval via integrations</td>
+            <td><span class="badge badge-red">No</span> — out of scope for Vault</td>
+          </tr>
+          <tr>
+            <td><strong>FGA enforcement</strong></td>
+            <td><span class="badge badge-green">Yes</span> — Okta FGA policies gate OPA access</td>
+            <td><span class="badge badge-red">No</span> — group-based access model</td>
+            <td><span class="badge badge-red">No</span> — path-based ACLs only</td>
+          </tr>
+          <tr>
+            <td><strong>Agent identity registry</strong></td>
+            <td><span class="badge badge-green">Yes</span> — agents as UD entities with lifecycle</td>
+            <td><span class="badge badge-amber">Partial</span> — service accounts manageable</td>
+            <td><span class="badge badge-red">No</span> — not an identity directory</td>
+          </tr>
+          <tr>
+            <td><strong>ISPM discovery</strong></td>
+            <td><span class="badge badge-green">Yes</span> — ISPM detects orphaned OPA credentials</td>
+            <td><span class="badge badge-amber">Partial</span> — own discovery tooling</td>
+            <td><span class="badge badge-red">No</span> — audit log only</td>
+          </tr>
+          <tr>
+            <td><strong>Pricing model</strong></td>
+            <td>Per-agent SKU; add-on to Okta Identity Security Platform</td>
+            <td>Per-seat; significant professional services investment</td>
+            <td>Open source core; Vault Enterprise per cluster/node</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:32px 0 12px">"Better Together" — OPA + HashiCorp Vault</h3>
+
+    <div class="comparison-grid">
+      <div class="concept-card card-accent-blue">
+        <h3>HashiCorp Vault Handles</h3>
+        <ul>
+          <li>Infrastructure secrets (AWS IAM, Kubernetes service accounts)</li>
+          <li>Dynamic database credentials for short-lived DB users</li>
+          <li>PKI certificate issuance for service meshes</li>
+          <li>Terraform state encryption keys</li>
+          <li>CI/CD pipeline secrets (GitHub Actions, Jenkins)</li>
+        </ul>
+        <div class="code-label" style="margin-top:12px">Trust Anchor</div>
+        <p style="font-size:13px">Vault entity identity, AppRole, or Kubernetes service account</p>
+      </div>
+      <div class="concept-card card-accent-amber">
+        <h3>OPA Handles</h3>
+        <ul>
+          <li>Identity-layer secrets (API keys tied to Okta agent identities)</li>
+          <li>Service account credentials in Universal Directory</li>
+          <li>JIT elevation with human approval workflows</li>
+          <li>Session recording for AI agent infrastructure access</li>
+          <li>Credential audit linked to the delegating human's identity</li>
+        </ul>
+        <div class="code-label" style="margin-top:12px">Trust Anchor</div>
+        <p style="font-size:13px">Okta is the authority for both — single identity plane across both products</p>
+      </div>
+    </div>
+
+    <div class="okta-note">
+      <div class="callout-title">Positioning Note for CyberArk Accounts</div>
+      CyberArk is excellent at privileged session management for humans (the PSM product). The gap is AI agents: CyberArk has no concept of an Okta agent identity, no RFC 8693 token exchange, and no delegation chain (actor claim). When the conversation is "we have CyberArk" — agree it's great for human PAM, and position OPA as the agent-identity-native layer that CyberArk cannot provide.
+    </div>
+
+  </section>
+
+  <!-- ─── Section 5: Integration with Okta Identity Fabric ─── -->
+  <section class="section-block" id="integration">
+    <div class="section-block-header">
+      <div class="section-block-number">5</div>
+      <h2 class="section-block-title">Integration with the Okta Identity Fabric</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px;">OPA is not a standalone vault — it is a layer within Okta's full identity fabric. Every OPA event is visible in the Okta System Log; every agent identity is a Universal Directory entity; every access policy can reference Okta groups and FGA relationships. The integrations below make OPA meaningfully more powerful than a standalone PAM product.</p>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-cyan">
+        <h3>ISPM &rarr; OPA</h3>
+        <p>Okta Identity Security Posture Management continuously discovers non-human identities across connected SaaS and infrastructure systems. When ISPM detects a service account or API key that is not associated with any OPA-managed agent identity, it flags it as an orphaned credential — a potential shadow agent or stale access.</p>
+        <h4>What ISPM Finds</h4>
+        <ul>
+          <li>API keys in GitHub, Bitbucket, or CI/CD systems not in OPA</li>
+          <li>Service accounts in Active Directory with no OPA checkout history</li>
+          <li>Credentials with no last-used date — dormant, removable</li>
+        </ul>
+      </div>
+      <div class="concept-card card-accent-blue">
+        <h3>OIG &rarr; OPA</h3>
+        <p>Okta Identity Governance runs access certification campaigns. For OPA-vaulted secrets, OIG can include credential access reviews: "Does agent svc-agent-crm-001 still need access to the Salesforce production API key?" Reviewers see the last checkout date, the delegating user, and the business justification.</p>
+        <h4>What OIG Certifies</h4>
+        <ul>
+          <li>Quarterly review of agent-to-secret mappings</li>
+          <li>Automated revocation for overdue certifications</li>
+          <li>Segregation of duties checks on privileged secret access</li>
+        </ul>
+      </div>
+      <div class="concept-card card-accent-red">
+        <h3>ITP &rarr; OPA</h3>
+        <p>Identity Threat Protection ingests OPA credential checkout events from the System Log. Anomaly signals: checkout volume spike (agent checking out credentials at 10x normal rate), off-hours access, access from an unusual network, or checkout of a secret never previously accessed.</p>
+        <h4>ITP Responses</h4>
+        <ul>
+          <li>Suspend agent's Okta session (blocks future checkouts)</li>
+          <li>Trigger CIBA step-up — require human approval for next checkout</li>
+          <li>Alert SOC with full checkout history context</li>
+        </ul>
+      </div>
+      <div class="concept-card card-accent-green">
+        <h3>Universal Logout &rarr; OPA</h3>
+        <p>When a threat is confirmed — compromised agent, insider threat, or runaway automation — Universal Logout revokes all active Okta sessions for the agent identity simultaneously. OPA sessions tied to the invalidated token are terminated immediately. In-flight tasks using OPA credentials fail cleanly.</p>
+        <h4>Revocation Scope</h4>
+        <ul>
+          <li>All active OPA credential checkouts invalidated</li>
+          <li>All OAuth tokens for the agent revoked</li>
+          <li>All active SSH/RDP sessions terminated</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 12px">Managed Connections in the Admin Console</h3>
+
+    <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:16px;">IT administrators configure which agent identities can access which secrets through the OPA Managed Connections interface in the Okta Admin Console. This is the operational control plane — no code required for policy changes.</p>
+
+    <div class="arch-diagram">
+      <pre>
+OPA Admin Console — Managed Connections Configuration
+
+Agent Identity:     svc-agent-crm-001
+  Group:            ai-agents-crm-prod
+  Owner:            craig.verzosa@company.com
+
+  Allowed Secrets:
+  ┌────────────────────────────────────────────────┐
+  │ Secret Name          │ TTL   │ Rotation Period  │
+  │ salesforce-prod-key  │ 1h    │ 90 days          │
+  │ postgresql-crm-write │ 30m   │ 7 days           │
+  │ slack-webhook-crm    │ 24h   │ 365 days         │
+  └────────────────────────────────────────────────┘
+
+  Session Recording:   Enabled (SSH only)
+  JIT Approval:        Required for postgresql-crm-write after 22:00 UTC
+  CIBA Step-Up:        Triggered by ITP anomaly signal
+
+Audit:  Last checkout 2026-03-11 14:32 UTC │ salesforce-prod-key │ task-id-8f3a
+        Delegating user: jane.doe@company.com (via OBO delegation)</pre>
+    </div>
+
+  </section>
+
+  <!-- ─── Section 6: SE Demo Script ─── -->
+  <section class="section-block" id="demo">
+    <div class="section-block-header">
+      <div class="section-block-number">6</div>
+      <h2 class="section-block-title">SE Demo Script</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px;">This is the recommended five-step demo flow for OPA AI agent secrets management. Total demo time: 12&ndash;15 minutes. Works best after you have already covered Agent Identity so the audience understands agent registration in Universal Directory.</p>
+
+    <div class="demo-step">
+      <div class="demo-step-num">1</div>
+      <div class="demo-step-body">
+        <h4>Show the Agent Registered in Universal Directory</h4>
+        <p>Navigate to Admin Console &rarr; Directory &rarr; People (switch to non-human entities view). Show the agent service principal: <code>svc-agent-crm-001</code>. Point out the <code>agent_type</code> attribute, assigned groups (<code>ai-agents-crm-prod</code>), and lifecycle state (Active).</p>
+        <div class="talking-points">
+          <strong>Talking Point</strong>
+          "Every agent that touches OPA-managed secrets must first exist as a verified identity in Universal Directory. This is the foundation — you cannot vault secrets for an identity that doesn't exist. This prevents shadow agents from ever getting credentials."
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step-num">2</div>
+      <div class="demo-step-body">
+        <h4>Navigate to Managed Connections — Show Configured Secret Access</h4>
+        <p>Navigate to Admin Console &rarr; Privileged Access &rarr; Managed Connections. Show the agent's allowed secret list: Salesforce production API key (1-hour TTL, 90-day rotation), PostgreSQL CRM write password (30-minute TTL, 7-day rotation), Slack webhook (24-hour TTL).</p>
+        <div class="talking-points">
+          <strong>Talking Point</strong>
+          "This is IT's control plane. No secret access exists unless it is configured here. The TTLs are per-credential and per-agent — the CRM database gets a 30-minute window because write access is higher risk. Any engineer can see exactly what each agent can reach, and change it instantly without touching agent code."
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step-num">3</div>
+      <div class="demo-step-body">
+        <h4>Trigger a Token Exchange Request — Show OPA Returning a Time-Limited Credential</h4>
+        <p>Use the demo CLI or Postman to send a token exchange request from the agent's client credentials. Show the raw HTTP exchange: agent presents access token, OPA returns the vaulted API key with an <code>expires_at</code> timestamp. Highlight the response headers showing the TTL.</p>
+        <div class="code-label">Demo: Token Exchange + Credential Checkout</div>
+        <div class="code-block">POST /oauth2/v1/token
+Authorization: Basic &lt;agent-client-credentials&gt;
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+&subject_token=&lt;agent-access-token&gt;
+&subject_token_type=urn:ietf:params:oauth:token-type:access_token
+&requested_token_type=urn:okta:params:oauth:token-type:opa-credential
+&resource=salesforce-prod-key
+
+--- OPA Response ---
+{
+  "credential_type": "api_key",
+  "credential_value": "sk-sf-REDACTED",
+  "expires_at": "2026-03-11T15:32:00Z",
+  "checkout_id": "ckout_8f3a9b2c",
+  "agent_id": "svc-agent-crm-001",
+  "task_id": "task-id-8f3a"
+}</div>
+        <div class="talking-points">
+          <strong>Talking Point</strong>
+          "Notice the credential is time-limited and checkout-tracked. The agent can't hold this longer than one hour. In one hour, that API key stops working — no manual action required. The checkout ID ties every downstream Salesforce call back to this specific agent task."
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step-num">4</div>
+      <div class="demo-step-body">
+        <h4>Show the System Log Entry — Who Accessed What, When, On Whose Behalf</h4>
+        <p>Navigate to Admin Console &rarr; Reports &rarr; System Log. Filter by the agent's entity ID or the event type <code>system.agent.credential.checkout</code>. Show the log entry: agent identity, secret name, checkout timestamp, TTL, and — critically — the delegating user (<code>actor: jane.doe@company.com</code>) from the OBO delegation chain.</p>
+        <div class="talking-points">
+          <strong>Talking Point</strong>
+          "This is the audit trail that CyberArk cannot provide for agent workloads. We know it was <em>this agent</em>, checking out <em>this secret</em>, at <em>this time</em>, on behalf of <em>this human</em>. When a compliance auditor asks 'who accessed Salesforce production on March 11?' — the answer is a two-second System Log search, not a three-week investigation."
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step">
+      <div class="demo-step-num">5</div>
+      <div class="demo-step-body">
+        <h4>Revoke Access — Show Instant Credential Invalidation</h4>
+        <p>In the Managed Connections interface, remove the Salesforce key from the agent's allowed secrets. Then attempt a new checkout request from the agent. Show the <code>403 Forbidden</code> response with <code>error: access_denied</code>. Navigate back to System Log to show the revocation event.</p>
+        <div class="talking-points">
+          <strong>Talking Point</strong>
+          "This is the 'break glass' scenario. The agent is acting anomalously — maybe ITP flagged it, maybe a developer made a mistake, maybe you discovered a credential leak. IT removes access here, and the next checkout attempt fails instantly. Any credentials already issued expire at their TTL — within the hour. Compare that to revoking a static API key from 47 places in your config management system."
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:32px 0 16px">Objection Handling</h3>
+
+    <div class="objection-card">
+      <div class="objection-q">
+        <span style="color:var(--c-accent-amber)">&#128483;</span>
+        "We already have CyberArk. Why would we add OPA?"
+      </div>
+      <div class="objection-a">
+        <p><strong>Agree first:</strong> "CyberArk is excellent for privileged session management for humans. The PSM product in particular is mature and we respect it. We're not here to replace CyberArk."</p>
+        <p><strong>Identify the gap:</strong> "CyberArk manages privileged access for humans. AI agents are a fundamentally different identity class — they're non-human, they operate at machine speed, they need RFC 8693 token exchange, and they need a delegation chain that says 'this agent acted on behalf of Jane Doe.' CyberArk has no concept of an Okta agent identity or an OBO actor claim."</p>
+        <p><strong>Position OPA:</strong> "OPA fills the identity-native gap. Keep CyberArk for human PAM. Add OPA for agent secrets — it's a different problem space and a different buyer in the security org."</p>
+      </div>
+    </div>
+
+    <div class="objection-card">
+      <div class="objection-q">
+        <span style="color:var(--c-accent-cyan)">&#128483;</span>
+        "We use HashiCorp Vault. Can't agents just use that?"
+      </div>
+      <div class="objection-a">
+        <p><strong>Agree first:</strong> "HashiCorp Vault is a great infrastructure secret store. If your Terraform, Kubernetes, and CI/CD pipelines use Vault, keep them there."</p>
+        <p><strong>Identify the gap:</strong> "Vault's trust anchor is the infrastructure entity — Kubernetes service account, AppRole, AWS IAM role. For AI agents, the trust anchor is the Okta identity, not the infrastructure. When an agent acts on behalf of a human user, the audit trail needs to show that delegation chain. Vault has no concept of OBO delegation, no RFC 8693 token exchange, and no CIBA step-up for JIT approval."</p>
+        <p><strong>Better Together position:</strong> "Vault manages infra secrets; OPA governs identity-layer secrets. Okta is the authority for both. An agent can check out infrastructure credentials via Vault (using its Okta-issued Kubernetes service account token) and identity-layer secrets via OPA (using its Okta access token). You get the best of both — and a single audit plane in the Okta System Log."</p>
+      </div>
+    </div>
+
+  </section>
+
+</div><!-- /content-area -->
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>Okta Secures AI &mdash; Enablement Hub &middot; Internal + Customer Reference &middot; Updated March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers OPA secrets vaulting, zero standing privileges, just-in-time credential brokering, and competitive positioning for AI agent workloads.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Flow Diagram Step Toggle ─── */
+function toggleStep(el){
+  const diagram=el.closest('.flow-diagram')||el.closest('.flow-steps')?.parentElement;
+  if(!diagram)return;
+  const wasActive=el.classList.contains('active');
+  diagram.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active'));
+  diagram.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+  if(!wasActive){
+    el.classList.add('active');
+    const stepNum=el.dataset.step;
+    const detail=diagram.querySelector('.step-detail[data-for-step="'+stepNum+'"]');
+    if(detail)detail.classList.add('visible');
+  }
+}
+</script>
+
+</body>
+</html>

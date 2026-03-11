@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Identity Threat Protection for AI Agents — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-red);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-red);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Content Sections ─── */
+.content-section{
+  margin-bottom:64px;
+}
+.content-section-header{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:28px;padding-bottom:16px;
+  border-bottom:2px solid var(--c-border);
+}
+.section-number{
+  background:var(--c-okta-blue);color:#fff;
+  font-size:12px;font-weight:700;font-family:var(--font-mono);
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.content-section-header h2{
+  font-family:var(--font-display);font-size:clamp(22px,3vw,30px);
+  letter-spacing:-0.01em;color:var(--c-text);
+}
+
+/* ─── Concept Cards ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin:20px 0}
+
+.card-red{border-left:4px solid var(--c-accent-red)}
+.card-amber{border-left:4px solid var(--c-accent-amber)}
+.card-green{border-left:4px solid var(--c-accent-green)}
+.card-blue{border-left:4px solid var(--c-okta-blue)}
+.card-purple{border-left:4px solid var(--c-auth0-purple)}
+.card-cyan{border-left:4px solid var(--c-accent-cyan)}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+  margin:16px 0;
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.roadmap-note,.warning-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.roadmap-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.warning-note{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Arch Diagram ─── */
+.arch-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.arch-diagram-title{
+  padding:14px 20px;font-weight:600;font-size:14px;font-family:var(--font-mono);
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+  color:var(--c-text-muted);letter-spacing:1px;text-transform:uppercase;font-size:11px;
+}
+.arch-diagram pre{
+  font-family:var(--font-mono);font-size:13px;line-height:1.7;
+  color:var(--c-text);padding:20px 24px;overflow-x:auto;
+}
+html[data-theme="dark"] .arch-diagram pre{color:#c8d8f0}
+
+/* ─── Risk Score Bar ─── */
+.risk-bar-wrapper{margin:20px 0}
+.risk-bar-row{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.risk-bar-label{font-size:13px;font-weight:600;min-width:130px;color:var(--c-text)}
+.risk-bar{flex:1;height:10px;background:var(--c-surface);border-radius:6px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:6px;transition:width 0.4s ease}
+.risk-bar-fill.low{background:var(--c-accent-green);width:20%}
+.risk-bar-fill.medium{background:var(--c-accent-amber);width:55%}
+.risk-bar-fill.high{background:var(--c-accent-red);width:90%}
+.risk-bar-value{font-size:12px;font-family:var(--font-mono);color:var(--c-text-muted);min-width:40px;text-align:right}
+
+/* ─── Detection Pattern Cards ─── */
+.detection-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:20px 24px;margin-bottom:16px;
+}
+.detection-card-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.detection-badge{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;
+  padding:3px 10px;border-radius:12px;font-weight:600;color:#fff;white-space:nowrap;
+}
+.badge-critical{background:var(--c-accent-red)}
+.badge-high{background:#cc5500}
+.badge-medium{background:var(--c-accent-amber)}
+.detection-name{font-size:16px;font-weight:600}
+.detection-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
+.detection-col-label{font-size:11px;font-family:var(--font-mono);text-transform:uppercase;
+  letter-spacing:1px;color:var(--c-text-dim);margin-bottom:6px}
+.detection-col-body{font-size:13px;color:var(--c-text-muted);line-height:1.6}
+
+/* ─── Flow Steps ─── */
+.flow-step-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.flow-step-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:14px 18px;background:var(--c-bg-elevated);
+  border:1px solid var(--c-border);border-radius:10px;
+}
+.step-circle{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-okta-blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;font-family:var(--font-mono);
+  flex-shrink:0;margin-top:1px;
+}
+.step-body{flex:1}
+.step-body strong{display:block;font-size:14px;color:var(--c-text);margin-bottom:3px}
+.step-body span{font-size:13px;color:var(--c-text-muted)}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .comparison-grid{grid-template-columns:1fr}
+  .detection-grid{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">OIDC &rarr;</a></li>
+      <li><a href="itp.html" class="current">ITP &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+      <li><a href="itp.html" style="font-weight:600;color:var(--c-accent-red)">Identity Threat Protection</a></li>
+      <li><a href="opa.html">OPA (Open Policy Agent)</a></li>
+      <li><a href="integrations.html">Integrations</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      Continuous Risk &middot; Anomaly Detection &middot; Universal Logout
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">Identity Threat Protection for AI Agents</h1>
+    <p class="section-subtitle">How do you detect a rogue agent at runtime? ITP monitors post-authentication behavior, detects session hijacking, and triggers Universal Logout when agents are compromised.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+  <!-- ─── Section 1: The Runtime Detection Problem ─── -->
+  <div class="content-section" id="section1">
+    <div class="content-section-header">
+      <div class="section-number">1</div>
+      <h2>The Runtime Detection Problem</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:20px;font-size:15px">Traditional security assumes the perimeter. Agents break that assumption entirely — they operate inside the application layer, carry long-lived credentials, and are designed to behave autonomously. By the time a network-level alert fires, the damage is done.</p>
+
+    <div class="card-grid">
+      <div class="concept-card card-red">
+        <h3>Perimeter vs. Application Layer</h3>
+        <p>Traditional security monitors network perimeter — firewalls, IDS, egress filtering. Agents operate at the application layer, authenticated with valid tokens, making calls indistinguishable from legitimate traffic. Network tools are blind to this threat model.</p>
+      </div>
+      <div class="concept-card card-red">
+        <h3>Token Replay Is Invisible to IP Detection</h3>
+        <p>An agent token stolen from memory or a log file can be replayed from any IP. If an agent normally runs in <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">us-east-1</code>, a replay from <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">eu-west-1</code> looks like a routine call. IP-based detection misses it entirely.</p>
+      </div>
+      <div class="concept-card card-amber">
+        <h3>Authorization Outlives Intent</h3>
+        <p>Agent credentials issued for a specific task frequently persist weeks or months after the task completes. Nobody deprovisioned the access. The agent still holds permissions to systems it no longer needs — a dormant blast radius waiting to be triggered.</p>
+      </div>
+      <div class="concept-card card-amber">
+        <h3>Attack Vectors</h3>
+        <p>The four primary vectors: <strong>token theft</strong> from memory or environment variables, <strong>session smuggling</strong> via MCP context injection, <strong>prompt injection</strong> that coerces the agent into requesting elevated scopes, and <strong>delegation chain manipulation</strong> by inserting a rogue intermediate agent into the <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">act</code> claim.</p>
+      </div>
+    </div>
+
+    <div class="security-note">
+      <div class="callout-title">The Core Gap</div>
+      Authentication is a point-in-time event. Authorization is a runtime state. Traditional identity tools verify identity at login — ITP is the only product in the Okta portfolio that continuously evaluates whether a session (or agent) should <em>stay</em> authorized after the initial token was issued.
+    </div>
+
+  </div>
+
+  <!-- ─── Section 2: How ITP Works ─── -->
+  <div class="content-section" id="section2">
+    <div class="content-section-header">
+      <div class="section-number">2</div>
+      <h2>How ITP Works</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px">Identity Threat Protection performs continuous post-authentication risk assessment. Instead of evaluating risk once at login, ITP monitors active sessions and re-evaluates risk in real time as signals change — then acts on the result without waiting for the next authentication event.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-diagram-title">ITP Architecture — Agent Request Flow</div>
+      <pre>
+  AI Agent  ──►  API Call  ──►  Resource Server
+                                      │
+                               Token Presented
+                                      │
+                            ┌─────────▼──────────┐
+                            │  ITP Risk Engine    │
+                            │  (continuous eval)  │
+                            └─────────┬──────────┘
+                                      │
+                         ┌────────────┼────────────┐
+                         ▼            ▼             ▼
+                    Risk: LOW    Risk: MEDIUM   Risk: HIGH
+                    Allow        Step-Up        Universal
+                                 (CIBA)         Logout
+      </pre>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Risk Signals Evaluated</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Signal Category</th>
+          <th>Signal</th>
+          <th>Relevance for Agents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Network</td>
+          <td>Unusual IP geolocation, Tor exit node, datacenter IP vs. expected cloud region</td>
+          <td>Agent running in us-east-1 suddenly sending requests from eu-west-2 indicates token replay</td>
+        </tr>
+        <tr>
+          <td>Temporal</td>
+          <td>Unusual time of day, off-hours activity, time-since-last-auth</td>
+          <td>Autonomous agent active during maintenance window when no orchestration job is scheduled</td>
+        </tr>
+        <tr>
+          <td>Behavioral</td>
+          <td>Anomalous scope usage, new resource access patterns, velocity anomalies</td>
+          <td>Agent requesting admin scopes it has never previously exercised; 100x API call spike</td>
+        </tr>
+        <tr>
+          <td>Third-Party</td>
+          <td>CrowdStrike device risk, Zscaler ZIA internet threat, Palo Alto Cortex, Jamf device compliance</td>
+          <td>If the host running an agent is flagged as compromised by EDR, ITP escalates agent risk score</td>
+        </tr>
+        <tr>
+          <td>Delegation Chain</td>
+          <td>Unexpected <code>act</code> (actor) claim values, new intermediate agents in chain</td>
+          <td>A known agent suddenly acting "on behalf of" an unrecognized parent agent signals chain manipulation</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Risk Score to Policy Action</h3>
+
+    <div class="risk-bar-wrapper">
+      <div class="risk-bar-row">
+        <div class="risk-bar-label">Low Risk (0–40)</div>
+        <div class="risk-bar"><div class="risk-bar-fill low"></div></div>
+        <div class="risk-bar-value" style="color:var(--c-accent-green)">Allow</div>
+      </div>
+      <div class="risk-bar-row">
+        <div class="risk-bar-label">Medium Risk (40–70)</div>
+        <div class="risk-bar"><div class="risk-bar-fill medium"></div></div>
+        <div class="risk-bar-value" style="color:var(--c-accent-amber)">Step-Up</div>
+      </div>
+      <div class="risk-bar-row">
+        <div class="risk-bar-label">High Risk (70–100)</div>
+        <div class="risk-bar"><div class="risk-bar-fill high"></div></div>
+        <div class="risk-bar-value" style="color:var(--c-accent-red)">Terminate</div>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">Step-Up via CIBA</div>
+      For medium-risk sessions, ITP can trigger a Client-Initiated Backchannel Authentication (CIBA) challenge — pushing an out-of-band verification request to the human owner of the agent without interrupting the current session. This is how you gate a suspicious agent action without hard-terminating a legitimate workflow.
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Third-Party Signal Ingestion</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-blue">
+        <h3>CrowdStrike</h3>
+        <p>Device risk score and threat intel feeds into ITP. If the host running an agent is marked high-risk by CrowdStrike Falcon, ITP elevates the agent's session risk score automatically — no manual intervention required.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h3>Zscaler ZIA</h3>
+        <p>Internet access risk signals. If an agent is making outbound calls through Zscaler and triggers a threat category match, the risk event propagates into ITP's evaluation engine in real time.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h3>Palo Alto Cortex</h3>
+        <p>Network and endpoint threat signals. Cortex XDR detections can be wired as ITP risk inputs — bridging the EDR signal into the identity risk layer for unified response.</p>
+      </div>
+      <div class="concept-card card-blue">
+        <h3>Jamf</h3>
+        <p>macOS/iOS device compliance signals. If an agent runs on a managed device that falls out of compliance (patch missing, disk unencrypted), the ITP risk score for sessions on that device increases.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── Section 3: Universal Logout for Agents ─── -->
+  <div class="content-section" id="section3">
+    <div class="content-section-header">
+      <div class="section-number">3</div>
+      <h2>Universal Logout for Agents</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px">When ITP determines a session or agent is compromised, the response must be total and immediate. Universal Logout does not revoke one token — it terminates every session, token, and credential associated with the identity across every connected system.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-diagram-title">Universal Logout — Propagation Scope</div>
+      <pre>
+  Trigger: ITP Risk Score Exceeds Threshold (or Admin Manual Action)
+                          │
+                          ▼
+              ┌───────────────────────┐
+              │  Okta Global Logout   │
+              │  Token Revocation     │
+              └───────────┬───────────┘
+                          │
+         ┌────────────────┼────────────────┐
+         ▼                ▼                ▼
+   SAML Apps       OIDC Apps        API/OAuth Clients
+   (SSO session    (ID token        (Access tokens
+   terminated)     invalidated)     revoked)
+         │                │                │
+         └────────────────┴────────────────┘
+                          │
+                    Agent Tokens,
+                    Refresh Tokens,
+                    Long-Lived Credentials
+                    ALL Revoked
+      </pre>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">What Triggers Universal Logout</h3>
+
+    <div class="flow-step-list">
+      <div class="flow-step-item">
+        <div class="step-circle">1</div>
+        <div class="step-body">
+          <strong>ITP Risk Threshold Exceeded</strong>
+          <span>Automated: risk score crosses the configured HIGH threshold, policy fires Universal Logout without waiting for human approval.</span>
+        </div>
+      </div>
+      <div class="flow-step-item">
+        <div class="step-circle">2</div>
+        <div class="step-body">
+          <strong>Admin Manual Action</strong>
+          <span>Security analyst uses the Okta Admin Console or API to immediately terminate all sessions for a specific agent client or service account.</span>
+        </div>
+      </div>
+      <div class="flow-step-item">
+        <div class="step-circle">3</div>
+        <div class="step-body">
+          <strong>ISPM Detection Event</strong>
+          <span>Identity Security Posture Management identifies an orphaned or shadow agent. The ISPM alert triggers a Workflow that initiates Universal Logout for the rogue entity.</span>
+        </div>
+      </div>
+      <div class="flow-step-item">
+        <div class="step-circle">4</div>
+        <div class="step-body">
+          <strong>OIG Deprovisioning</strong>
+          <span>Okta Identity Governance completes an access review that determines an agent's access should be revoked. OIG triggers the lifecycle event, which propagates through Universal Logout.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">How It Works</h3>
+
+    <div class="concept-card card-red">
+      <p>Universal Logout works by revoking the global session at the Okta layer — which cascades token invalidation to every connected application via backchannel logout, token introspection failures, and JWKS key rotation signals. For agent tokens specifically, the access token's <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">jti</code> (JWT ID) is added to a revocation list that resource servers check on every request. The next API call from the agent returns 401. There is no grace period.</p>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Forensic Preservation</h3>
+
+    <div class="okta-note">
+      <div class="callout-title">Audit Logs Survive Logout</div>
+      Universal Logout terminates all active sessions and tokens, but does not destroy audit logs. Every API call the agent made, every scope it exercised, every delegation event it participated in — all of this is preserved in Okta's System Log and surfaced in the SecurityEvents API for post-incident forensic investigation. The evidence trail is intact before the first step of your incident response playbook runs.
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Current State and Roadmap</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Universal Logout for Auth0 apps</td>
+          <td style="color:var(--c-accent-green);font-weight:600">GA</td>
+          <td>Available today. Terminates sessions across all OIDC/OAuth apps connected to Auth0.</td>
+        </tr>
+        <tr>
+          <td>Universal Logout for Okta WIC apps</td>
+          <td style="color:var(--c-accent-green);font-weight:600">GA</td>
+          <td>Available today. Covers SAML, OIDC, and SWA apps connected to Okta Workforce Identity Cloud.</td>
+        </tr>
+        <tr>
+          <td>Third-party signal ingestion (CrowdStrike, Zscaler)</td>
+          <td style="color:var(--c-accent-green);font-weight:600">GA</td>
+          <td>Shared Signals Framework (SSF) integration. Available today.</td>
+        </tr>
+        <tr>
+          <td>Agent-specific behavioral baselines</td>
+          <td style="color:var(--c-accent-amber);font-weight:600">Phase 2</td>
+          <td>ML models trained on NHI/agent traffic patterns. On roadmap; not yet GA.</td>
+        </tr>
+        <tr>
+          <td>Extended Universal Logout (cross-system agent token revocation)</td>
+          <td style="color:var(--c-accent-amber);font-weight:600">Phase 2</td>
+          <td>Propagates revocation beyond Okta-connected apps to third-party credential stores. On roadmap.</td>
+        </tr>
+        <tr>
+          <td>Agent-specific risk policies (dedicated NHI policy engine)</td>
+          <td style="color:var(--c-accent-amber);font-weight:600">Phase 2</td>
+          <td>Separate policy evaluation path for non-human identities. On roadmap.</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <!-- ─── Section 4: Agent-Specific Detection Patterns ─── -->
+  <div class="content-section" id="section4">
+    <div class="content-section-header">
+      <div class="section-number">4</div>
+      <h2>Agent-Specific Detection Patterns</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px">These are the five patterns most likely to surface in a prospect conversation. For each one: what the signal looks like, what ITP does with it, and what you say to the customer.</p>
+
+    <!-- Pattern 1 -->
+    <div class="detection-card">
+      <div class="detection-card-header">
+        <span class="detection-badge badge-critical">Critical</span>
+        <span class="detection-name">Token Replay from Unexpected Geography</span>
+      </div>
+      <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:14px">An agent's access token is exfiltrated (from environment variables, a log file, or memory) and replayed from a different cloud region or country than the agent's normal operating environment.</p>
+      <div class="detection-grid">
+        <div>
+          <div class="detection-col-label">What ITP Detects</div>
+          <div class="detection-col-body">Access token presented from IP geolocating to eu-west-1 when the agent's historical baseline is exclusively us-east-1. No known cloud provider egress IP for the agent's infrastructure.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">Action Fires</div>
+          <div class="detection-col-body">Risk score elevated to HIGH. Universal Logout triggered immediately. New tokens blocked until investigation clears. Forensic event logged with full request context.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">SE Talking Point</div>
+          <div class="detection-col-body">"If one of your agent tokens gets stolen out of an ECS task definition environment variable, ITP is the thing that notices the next API call came from a Berlin datacenter and shuts it down before it can exfiltrate your data."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 2 -->
+    <div class="detection-card">
+      <div class="detection-card-header">
+        <span class="detection-badge badge-critical">Critical</span>
+        <span class="detection-name">Scope Escalation</span>
+      </div>
+      <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:14px">An agent that has historically only exercised read scopes suddenly requests or attempts to exercise administrative scopes included in its token but never previously used. Classic indicator of prompt injection or compromised orchestration logic.</p>
+      <div class="detection-grid">
+        <div>
+          <div class="detection-col-label">What ITP Detects</div>
+          <div class="detection-col-body">Scope usage anomaly: <code style="font-family:var(--font-mono);font-size:11px">admin:write</code> scope exercised for the first time in the agent's behavioral history. New resource types accessed without precedent in the baseline window.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">Action Fires</div>
+          <div class="detection-col-body">Medium risk: CIBA step-up sent to agent owner for approval. High risk (if combined with other signals): Universal Logout. Request blocked pending re-authorization.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">SE Talking Point</div>
+          <div class="detection-col-body">"This is exactly what a prompt injection attack looks like at the identity layer — the agent's token has the scope, the attacker convinced the agent to use it. ITP catches the behavioral deviation even when the token was technically valid."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 3 -->
+    <div class="detection-card">
+      <div class="detection-card-header">
+        <span class="detection-badge badge-high">High</span>
+        <span class="detection-name">Velocity Anomaly</span>
+      </div>
+      <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:14px">An agent making API calls at 100x its established baseline rate — often indicating a runaway loop, compromised orchestration, or an attacker using the agent token for mass data extraction.</p>
+      <div class="detection-grid">
+        <div>
+          <div class="detection-col-label">What ITP Detects</div>
+          <div class="detection-col-body">Request velocity exceeds 3x rolling baseline within a 5-minute window. Agent baseline: 100 calls/minute. Anomaly: 10,000 calls/minute sustained.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">Action Fires</div>
+          <div class="detection-col-body">Rate limiting applied immediately at the Okta token introspection layer. Risk score elevated. Alert sent to security team. If velocity continues post-throttle: Universal Logout.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">SE Talking Point</div>
+          <div class="detection-col-body">"A runaway agent or a stolen token being used for bulk data exfiltration looks the same at the network layer — lots of API calls. ITP distinguishes between them by knowing what normal looks like for that specific agent identity."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 4 -->
+    <div class="detection-card">
+      <div class="detection-card-header">
+        <span class="detection-badge badge-medium">Medium</span>
+        <span class="detection-name">Off-Hours Activity</span>
+      </div>
+      <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:14px">An autonomous agent that historically operates during business hours (driven by human-initiated workflows) suddenly becomes active at 3:00 AM during a scheduled maintenance window when no orchestration jobs should be running.</p>
+      <div class="detection-grid">
+        <div>
+          <div class="detection-col-label">What ITP Detects</div>
+          <div class="detection-col-body">Session activity at 03:17 UTC — outside the agent's historical activity window (08:00–22:00 UTC). No correlated orchestration job ID in request headers. No known maintenance task scheduled.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">Action Fires</div>
+          <div class="detection-col-body">Risk score elevated to MEDIUM. CIBA challenge sent to agent owner (on-call engineer). If no response within timeout window: session suspended pending review.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">SE Talking Point</div>
+          <div class="detection-col-body">"Scheduled agent jobs don't just spontaneously run at 3 AM. If an agent is active when it shouldn't be, that's either a compromised credential or a runaway process — and both need human attention immediately."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pattern 5 -->
+    <div class="detection-card">
+      <div class="detection-card-header">
+        <span class="detection-badge badge-high">High</span>
+        <span class="detection-name">Delegation Chain Manipulation</span>
+      </div>
+      <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:14px">The <code style="font-family:var(--font-mono);font-size:12px;background:var(--c-surface);padding:2px 6px;border-radius:4px">act</code> claim in a delegated token shows an unexpected intermediate agent — an entity that has inserted itself into the delegation chain and is acting as a conduit for privilege escalation.</p>
+      <div class="detection-grid">
+        <div>
+          <div class="detection-col-label">What ITP Detects</div>
+          <div class="detection-col-body"><code style="font-family:var(--font-mono);font-size:11px">act.sub</code> claim contains <code style="font-family:var(--font-mono);font-size:11px">agent-id-unknown-7f3a</code> — an entity never seen before in this agent's delegation history. Chain depth exceeds configured maximum.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">Action Fires</div>
+          <div class="detection-col-body">Request blocked immediately. Risk elevated to HIGH. Alert generated with full delegation chain decoded for security review. Universal Logout applied to all entities in the chain pending investigation.</div>
+        </div>
+        <div>
+          <div class="detection-col-label">SE Talking Point</div>
+          <div class="detection-col-body">"Multi-agent systems create a new attack surface — if an attacker can insert a rogue agent into the middle of a delegation chain, they can amplify their permissions through legitimate agents. ITP makes the delegation chain visible and auditable."</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── Section 5: ITP + ISPM + OIG Integration ─── -->
+  <div class="content-section" id="section5">
+    <div class="content-section-header">
+      <div class="section-number">5</div>
+      <h2>ITP + ISPM + OIG Integration</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px">No single product solves the agent identity security problem in isolation. The real power is how ISPM, ITP, OIG, and OPA operate as a unified fabric — each handling a distinct layer of the agent lifecycle.</p>
+
+    <h3 style="font-size:17px;font-weight:600;margin:0 0 16px">Product Responsibilities</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-blue">
+        <h3>ISPM — Discovery</h3>
+        <p>Identity Security Posture Management finds agents you didn't know existed. Shadow agents, orphaned service accounts, over-provisioned NHIs — ISPM surfaces them through continuous discovery before they become incident fodder.</p>
+      </div>
+      <div class="concept-card card-red">
+        <h3>ITP — Runtime Monitoring</h3>
+        <p>Identity Threat Protection watches agents you do know about and detects when their behavior deviates from baseline. It acts on the signal in real time — step-up, throttle, or terminate.</p>
+      </div>
+      <div class="concept-card card-green">
+        <h3>OIG — Lifecycle Governance</h3>
+        <p>Okta Identity Governance ensures agents have access reviews, defined owners, expiration policies, and audit trails. When ITP detects a threat, OIG closes the governance loop — triggering review and formal deprovisioning.</p>
+      </div>
+      <div class="concept-card card-amber">
+        <h3>OPA — Policy Engine</h3>
+        <p>Open Policy Agent enforces fine-grained authorization decisions at the API layer. While ITP detects and responds to behavioral anomalies, OPA enforces the policy that determines what an agent is allowed to do in the first place.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">The Integrated Response Flow</h3>
+
+    <div class="arch-diagram">
+      <div class="arch-diagram-title">Identity Security Fabric — Agent Incident Response</div>
+      <pre>
+  ISPM Alert
+  ┌─────────────────────────────────────────────────┐
+  │  Orphaned agent discovered:                     │
+  │  "billing-processor-v2" — no owner, 90 days     │
+  │  of activity, never in access review            │
+  └──────────────────────┬──────────────────────────┘
+                         │ Workflow triggers ITP monitoring rule
+                         ▼
+  ITP Behavioral Baseline
+  ┌─────────────────────────────────────────────────┐
+  │  Establishes 7-day baseline for agent           │
+  │  Anomaly detected Day 3:                        │
+  │    - Velocity spike: 500x baseline              │
+  │    - New scope exercised: billing:export:all    │
+  │    - Source IP: never seen before               │
+  └──────────────────────┬──────────────────────────┘
+                         │ Risk score: HIGH
+                         ▼
+  Universal Logout
+  ┌─────────────────────────────────────────────────┐
+  │  All sessions terminated                        │
+  │  All tokens revoked                             │
+  │  API access blocked across all connected apps   │
+  │  Audit log preserved for forensics              │
+  └──────────────────────┬──────────────────────────┘
+                         │ Lifecycle event fired
+                         ▼
+  OIG Access Review
+  ┌─────────────────────────────────────────────────┐
+  │  Formal access review triggered                 │
+  │  Owner lookup: no owner found                   │
+  │  Escalated to IT Security team                  │
+  │  Access permanently revoked after review        │
+  │  Owner assigned for all remaining agents        │
+  └─────────────────────────────────────────────────┘
+      </pre>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">The "Identity Security Fabric" Concept</div>
+      The value of positioning these four products together is that they cover the entire agent lifecycle: ISPM finds what exists, ITP monitors what's running, OIG governs who owns it and when access expires, and OPA enforces what it can do at the policy layer. No competitor has this integrated stack for non-human identities.
+    </div>
+
+  </div>
+
+  <!-- ─── Section 6: Current Limitations ─── -->
+  <div class="content-section" id="section6">
+    <div class="content-section-header">
+      <div class="section-number">6</div>
+      <h2>Current Limitations — Honest Assessment</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px">ITP was built for human session risk. The architecture is correct for agents — but the agent-specific tuning, detection models, and policy controls are still being built. Here is an accurate picture of what works today and what is on the roadmap.</p>
+
+    <div class="warning-note">
+      <div class="callout-title">What Works for Agents Today</div>
+      <ul style="color:var(--c-text-muted);font-size:14px;line-height:2;padding-left:20px">
+        <li>Token-based risk signals (geolocation, velocity, new scope usage, unusual time)</li>
+        <li>Third-party signal ingestion via Shared Signals Framework (CrowdStrike, Zscaler, Palo Alto)</li>
+        <li>Universal Logout — immediate cross-system session and token revocation</li>
+        <li>ITP policies configurable for service account client IDs (agent identifiers)</li>
+        <li>Full audit log preservation for post-incident investigation</li>
+        <li>CIBA-based step-up for medium-risk sessions (requires human owner to be reachable)</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-note">
+      <div class="callout-title">What Is on the Roadmap (Phase 2)</div>
+      <ul style="color:var(--c-text-muted);font-size:14px;line-height:2;padding-left:20px">
+        <li><strong>Dedicated agent behavioral baselines:</strong> ML models trained specifically on NHI/agent traffic patterns rather than human session patterns</li>
+        <li><strong>Agent-specific risk policies:</strong> A separate policy evaluation path for non-human identities with NHI-native risk factors</li>
+        <li><strong>Extended Universal Logout:</strong> Cross-system agent token revocation that propagates beyond Okta-connected apps into third-party credential stores and cloud IAM systems</li>
+        <li><strong>Delegation chain anomaly detection:</strong> Native analysis of <code style="font-family:var(--font-mono);font-size:12px">act</code> claim values and chain depth as first-class risk signals</li>
+      </ul>
+    </div>
+
+    <div class="security-note">
+      <div class="callout-title">SE Talking Point for This Section</div>
+      "ITP gives you runtime visibility into agent behavior today — the token-based risk signals, Universal Logout, and third-party integrations are all available now. The agent-specific detection models and dedicated NHI policy engine are coming in Phase 2. What matters for your architecture conversation is that the infrastructure is already in place — you're not waiting for a new product, you're waiting for new detection models layered on top of a production-grade platform."
+    </div>
+
+  </div>
+
+  <!-- ─── Section 7: SE Positioning ─── -->
+  <div class="content-section" id="section7">
+    <div class="content-section-header">
+      <div class="section-number">7</div>
+      <h2>SE Positioning</h2>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:0 0 16px">The CISO Question</h3>
+
+    <div class="concept-card card-red">
+      <h3 style="font-size:16px">"How do you detect a compromised agent?"</h3>
+      <p>This is ITP's defining question. The answer: continuous post-authentication risk assessment that monitors agent behavior after the token is issued, evaluates runtime signals from your security stack, and acts autonomously — throttle, step-up, or terminate — without waiting for a human to notice the alert. No other identity vendor has this for agent tokens at GA.</p>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Competitive Differentiation</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>What They Have</th>
+          <th>What They Lack vs. ITP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CyberArk</strong></td>
+          <td>PAM-based secrets management for service accounts; session recording for privileged access</td>
+          <td>No continuous post-auth risk assessment; no behavioral anomaly detection on agent tokens; no Universal Logout across all connected apps</td>
+        </tr>
+        <tr>
+          <td><strong>SailPoint</strong></td>
+          <td>IGA lifecycle management; access certifications and access reviews</td>
+          <td>Governance-layer visibility only; no real-time runtime signal evaluation; no automated session termination on behavioral anomaly</td>
+        </tr>
+        <tr>
+          <td><strong>Astrix Security</strong></td>
+          <td>NHI discovery and posture; OAuth app visibility; over-permission detection</td>
+          <td>Static posture analysis only; no continuous runtime behavioral monitoring; no Universal Logout integration</td>
+        </tr>
+        <tr>
+          <td><strong>Okta ITP</strong></td>
+          <td>Continuous post-auth risk assessment; third-party signal ingestion; CIBA step-up; Universal Logout</td>
+          <td>Agent-specific behavioral models still maturing (Phase 2); Extended Universal Logout on roadmap</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Discovery Questions</h3>
+
+    <div class="comparison-grid">
+      <div class="concept-card card-red">
+        <h3 style="font-size:15px">The Core Question</h3>
+        <p style="font-size:14px">"If one of your AI agents is compromised right now — token stolen, prompt injected, running out of control — how would you know? And how fast can you revoke its access across every system it has permissions on?"</p>
+        <p style="font-size:13px;color:var(--c-text-dim);margin-top:10px">Pause. Let them answer. The usual responses: "We'd check logs," "We'd rotate the API key," "We'd take it offline." Each answer is an opportunity to demonstrate what ITP does that those responses don't.</p>
+      </div>
+      <div class="concept-card card-amber">
+        <h3 style="font-size:15px">The Scope Question</h3>
+        <p style="font-size:14px">"How many AI agents or automated workflows do you have running in production right now? How many of them have standing access to sensitive systems that nobody reviewed in the last 90 days?"</p>
+        <p style="font-size:13px;color:var(--c-text-dim);margin-top:10px">Opens the ISPM conversation. Most prospects dramatically underestimate their agent footprint. The ISPM discovery scan is the tool that shows them the real number.</p>
+      </div>
+      <div class="concept-card card-green">
+        <h3 style="font-size:15px">The Incident Response Question</h3>
+        <p style="font-size:14px">"When your SOC gets an alert that an agent is misbehaving, what's your playbook? Who owns it? How long does revocation take — and how confident are you it's actually revoked everywhere?"</p>
+        <p style="font-size:13px;color:var(--c-text-dim);margin-top:10px">Universal Logout is the answer to the last part. Most organizations have no confident answer to "revoked everywhere" for non-human identities. That's the gap ITP fills.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Full Okta Platform Pitch for AI Security</h3>
+
+    <div class="flow-step-list">
+      <div class="flow-step-item">
+        <div class="step-circle" style="background:var(--c-accent-cyan)">1</div>
+        <div class="step-body">
+          <strong>ISPM — "What do you have?"</strong>
+          <span>Continuous discovery of all non-human identities — service accounts, OAuth apps, agent credentials — with risk scoring and remediation recommendations.</span>
+        </div>
+      </div>
+      <div class="flow-step-item">
+        <div class="step-circle" style="background:var(--c-accent-amber)">2</div>
+        <div class="step-body">
+          <strong>OIG — "Who owns it and should they have it?"</strong>
+          <span>Access reviews, lifecycle policies, and certification campaigns for NHI access. Ensures every agent has an owner and an expiration policy.</span>
+        </div>
+      </div>
+      <div class="flow-step-item">
+        <div class="step-circle" style="background:var(--c-auth0-purple)">3</div>
+        <div class="step-body">
+          <strong>FGA / OPA — "What is it allowed to do?"</strong>
+          <span>Fine-grained authorization enforced at the resource layer. Agents can only exercise the specific permissions they were explicitly granted for each task.</span>
+        </div>
+      </div>
+      <div class="flow-step-item">
+        <div class="step-circle" style="background:var(--c-accent-red)">4</div>
+        <div class="step-body">
+          <strong>ITP — "Is it behaving as expected right now?"</strong>
+          <span>Continuous runtime risk assessment with automated response. The behavioral watchdog that operates between authentication events.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">The One-Liner</div>
+      "Okta is the only vendor that can tell you what agents exist, who owns them, what they're allowed to do, and whether they're behaving right now — across every app in your environment, with Universal Logout as the kill switch."
+    </div>
+
+  </div>
+
+</div><!-- /content-area -->
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>Identity Threat Protection for AI Agents &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers continuous post-authentication risk assessment, agent behavioral anomaly detection, Universal Logout, and the ITP + ISPM + OIG + OPA identity security fabric.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+</script>
+
+</body>
+</html>
