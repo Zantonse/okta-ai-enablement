@@ -1831,6 +1831,64 @@ export const calendarTool = withGoogleConnection(
     <p><strong>Auth0 Async Authorization docs:</strong> <a href="https://auth0.com/ai/docs/intro/asynchronous-authorization" target="_blank">https://auth0.com/ai/docs/intro/asynchronous-authorization</a></p>
   </div>
 
+  <!-- Auth0 Actions for Agent Token Pipelines -->
+  <div class="concept-card">
+    <h3>Auth0 Actions — Agent Token Customization</h3>
+    <p>Auth0 Actions are serverless functions that run inside the Auth0 platform during authentication/authorization events. For AI agents, the key trigger is the <strong>Client Credentials Exchange</strong> action — it fires every time a machine-to-machine token is issued.</p>
+
+    <h4>What You Can Do with Actions</h4>
+    <ul>
+      <li><strong>Inject custom claims:</strong> Add <code>agent_id</code>, <code>agent_version</code>, or <code>deployment_env</code> so downstream APIs know which agent made the call</li>
+      <li><strong>Enrich with FGA data:</strong> Query FGA relationships and inject authorization context into the token — avoids round-trip auth checks at every API call</li>
+      <li><strong>Risk-gate token issuance:</strong> Call an external risk API before issuing a token; deny if risk score exceeds threshold</li>
+      <li><strong>Enforce software attestation:</strong> Verify the agent's workload identity certificate before issuing credentials</li>
+      <li><strong>Dynamic scope restriction:</strong> Restrict scopes based on agent metadata, time of day, or deployment environment</li>
+    </ul>
+
+    <h4>Client Credentials Exchange Action Example</h4>
+    <div class="code-block">
+<pre><span class="cmt">// Auth0 Action — Client Credentials Exchange trigger</span>
+<span class="kw">exports</span>.onExecuteCredentialsExchange = <span class="kw">async</span> (event, api) => {
+  <span class="cmt">// Inject agent metadata into the token</span>
+  api.accessToken.setCustomClaim(<span class="str">'agent_id'</span>, event.client.client_id);
+  api.accessToken.setCustomClaim(<span class="str">'agent_name'</span>, event.client.name);
+
+  <span class="cmt">// Risk check — deny token if agent is flagged</span>
+  <span class="kw">const</span> riskScore = <span class="kw">await</span> <span class="fn">checkAgentRisk</span>(event.client.client_id);
+  <span class="kw">if</span> (riskScore > <span class="num">0.8</span>) {
+    api.access.deny(<span class="str">'Agent flagged as high-risk'</span>);
+    <span class="kw">return</span>;
+  }
+
+  <span class="cmt">// Restrict scopes for non-production agents</span>
+  <span class="kw">if</span> (event.client.metadata?.env === <span class="str">'staging'</span>) {
+    api.accessToken.setCustomClaim(<span class="str">'scope'</span>, <span class="str">'read:data'</span>);
+  }
+};</pre>
+    </div>
+
+    <h4>Actions vs Okta Inline Hooks</h4>
+    <table style="width:100%;border-collapse:collapse;font-size:0.9rem">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:0.75rem;border-bottom:2px solid var(--c-border)">Dimension</th>
+          <th style="text-align:left;padding:0.75rem;border-bottom:2px solid var(--c-border)">Auth0 Actions</th>
+          <th style="text-align:left;padding:0.75rem;border-bottom:2px solid var(--c-border)">Okta Inline Hooks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)"><strong>Execution</strong></td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Runs inside Auth0 platform</td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Calls your external HTTPS endpoint</td></tr>
+        <tr><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)"><strong>Latency</strong></td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Sub-100ms, no cold starts</td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Depends on your endpoint (50-500ms)</td></tr>
+        <tr><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)"><strong>Failure mode</strong></td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Fail-closed (configurable)</td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Fail-open by default</td></tr>
+        <tr><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)"><strong>Agent relevance</strong></td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">M2M token trigger for every agent token</td><td style="padding:0.75rem;border-bottom:1px solid var(--c-border)">Token inline hook for custom AS tokens</td></tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <strong>SE positioning:</strong> "Actions is the developer customization story for Auth0-built agent systems. Competitors (Ping, Entra) have weaker equivalents. Actions runs inside the platform with sub-100ms latency — critical for multi-hop agent chains where latency compounds at every token exchange."
+    </div>
+  </div>
+
   <!-- Real-World Attack Surface -->
   <div class="concept-card">
     <h3>Real-World Attack Surface</h3>

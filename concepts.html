@@ -886,6 +886,7 @@
       <div class="sidebar-label">AI Security</div>
       <a class="sidebar-link" data-section="rag-security">RAG Security</a>
       <a class="sidebar-link" data-section="threat-model">Threat Model</a>
+      <a class="sidebar-link" data-section="owasp-agentic">OWASP Agentic Top 10</a>
     </div>
 
     <div class="sidebar-section">
@@ -2325,6 +2326,89 @@ curl --request POST \
       </div>
     </section>
 
+    <!-- OWASP Agentic Top 10 Section -->
+    <section id="owasp-agentic">
+      <h2>OWASP Agentic Top 10 — Control Mapping</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">The OWASP Agentic Top 10 (December 2025) is a distinct list from the LLM Top 10 — focused specifically on autonomous AI agent risks. Security teams and auditors are using this as a procurement checklist. Here's how Okta/Auth0 maps to each risk.</p>
+
+      <table class="integration-table">
+        <thead>
+          <tr>
+            <th style="width:25%">OWASP Agentic Risk</th>
+            <th style="width:35%">Description</th>
+            <th style="width:20%">Okta/Auth0 Control</th>
+            <th style="width:20%">SE Talking Point</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Excessive Agency</strong></td>
+            <td>Agent has more permissions than needed for its task</td>
+            <td>FGA + ID-JAG scope attenuation + CIBA step-up</td>
+            <td>"Least privilege enforced at every token exchange"</td>
+          </tr>
+          <tr>
+            <td><strong>2. Agent Goal Hijacking</strong></td>
+            <td>Prompt injection redirects agent to attacker's objectives</td>
+            <td>MCP authorization allowlisting + AI Gateway content filtering</td>
+            <td>"Only pre-approved MCP servers, with content validation"</td>
+          </tr>
+          <tr>
+            <td><strong>3. Tool Misuse</strong></td>
+            <td>Agent calls tools in unintended or malicious ways</td>
+            <td>FGA per-tool authorization + MCP scope mapping</td>
+            <td>"OAuth scopes map to MCP tool permissions — no scope, no tool"</td>
+          </tr>
+          <tr>
+            <td><strong>4. Privilege Escalation</strong></td>
+            <td>Agent acquires permissions beyond its authorized scope</td>
+            <td>Structural scope attenuation (agent cannot exceed user's scope via XAA)</td>
+            <td>"ID-JAG structurally prevents scope escalation"</td>
+          </tr>
+          <tr>
+            <td><strong>5. Agent Impersonation</strong></td>
+            <td>Malicious entity pretends to be a trusted agent</td>
+            <td>Agent Identity in UD + certificate-based auth + ITP anomaly detection</td>
+            <td>"Every agent has a registered identity with PKI credentials"</td>
+          </tr>
+          <tr>
+            <td><strong>6. Memory Poisoning</strong></td>
+            <td>Attacker corrupts agent's persistent memory or context</td>
+            <td>FGA document-level filtering + Token Vault isolation</td>
+            <td>"FGA ensures only authorized data enters the agent's context"</td>
+          </tr>
+          <tr>
+            <td><strong>7. Supply Chain Attacks</strong></td>
+            <td>Compromised MCP server or tool dependency</td>
+            <td>MCP client registry allowlisting + CIMD verification + ISPM discovery</td>
+            <td>"Only OAuth-registered MCP servers — verified by DNS/HTTPS trust"</td>
+          </tr>
+          <tr>
+            <td><strong>8. Rogue Agents</strong></td>
+            <td>Unauthorized agents operating outside IT governance</td>
+            <td>ISPM Agent Discovery + SAM Browser Plugin</td>
+            <td>"ISPM finds every shadow agent, including OAuth grants you didn't approve"</td>
+          </tr>
+          <tr>
+            <td><strong>9. Resource Overuse</strong></td>
+            <td>Agent consumes excessive compute, API calls, or data</td>
+            <td>AI Gateway token budgets + OAuth scope-based quotas</td>
+            <td>"Per-agent token budgets enforced via custom claims"</td>
+          </tr>
+          <tr>
+            <td><strong>10. Observability Gaps</strong></td>
+            <td>Inability to audit what agents are doing</td>
+            <td>System Logs + <code>act</code> claim delegation chains + OIG certification</td>
+            <td>"Full audit trail: who, what, when, on whose behalf, with what scope"</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-red);">
+        <strong>For auditors and security teams:</strong> Print this table. It maps directly to the OWASP Agentic Top 10 assessment checklist. Each Okta/Auth0 control is demonstrable in a PoC — ask your SE for the specific demo script per risk.
+      </div>
+    </section>
+
     <!-- AWS Bedrock & AgentCore Section -->
     <section id="aws-bedrock">
       <h2>AWS Bedrock & AgentCore</h2>
@@ -2666,8 +2750,48 @@ curl --request POST \
             <td>System Logs with delegation context</td>
             <td>Show full audit trail: agent + user + resource + scope + time</td>
           </tr>
+          <tr>
+            <td><strong>NIST AI RMF — Govern 2.2</strong></td>
+            <td>AI risk governance and accountability</td>
+            <td>OIG agent access certification + ISPM posture scoring</td>
+            <td>Show OIG certification campaign with agent owner accountability</td>
+          </tr>
+          <tr>
+            <td><strong>NIST AI RMF — Manage 1.3</strong></td>
+            <td>Runtime monitoring and risk response</td>
+            <td>ITP continuous risk assessment + Universal Logout</td>
+            <td>Show ITP risk score triggering automated session termination</td>
+          </tr>
+          <tr>
+            <td><strong>NIST AI RMF — Measure 2.6</strong></td>
+            <td>Logging and measurement of AI system performance</td>
+            <td>System Logs + SIEM export + <code>act</code> chain attribution</td>
+            <td>Show delegation chain logs with Splunk/Sentinel correlation</td>
+          </tr>
+          <tr>
+            <td><strong>Colorado SB24-205</strong></td>
+            <td>AI consumer protection — risk management, impact assessment, disclosure</td>
+            <td>OIG governance workflows + ISPM risk classification + audit trails</td>
+            <td>Show agent risk classification in ISPM + OIG access review workflow</td>
+          </tr>
+          <tr>
+            <td><strong>PCI DSS 4.0 Req. 7.2.1</strong></td>
+            <td>Access control for cardholder data environments</td>
+            <td>FGA document-level access + XAA scope attenuation</td>
+            <td>Show FGA tuples restricting agent to specific data classifications</td>
+          </tr>
+          <tr>
+            <td><strong>PCI DSS 4.0 Req. 10.2.1</strong></td>
+            <td>Audit trail for all access to cardholder data</td>
+            <td>System Logs with <code>act</code> claim + SIEM integration</td>
+            <td>Show every agent access to CDE logged with user delegation context</td>
+          </tr>
         </tbody>
       </table>
+
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-amber);">
+        <strong>US Regulatory Note:</strong> Colorado SB24-205 (effective Feb 1, 2026) is the first major US state AI consumer protection law. California SB 942 and Texas HB 1709 are following. NIST AI RMF is required for US federal agencies and defense contractors. The EU-only compliance story is no longer sufficient for US-based prospects.
+      </div>
     </section>
 
     <!-- Audit Logging Section -->
