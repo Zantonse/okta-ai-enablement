@@ -5,6 +5,10 @@ Thumbs.db
 # Playwright test artifacts
 .playwright-mcp/
 
+# Screenshots from browser testing
+*.png
+*.jpeg
+
 # Node modules (if added later)
 node_modules/
 
@@ -12,3 +16,4 @@ node_modules/
 .env
 .env.local
 .vercel
+.superpowers/
