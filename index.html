@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
 <title>Okta Secures AI — Enablement Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +27,7 @@
   --c-accent-amber:#d48a00;
   --c-accent-red:#e03e4d;
   --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
   --c-seller-bg:#fef9f0;
   --c-seller-border:#e0d5c0;
   --c-seller-accent:#d48a00;
@@ -36,6 +38,8 @@
   --font-body:'DM Sans',system-ui,sans-serif;
   --font-mono:'JetBrains Mono',monospace;
   --nav-h:64px;
+  --nav-sub-h:40px;
+  --nav-total-h:104px;
   --section-pad:clamp(60px,8vw,120px);
   --max-w:1200px;
 }
@@ -56,6 +60,7 @@ html[data-theme="dark"]{
   --c-accent-amber:#f5a623;
   --c-accent-red:#ff4757;
   --c-accent-green:#2ed573;
+  --c-accent-cyan:#00c4ee;
   --c-seller-bg:#1a1710;
   --c-seller-border:#3d3520;
   --c-seller-accent:#f5a623;
@@ -63,7 +68,7 @@ html[data-theme="dark"]{
   --c-inset-bg:rgba(0,0,0,0.3);
   --c-auth0-gradient-end:#0e0b18;
 }
-html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
+html{scroll-behavior:smooth;scroll-padding-top:var(--nav-total-h)}
 body{
   font-family:var(--font-body);
   background:var(--c-bg);
@@ -147,6 +152,39 @@ html[data-theme="dark"] body::before{opacity:0.4}
   font-weight:500;white-space:nowrap;
 }
 .nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+
+/* ─── Sub-Navigation (Tier 2) ─── */
+.nav-sub{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:999;
+  height:var(--nav-sub-h);
+  background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+  transition:border-color 0.3s;
+}
+.nav.seller-active ~ .nav-sub{border-bottom-color:var(--c-seller-accent)}
+.nav-sub-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;gap:10px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.nav-sub-inner::-webkit-scrollbar{display:none}
+.nav-sub-label{
+  font-family:var(--font-mono);
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--c-text-dim);white-space:nowrap;flex-shrink:0;
+}
+.nav-sub-inner a{
+  font-size:11px;font-weight:600;font-family:var(--font-body);
+  padding:4px 12px;border-radius:99px;
+  text-decoration:none;white-space:nowrap;
+  border:1px solid transparent;
+  transition:all 0.2s;
+}
+.nav-sub-inner a:hover{filter:brightness(1.2);background:var(--c-surface)}
 
 /* ─── Hamburger Menu (Mobile) ─── */
 .hamburger{
@@ -281,7 +319,7 @@ body.seller-mode .seller-section{display:block}
 
 /* ─── Hero ─── */
 .hero{
-  padding:calc(var(--nav-h) + 80px) 0 var(--section-pad);
+  padding:calc(var(--nav-total-h) + 80px) 0 var(--section-pad);
   position:relative;overflow:hidden;
   min-height:100vh;
   display:flex;align-items:center;
@@ -764,9 +802,12 @@ blockquote cite{
 @media(max-width:768px){
   .hamburger{display:flex}
   .nav-links{display:none}
+  .nav-sub{display:none}
   .nav-brand{font-size:18px;gap:8px}
   .nav-brand .okta-mark{width:24px;height:24px;font-size:10px}
   .seller-toggle{display:none}
+  html{scroll-padding-top:var(--nav-h)}
+  .hero{padding-top:calc(var(--nav-h) + 80px)}
 }
 
 @media(max-width:600px){
@@ -822,9 +863,6 @@ blockquote cite{
       <li><a href="#auth0">Auth0 for AI</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#token-flow">Token Flow</a></li>
-      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid var(--c-seller-border);border-radius:6px;">Technical &rarr;</a></li>
-      <li><a href="concepts.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px;">Concepts &rarr;</a></li>
-      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px;">Use Cases &rarr;</a></li>
     </ul>
     <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode">
       <span class="theme-icon">☾</span>
@@ -835,6 +873,21 @@ blockquote cite{
     </button>
   </div>
 </nav>
+
+<!-- ─── Sub-Navigation (Tier 2 — Deep Dives) ─── -->
+<div class="nav-sub">
+  <div class="nav-sub-inner">
+    <span class="nav-sub-label">Deep Dives</span>
+    <a href="technical.html" style="color:var(--c-accent-amber);border-color:rgba(212,138,0,0.3)">Technical</a>
+    <a href="concepts.html" style="color:var(--c-accent-green);border-color:rgba(31,170,88,0.3)">Concepts</a>
+    <a href="usecases.html" style="color:var(--c-accent-cyan);border-color:rgba(0,153,187,0.3)">Use Cases</a>
+    <a href="oauth.html" style="color:var(--c-auth0-purple);border-color:rgba(103,66,213,0.3)">OAuth 2.1</a>
+    <a href="agent-identity.html" style="color:var(--c-accent-green);border-color:rgba(31,170,88,0.3)">Agent Identity</a>
+    <a href="fga.html" style="color:var(--c-accent-amber);border-color:rgba(212,138,0,0.3)">FGA</a>
+    <a href="ai-gateway.html" style="color:var(--c-accent-red);border-color:rgba(224,62,77,0.3)">AI Gateway</a>
+    <a href="oidc.html" style="color:var(--c-accent-cyan);border-color:rgba(0,153,187,0.3)">OIDC</a>
+  </div>
+</div>
 
 <!-- ─── Mobile Nav Drawer ─── -->
 <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
@@ -847,9 +900,17 @@ blockquote cite{
       <li><a href="#auth0">Auth0 for AI</a></li>
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#token-flow">Token Flow</a></li>
+    </ul>
+    <div class="nav-drawer-separator"></div>
+    <ul class="nav-drawer-links">
       <li><a href="technical.html">SE Technical Deep-Dive →</a></li>
       <li><a href="concepts.html">Concepts Guide →</a></li>
       <li><a href="usecases.html">Use Cases →</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive →</a></li>
+      <li><a href="agent-identity.html">Agent Identity →</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization →</a></li>
+      <li><a href="ai-gateway.html">AI Gateway →</a></li>
+      <li><a href="oidc.html">OIDC for AI →</a></li>
     </ul>
     <div class="nav-drawer-separator"></div>
     <button class="theme-toggle" id="themeToggleMobile" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode" style="width:100%;justify-content:center;margin-bottom:12px">
@@ -1581,7 +1642,7 @@ blockquote cite{
 <!-- ─── Footer ─── -->
 <footer class="footer">
   <div class="container">
-    <p>Okta Secures AI — Enablement Hub &middot; Internal + Customer Reference &middot; Updated February 2026</p>
+    <p>Okta Secures AI — Enablement Hub &middot; Internal + Customer Reference &middot; Updated March 2026</p>
     <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Contains forward-looking statements. Product roadmap items subject to change.</p>
   </div>
 </footer>
@@ -1738,7 +1799,7 @@ const observer = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       entry.target.classList.add('visible');
       if (entry.target.classList.contains('count-up')) {
-        animateCountUp(entry.target);
+        setTimeout(() => animateCountUp(entry.target), 620);
       }
       observer.unobserve(entry.target);
     }

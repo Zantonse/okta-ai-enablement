@@ -1,0 +1,3159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>OpenID Connect Deep Dive — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-cyan);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-cyan);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Content Components ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+/* ─── Flow Diagrams ─── */
+.flow-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.flow-diagram-title{
+  padding:16px 20px;font-weight:600;font-size:15px;
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-parties{
+  display:flex;justify-content:space-around;padding:16px 20px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+}
+.party{
+  padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;
+}
+.party-client{background:var(--c-okta-blue)}
+.party-auth{background:var(--c-auth0-purple)}
+.party-resource{background:var(--c-accent-green)}
+.party-user{background:var(--c-accent-amber)}
+.party-device{background:var(--c-accent-cyan)}
+
+.flow-steps{padding:8px}
+.flow-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;margin:4px 8px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;border:1px solid transparent;
+}
+.flow-step:hover{background:var(--c-surface);border-color:var(--c-border)}
+.flow-step.active{background:var(--c-surface);border-color:var(--c-okta-blue)}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);
+  flex-shrink:0;transition:all 0.2s;
+}
+.flow-step.active .step-num{background:var(--c-okta-blue);color:#fff;border-color:var(--c-okta-blue)}
+.step-arrow{font-size:16px;color:var(--c-text-dim);flex-shrink:0}
+.step-label{font-size:14px;font-weight:500}
+.step-label-sub{font-size:12px;color:var(--c-text-muted);margin-left:auto}
+
+.step-detail{
+  display:none;margin:0 12px 8px;padding:16px 20px;
+  background:var(--c-surface);border-radius:8px;
+  border-left:3px solid var(--c-okta-blue);
+  animation:fadeIn 0.2s ease;
+}
+.step-detail.visible{display:block}
+.step-http{margin-bottom:12px}
+.step-explain{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .flow-parties{flex-wrap:wrap;gap:6px;justify-content:center}
+  .comparison-grid{grid-template-columns:1fr}
+}
+</style>
+
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" class="current">OIDC &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html" style="font-weight:600;color:var(--c-accent-cyan)">OpenID Connect Deep Dive</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      OIDC Core 1.0 &middot; ID Tokens &middot; Discovery
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">OpenID Connect Deep Dive</h1>
+    <p class="section-subtitle">The identity layer on top of OAuth 2.1 &mdash; authentication, ID tokens, discovery, and session management.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+<!-- Embedded styles for Sections 1-5 -->
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --accent: #5c7cfa;
+    --accent2: #7950f2;
+    --accent3: #20c997;
+    --warn: #f59f00;
+    --danger: #f03e3e;
+    --text: #c9d1e0;
+    --text-dim: #7a8296;
+    --text-bright: #e8ecf4;
+    --code-bg: #141720;
+    --code-border: #2a2f4a;
+    --step-num: #5c7cfa;
+    --radius: 8px;
+    --radius-sm: 5px;
+    font-size: 15px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+    line-height: 1.65;
+    padding: 2rem 1.5rem 5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    padding: 2.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+  .page-header .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .page-header .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 4rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .subsection {
+    margin: 2rem 0;
+  }
+  .subsection h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .subsection h3::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background: var(--accent3);
+    border-radius: 2px;
+  }
+
+  p {
+    margin-bottom: 0.9rem;
+    color: var(--text);
+  }
+
+  /* ── Concept Card ── */
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 1.25rem 0;
+    position: relative;
+  }
+  .concept-card .card-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 0.5rem;
+  }
+  .concept-card p {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+  .concept-card p:last-child { margin-bottom: 0; }
+  .concept-card .formula {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9rem;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0 0;
+    color: var(--accent3);
+    display: block;
+  }
+
+  /* ── Info Table ── */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+  }
+  .info-table thead th {
+    background: var(--surface2);
+    color: var(--text-bright);
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .info-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .info-table tbody tr:last-child { border-bottom: none; }
+  .info-table tbody tr:hover { background: var(--surface2); }
+  .info-table tbody td {
+    padding: 0.7rem 1rem;
+    vertical-align: top;
+    color: var(--text);
+  }
+  .info-table tbody td:first-child {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    color: var(--accent3);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .info-table.no-mono tbody td:first-child {
+    font-family: inherit;
+    color: var(--text-bright);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .info-table .tag {
+    display: inline-block;
+    background: rgba(92,124,250,0.15);
+    color: var(--accent);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .info-table .tag.req { background: rgba(240,62,62,0.15); color: #ff6b6b; }
+  .info-table .tag.opt { background: rgba(32,201,151,0.12); color: var(--accent3); }
+  .info-table .tag.warn { background: rgba(245,159,0,0.15); color: var(--warn); }
+
+  /* ── Code Block ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: var(--radius);
+    margin: 1.25rem 0;
+    overflow: hidden;
+  }
+  .code-block .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--code-border);
+  }
+  .code-block .code-lang {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .code-block pre {
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.83rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .code-block pre .cm { color: #666d82; font-style: italic; }
+  .code-block pre .kw { color: #7aa2f7; }
+  .code-block pre .str { color: #9ece6a; }
+  .code-block pre .num { color: #ff9e64; }
+  .code-block pre .key { color: #73daca; }
+  .code-block pre .val { color: #bb9af7; }
+  .code-block pre .url { color: #7dcfff; }
+  .code-block pre .hl { color: var(--accent3); font-weight: 600; }
+  .code-block pre .dim { color: var(--text-dim); }
+
+  /* ── Flow Diagram ── */
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin: 1.5rem 0;
+  }
+  .flow-diagram .flow-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .flow-step {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 0;
+    position: relative;
+  }
+  .flow-step + .flow-step { margin-top: 0; }
+  .flow-step-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .flow-step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+    box-shadow: 0 0 0 3px rgba(92,124,250,0.2);
+  }
+  .flow-step-line {
+    width: 2px;
+    flex-grow: 1;
+    background: var(--border);
+    margin: 4px 0;
+    min-height: 20px;
+  }
+  .flow-step:last-child .flow-step-line { display: none; }
+  .step-detail {
+    flex: 1;
+    padding-bottom: 1.5rem;
+  }
+  .step-detail h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 0.4rem;
+    margin-top: 0.3rem;
+  }
+  .step-detail p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    margin-bottom: 0.6rem;
+  }
+  .step-detail .code-block {
+    margin: 0.5rem 0 0;
+  }
+  .step-detail .code-block pre {
+    font-size: 0.78rem;
+    padding: 0.8rem 1rem;
+  }
+
+  /* ── Security Note ── */
+  .security-note {
+    display: flex;
+    gap: 0.85rem;
+    background: rgba(240,62,62,0.08);
+    border: 1px solid rgba(240,62,62,0.25);
+    border-left: 3px solid var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1.1rem;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+  }
+  .security-note .note-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+  .security-note .note-body strong {
+    display: block;
+    color: #ff6b6b;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .security-note .note-body p { margin: 0; color: var(--text); }
+  .security-note.warn {
+    background: rgba(245,159,0,0.08);
+    border-color: rgba(245,159,0,0.25);
+    border-left-color: var(--warn);
+  }
+  .security-note.warn .note-body strong { color: var(--warn); }
+
+  /* ── Key Point ── */
+  .key-point {
+    background: rgba(92,124,250,0.08);
+    border: 1px solid rgba(92,124,250,0.22);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1.1rem;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+  }
+  .key-point strong {
+    color: var(--accent);
+    font-weight: 700;
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .key-point p { margin: 0; color: var(--text); }
+  .key-point.success {
+    background: rgba(32,201,151,0.07);
+    border-color: rgba(32,201,151,0.25);
+    border-left-color: var(--accent3);
+  }
+  .key-point.success strong { color: var(--accent3); }
+
+  /* ── Comparison Table variant ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.25rem 0;
+    font-size: 0.9rem;
+  }
+  .compare-table thead th {
+    background: var(--surface2);
+    color: var(--text-bright);
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .compare-table thead th:first-child { color: var(--text-dim); }
+  .compare-table thead th.col-a { border-top: 3px solid #f03e3e; color: #ff6b6b; }
+  .compare-table thead th.col-b { border-top: 3px solid var(--accent3); color: var(--accent3); }
+  .compare-table tbody tr { border-bottom: 1px solid var(--border); }
+  .compare-table tbody tr:last-child { border-bottom: none; }
+  .compare-table tbody tr:hover { background: var(--surface2); }
+  .compare-table tbody td { padding: 0.65rem 1rem; vertical-align: top; }
+  .compare-table tbody td:first-child {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  /* ── Ordered validation list ── */
+  .validation-steps {
+    counter-reset: vstep;
+    list-style: none;
+    margin: 1.25rem 0;
+  }
+  .validation-steps li {
+    counter-increment: vstep;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    align-items: flex-start;
+  }
+  .validation-steps li::before {
+    content: counter(vstep);
+    width: 26px;
+    height: 26px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .validation-steps li .vstep-body { flex: 1; }
+  .validation-steps li .vstep-body strong {
+    display: block;
+    color: var(--text-bright);
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+  }
+  .validation-steps li .vstep-body p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+  .validation-steps li .vstep-body .code-block {
+    margin: 0.4rem 0 0;
+  }
+  .validation-steps li .vstep-body .code-block pre {
+    font-size: 0.78rem;
+    padding: 0.7rem 1rem;
+  }
+
+  /* ── Mistake items ── */
+  .mistake-item {
+    border: 1px solid rgba(240,62,62,0.2);
+    border-left: 3px solid var(--danger);
+    border-radius: var(--radius-sm);
+    background: rgba(240,62,62,0.05);
+    padding: 0.85rem 1.1rem;
+    margin-bottom: 0.85rem;
+  }
+  .mistake-item .mistake-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--danger);
+    margin-bottom: 0.3rem;
+  }
+  .mistake-item p {
+    font-size: 0.88rem;
+    margin: 0;
+    color: var(--text);
+  }
+  .mistake-item .code-block {
+    margin: 0.6rem 0 0;
+  }
+  .mistake-item .code-block pre {
+    font-size: 0.78rem;
+    padding: 0.7rem 1rem;
+  }
+
+  /* ── Scope badge list ── */
+  .scope-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0 1rem;
+  }
+  .scope-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.3rem 0.65rem;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--accent3);
+    font-weight: 600;
+  }
+  .scope-badge .req-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--danger);
+    flex-shrink: 0;
+  }
+  .scope-badge .opt-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* ── Grid layout for two-column concept cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  @media (max-width: 640px) {
+    .card-grid { grid-template-columns: 1fr; }
+  }
+  .card-grid .concept-card { margin: 0; }
+
+  /* ── Divider ── */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  /* ── Response type chips in hybrid table ── */
+  .rt-chip {
+    display: inline-block;
+    background: rgba(121,80,242,0.15);
+    color: var(--accent2);
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  /* ── scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+
+<!-- ══════════════════════════════════════════ PAGE HEADER -->
+<header class="page-header">
+  <div class="eyebrow">OIDC Deep Dive — Part 1 of 2</div>
+  <h1>OpenID Connect: Foundation to Flows</h1>
+  <p class="subtitle">Sections 1–5 &nbsp;|&nbsp; What OIDC Is &nbsp;&bull;&nbsp; Core Concepts &nbsp;&bull;&nbsp; Flows &nbsp;&bull;&nbsp; Discovery &nbsp;&bull;&nbsp; Token Validation</p>
+</header>
+
+
+<!-- ══════════════════════════════════════════ SECTION 1 -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">Section 01</span>
+    <h2>What OIDC Is and Why It Exists</h2>
+  </div>
+
+  <div class="subsection">
+    <h3>The Core Problem OAuth Left Unsolved</h3>
+    <p>OAuth 2.0 is an <strong>authorization</strong> framework. It answers: <em>"What is this app allowed to do?"</em> It issues access tokens that let a client act on behalf of a user — but says nothing about <em>who</em> that user is.</p>
+    <p>Before OIDC, every major provider (Google, Facebook, Twitter) invented its own non-interoperable layer on top of OAuth to express identity. No standard claims, no standard token format, no standard discovery mechanism.</p>
+
+    <div class="card-grid">
+      <div class="concept-card">
+        <div class="card-label">OAuth 2.0</div>
+        <p><strong>Authorization</strong> — what can the app do?</p>
+        <p>Issues access tokens for resource access. Does not identify the user. Opaque to the client about who logged in.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-label">OpenID Connect (OIDC)</div>
+        <p><strong>Authentication</strong> — who is the user?</p>
+        <p>Adds an identity layer on top of OAuth 2.0. Standardized claims, ID Token, and discovery. Published Feb 26, 2014 by the OpenID Foundation.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>The OIDC Formula</h3>
+    <div class="concept-card">
+      <div class="card-label">What OIDC Adds to OAuth 2.0</div>
+      <code class="formula">OIDC = OAuth 2.1 (authorization) + ID Token + UserInfo endpoint + Discovery + Session management</code>
+      <p style="margin-top:1rem; margin-bottom:0.25rem;">Specifically, OIDC introduces:</p>
+      <ul style="margin-left:1.25rem; margin-top:0.5rem; font-size:0.9rem; color:var(--text);">
+        <li>A new <strong>ID Token</strong> (always a JWT) asserting authentication facts about the user</li>
+        <li>A mandatory <code style="color:var(--accent3)">openid</code> scope that signals an identity request</li>
+        <li>A standard set of <strong>claims</strong> (sub, name, email, picture, etc.)</li>
+        <li>A <strong>UserInfo endpoint</strong> for retrieving additional user attributes</li>
+        <li><strong>Discovery</strong> via <code style="color:var(--accent3)">/.well-known/openid-configuration</code></li>
+        <li><strong>Session management and logout</strong> specifications</li>
+        <li><strong>Dynamic Client Registration</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Key Vocabulary</h3>
+    <table class="info-table no-mono">
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OpenID Provider (OP)</td>
+          <td>The identity provider — authenticates users and issues tokens. Okta acts as an OP. Also called IdP or Authorization Server.</td>
+        </tr>
+        <tr>
+          <td>Relying Party (RP)</td>
+          <td>The client application that outsources authentication to the OP. Your web app is the RP.</td>
+        </tr>
+        <tr>
+          <td>End-User</td>
+          <td>The human being being authenticated.</td>
+        </tr>
+        <tr>
+          <td>ID Token</td>
+          <td>JWT issued by the OP asserting who the user is. Always a JWT — never opaque.</td>
+        </tr>
+        <tr>
+          <td>UserInfo Endpoint</td>
+          <td>OP endpoint where the RP retrieves additional user claims using an access token.</td>
+        </tr>
+        <tr>
+          <td>Claims</td>
+          <td>Key-value pairs asserting facts about the user or authentication event (e.g., sub, name, email, acr).</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="key-point">
+    <strong>Why OIDC vs Rolling Your Own on OAuth</strong>
+    <p>Interoperability: standard claims and discovery mean any OIDC client works with any OIDC OP. Security built in: nonce prevents replay attacks, signature verification prevents tampering. No password storage at the RP. Extensible: ACR, AMR, CIBA, DCR all build on core OIDC.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ SECTION 2 -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">Section 02</span>
+    <h2>Core Concepts</h2>
+  </div>
+
+  <div class="subsection">
+    <h3>The ID Token</h3>
+    <p>The ID Token is OIDC's central artifact. It is <strong>always a JWT</strong> (JSON Web Token, RFC 7519) — never an opaque token. It represents proof of the authentication event.</p>
+
+    <div class="security-note warn">
+      <div class="note-icon">&#9888;</div>
+      <div class="note-body">
+        <strong>What the ID Token is NOT for</strong>
+        <p>Calling APIs. The ID token is a statement <em>about</em> the user for the <em>client</em>. It should never be sent to a resource server as an authorization credential. That is what the access token is for.</p>
+      </div>
+    </div>
+
+    <p>Structure: three Base64url-encoded parts separated by dots — <code style="color:var(--accent3)">Header.Payload.Signature</code></p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Decoded Header — Okta</span></div>
+      <pre>{
+  <span class="key">"alg"</span>: <span class="str">"RS256"</span>,   <span class="cm">// signature algorithm — never trust "none"</span>
+  <span class="key">"kid"</span>: <span class="str">"abc123"</span>   <span class="cm">// key ID — use to look up the signing key in JWKS</span>
+}</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Decoded Payload — Full Okta Example</span></div>
+      <pre>{
+  <span class="key">"sub"</span>:                <span class="str">"00u47ijy7sRLaeSdC0g7"</span>,       <span class="cm">// required: subject</span>
+  <span class="key">"name"</span>:               <span class="str">"Jane Doe"</span>,
+  <span class="key">"email"</span>:              <span class="str">"jane@example.com"</span>,
+  <span class="key">"preferred_username"</span>: <span class="str">"jane.doe@example.com"</span>,
+  <span class="key">"given_name"</span>:         <span class="str">"Jane"</span>,
+  <span class="key">"family_name"</span>:        <span class="str">"Doe"</span>,
+  <span class="key">"picture"</span>:            <span class="str">"https://example.com/photo.jpg"</span>,
+  <span class="key">"locale"</span>:             <span class="str">"en-US"</span>,
+  <span class="key">"zoneinfo"</span>:           <span class="str">"America/Los_Angeles"</span>,
+  <span class="key">"iss"</span>:                <span class="str">"https://dev-123456.oktapreview.com/oauth2/default"</span>,  <span class="cm">// required</span>
+  <span class="key">"aud"</span>:                <span class="str">"0oa48e74ox4t7mQJX0g7"</span>,      <span class="cm">// required: your client_id</span>
+  <span class="key">"iat"</span>:                <span class="num">1661289624</span>,                  <span class="cm">// required: issued at</span>
+  <span class="key">"exp"</span>:                <span class="num">1661293224</span>,                  <span class="cm">// required: expiration</span>
+  <span class="key">"nonce"</span>:              <span class="str">"n-0S6_WzA2Mj"</span>,              <span class="cm">// replay protection</span>
+  <span class="key">"auth_time"</span>:          <span class="num">1661289603</span>,                  <span class="cm">// when user actually authed</span>
+  <span class="key">"acr"</span>:                <span class="str">"urn:okta:loa:1fa:any"</span>,      <span class="cm">// auth context class</span>
+  <span class="key">"amr"</span>:                [<span class="str">"pwd"</span>],                      <span class="cm">// auth methods used</span>
+  <span class="key">"azp"</span>:                <span class="str">"0oa48e74ox4t7mQJX0g7"</span>,      <span class="cm">// authorized party</span>
+  <span class="key">"jti"</span>:                <span class="str">"ID.dz6ibX-YnBNlt14huAtBULam_Z0"</span>,
+  <span class="key">"at_hash"</span>:            <span class="str">"w6BLQV3642TKWvaVwTAJuw"</span>,    <span class="cm">// access token hash</span>
+  <span class="key">"ver"</span>:                <span class="num">1</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Required ID Token Claims</h3>
+    <p>These MUST always be present in every ID token. Validation fails if any are missing.</p>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Claim</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>iss <span class="tag req">REQUIRED</span></td>
+          <td>string</td>
+          <td>Issuer — the OP's URL. Must be <code>https://</code>. Must exactly match the <code>issuer</code> in the discovery document.</td>
+        </tr>
+        <tr>
+          <td>sub <span class="tag req">REQUIRED</span></td>
+          <td>string</td>
+          <td>Subject — unique identifier for the user at this OP. Max 255 ASCII chars. Persistent and non-reassignable.</td>
+        </tr>
+        <tr>
+          <td>aud <span class="tag req">REQUIRED</span></td>
+          <td>string or array</td>
+          <td>Audience — must contain the client's <code>client_id</code>. If an array, also validate against <code>azp</code>.</td>
+        </tr>
+        <tr>
+          <td>exp <span class="tag req">REQUIRED</span></td>
+          <td>number</td>
+          <td>Expiration — Unix timestamp. Token MUST be rejected if <code>now &gt; exp</code>.</td>
+        </tr>
+        <tr>
+          <td>iat <span class="tag req">REQUIRED</span></td>
+          <td>number</td>
+          <td>Issued At — Unix timestamp of when the token was created.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <h3>Optional ID Token Claims</h3>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Claim</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>nonce <span class="tag opt">CONDITIONAL</span></td>
+          <td>Echo of the nonce sent in the authorization request. MUST be present if nonce was sent. Prevents replay attacks.</td>
+        </tr>
+        <tr>
+          <td>auth_time</td>
+          <td>Unix timestamp of when the user last authenticated with credentials (not SSO — actual credential entry).</td>
+        </tr>
+        <tr>
+          <td>acr</td>
+          <td>Authentication Context Class Reference — the assurance level achieved (e.g., <code>urn:okta:loa:2fa:any</code>).</td>
+        </tr>
+        <tr>
+          <td>amr</td>
+          <td>Authentication Methods References — array of what methods were used (e.g., <code>["pwd", "mfa", "hwk"]</code>).</td>
+        </tr>
+        <tr>
+          <td>azp</td>
+          <td>Authorized Party — the <code>client_id</code> of the client the token was issued to. Used when <code>aud</code> is an array.</td>
+        </tr>
+        <tr>
+          <td>at_hash</td>
+          <td>Access token hash — first half of SHA-256 of <code>access_token</code>, base64url encoded. Binds the access token to this ID token.</td>
+        </tr>
+        <tr>
+          <td>c_hash</td>
+          <td>Code hash — same principle as <code>at_hash</code> but for the authorization code. Used in hybrid flow.</td>
+        </tr>
+        <tr>
+          <td>jti</td>
+          <td>JWT ID — a unique identifier for this specific token instance. Enables per-token replay detection.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <h3>The <code style="font-size:0.95rem">openid</code> Scope — The Critical Trigger</h3>
+    <p>Adding <code>scope=openid</code> to any OAuth 2.0 authorization request transforms it from a pure authorization request into an OIDC authentication request.</p>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="width:28%">Dimension</th>
+          <th class="col-a" style="width:36%">Without <code>openid</code></th>
+          <th class="col-b" style="width:36%">With <code>openid</code></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Protocol</td>
+          <td>Pure OAuth 2.0 authorization</td>
+          <td>OIDC authentication</td>
+        </tr>
+        <tr>
+          <td>Token response</td>
+          <td>Only <code>access_token</code></td>
+          <td><code>access_token</code> + <code>id_token</code></td>
+        </tr>
+        <tr>
+          <td>User identity</td>
+          <td>No claims about who the user is</td>
+          <td>ID token claims assert user identity</td>
+        </tr>
+        <tr>
+          <td>Nonce</td>
+          <td>Not applicable</td>
+          <td>Nonce MUST be validated if sent in request</td>
+        </tr>
+        <tr>
+          <td>UserInfo endpoint</td>
+          <td>Not meaningful</td>
+          <td>Provides user profile claims</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <strong>The Scope Rule</strong>
+      <p><code>openid</code> is <strong>required</strong>. You cannot do OIDC without it. It is the switch that causes the OP to issue an ID token and activates all OIDC spec requirements.</p>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Standard OIDC Scopes</h3>
+    <table class="info-table no-mono">
+      <thead>
+        <tr>
+          <th>Scope</th>
+          <th>Claims Returned</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code style="color:var(--danger); font-family: monospace">openid</code></td>
+          <td><code>sub</code></td>
+          <td>Required. Without this, it is not OIDC.</td>
+        </tr>
+        <tr>
+          <td><code style="color:var(--accent3); font-family: monospace">profile</code></td>
+          <td><code>name</code>, <code>given_name</code>, <code>family_name</code>, <code>middle_name</code>, <code>nickname</code>, <code>preferred_username</code>, <code>profile</code>, <code>picture</code>, <code>website</code>, <code>gender</code>, <code>birthdate</code>, <code>zoneinfo</code>, <code>locale</code>, <code>updated_at</code></td>
+          <td>Full user profile claims.</td>
+        </tr>
+        <tr>
+          <td><code style="color:var(--accent3); font-family: monospace">email</code></td>
+          <td><code>email</code>, <code>email_verified</code></td>
+          <td><code>email_verified</code> is a boolean.</td>
+        </tr>
+        <tr>
+          <td><code style="color:var(--accent3); font-family: monospace">address</code></td>
+          <td><code>address</code> (JSON object)</td>
+          <td>Contains <code>street_address</code>, <code>locality</code>, <code>region</code>, <code>postal_code</code>, <code>country</code>.</td>
+        </tr>
+        <tr>
+          <td><code style="color:var(--accent3); font-family: monospace">phone</code></td>
+          <td><code>phone_number</code>, <code>phone_number_verified</code></td>
+          <td><code>phone_number_verified</code> is a boolean.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <h3>Nonce — Replay Attack Prevention</h3>
+    <p>The nonce is a cryptographically random value the RP generates and sends in the authorization request. The OP echoes it back in the ID token. The RP must store the nonce before the redirect and verify the match after receiving the token.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Nonce in Authorization Request</span></div>
+      <pre>/authorize?...&amp;<span class="hl">nonce=n-0S6_WzA2Mj</span>
+
+<span class="cm">// After receiving ID token, RP must verify:</span>
+assert(<span class="hl">id_token.nonce</span> === <span class="hl">stored_nonce</span>)</pre>
+    </div>
+
+    <div class="security-note">
+      <div class="note-icon">&#9888;</div>
+      <div class="note-body">
+        <strong>Replay Attack Risk</strong>
+        <p>Without nonce validation, an attacker who captures a valid ID token can replay it to authenticate as that user. Always generate a fresh nonce per request, store it (e.g., in session), and verify it after token receipt.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Subject Identifier Types</h3>
+    <div class="card-grid">
+      <div class="concept-card">
+        <div class="card-label">Public (default)</div>
+        <p>The same <code>sub</code> value is returned for the same user to all RPs. Simple to implement, but allows multiple RPs to correlate users by <code>sub</code>.</p>
+        <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0">Okta default. Most common in enterprise use.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-label">Pairwise</div>
+        <p>A different <code>sub</code> is generated per (RP, user) pair. RP-A and RP-B cannot correlate users even if they share the same user base.</p>
+        <code class="formula">sub = SHA-256(sector_identifier + user_id + salt)</code>
+        <p style="font-size:0.85rem; color:var(--text-dim); margin-top:0.5rem; margin-bottom:0">Trade-off: More complex, harder to debug, cross-app linking is impossible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ SECTION 3 -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">Section 03</span>
+    <h2>OIDC Flows</h2>
+  </div>
+
+  <div class="subsection">
+    <h3>Authorization Code Flow with PKCE (Recommended for Everything)</h3>
+    <p>This is the correct modern flow for web apps, SPAs, and native apps. When <code>scope=openid</code> is included, the token endpoint returns an ID token alongside the access token.</p>
+
+    <div class="flow-diagram">
+      <div class="flow-title">Authorization Code + PKCE + OIDC — Full Request Sequence</div>
+
+      <!-- Step 1 -->
+      <div class="flow-step">
+        <div class="flow-step-connector">
+          <div class="flow-step-num">1</div>
+          <div class="flow-step-line"></div>
+        </div>
+        <div class="step-detail">
+          <h4>RP Generates PKCE Verifier and Challenge</h4>
+          <p>Before any redirect, the RP creates a random code verifier and its SHA-256 hash. These are stored locally — the verifier is never sent until step 4.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">PKCE Setup</span></div>
+            <pre><span class="cm">// Generate a 32-byte random value, base64url-encode it</span>
+code_verifier  = base64url(random_bytes(32))   <span class="cm">// e.g., "abc123..."</span>
+code_challenge = base64url(SHA-256(code_verifier))
+<span class="cm">// Store code_verifier in session — send only code_challenge</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-step">
+        <div class="flow-step-connector">
+          <div class="flow-step-num">2</div>
+          <div class="flow-step-line"></div>
+        </div>
+        <div class="step-detail">
+          <h4>Authorization Request — Browser Redirect to OP</h4>
+          <p>RP redirects the user's browser to the OP's <code>authorization_endpoint</code>. The nonce and PKCE challenge go here.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">HTTP Request</span></div>
+            <pre>GET /oauth2/default/v1/authorize
+  ?<span class="key">client_id</span>=<span class="str">0oa48e74ox4t7mQJX0g7</span>
+  &amp;<span class="key">response_type</span>=<span class="str">code</span>
+  &amp;<span class="key">scope</span>=<span class="hl">openid</span> <span class="str">profile email</span>
+  &amp;<span class="key">redirect_uri</span>=<span class="url">https://app.example.com/callback</span>
+  &amp;<span class="key">state</span>=<span class="str">zCz0nXe5DP9lkH0oBPVB</span>
+  &amp;<span class="key">nonce</span>=<span class="hl">n-0S6_WzA2Mj</span>
+  &amp;<span class="key">code_challenge</span>=<span class="str">E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM</span>
+  &amp;<span class="key">code_challenge_method</span>=<span class="str">S256</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="flow-step">
+        <div class="flow-step-connector">
+          <div class="flow-step-num">3</div>
+          <div class="flow-step-line"></div>
+        </div>
+        <div class="step-detail">
+          <h4>User Authenticates — OP Returns Authorization Code</h4>
+          <p>After the user authenticates at the OP, a short-lived authorization code is returned via redirect. The code is single-use and has a short TTL (typically 60–300 seconds). The <code>state</code> parameter is echoed back for CSRF protection.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">HTTP Response</span></div>
+            <pre>HTTP/1.1 302 Found
+Location: <span class="url">https://app.example.com/callback</span>
+  ?<span class="key">code</span>=<span class="hl">SplxlOBeZQQYbYS6WxSbIA</span>
+  &amp;<span class="key">state</span>=<span class="str">zCz0nXe5DP9lkH0oBPVB</span>  <span class="cm">// must match what was sent</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="flow-step">
+        <div class="flow-step-connector">
+          <div class="flow-step-num">4</div>
+          <div class="flow-step-line"></div>
+        </div>
+        <div class="step-detail">
+          <h4>Token Exchange — Back-Channel (Server to Server)</h4>
+          <p>The RP exchanges the code for tokens. This happens server-to-server — no browser involvement. The <code>code_verifier</code> (never sent before) proves the same party that started the flow is completing it.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">HTTP Request</span></div>
+            <pre>POST /oauth2/default/v1/token HTTP/1.1
+Host: dev-123456.okta.com
+Content-Type: application/x-www-form-urlencoded
+
+<span class="key">grant_type</span>=authorization_code
+&amp;<span class="key">code</span>=<span class="hl">SplxlOBeZQQYbYS6WxSbIA</span>
+&amp;<span class="key">redirect_uri</span>=<span class="url">https://app.example.com/callback</span>
+&amp;<span class="key">client_id</span>=<span class="str">0oa48e74ox4t7mQJX0g7</span>
+&amp;<span class="key">code_verifier</span>=<span class="hl">abc123...</span>   <span class="cm">// the original verifier — OP will SHA-256 and compare</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="flow-step">
+        <div class="flow-step-connector">
+          <div class="flow-step-num">5</div>
+          <div class="flow-step-line"></div>
+        </div>
+        <div class="step-detail">
+          <h4>Token Response — ID Token + Access Token Returned</h4>
+          <p>The OP returns tokens. The <code>id_token</code> is for the RP to validate and use for authentication. The <code>access_token</code> is for calling APIs. They serve different purposes and go to different places.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="code-lang">JSON Response</span></div>
+            <pre>{
+  <span class="key">"token_type"</span>:    <span class="str">"Bearer"</span>,
+  <span class="key">"expires_in"</span>:   <span class="num">3600</span>,
+  <span class="key">"access_token"</span>: <span class="str">"eyJraW...vSqrH1Q"</span>,    <span class="cm">// for APIs</span>
+  <span class="key">"id_token"</span>:     <span class="hl">"eyJraW...WlB8Y9pQ"</span>,   <span class="cm">// for the RP — validate this</span>
+  <span class="key">"refresh_token"</span>:<span class="str">"hC9XDE5BbUfEBT8"</span>,
+  <span class="key">"scope"</span>:        <span class="str">"openid profile email"</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div><!-- /flow-diagram -->
+  </div>
+
+  <div class="subsection">
+    <h3>Implicit Flow (Deprecated)</h3>
+
+    <div class="security-note">
+      <div class="note-icon">&#9888;</div>
+      <div class="note-body">
+        <strong>Deprecated in OAuth 2.1</strong>
+        <p>In the implicit flow (<code>response_type=token id_token</code>), tokens are returned directly in the URL fragment from the authorization endpoint. This causes token leakage in browser history and referrer headers. Do not recommend to customers. The OIDC Core spec retains it for backwards compatibility only.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Implicit Flow response_type Values</span></div>
+      <pre><span class="val">response_type=id_token</span>         <span class="cm">// Returns only ID token from auth endpoint</span>
+<span class="val">response_type=token id_token</span>   <span class="cm">// Returns access token + ID token from auth endpoint</span>
+<span class="cm">// Both appear in the URL fragment (#), not query string</span></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Hybrid Flow</h3>
+    <p>The hybrid flow returns some tokens from the authorization endpoint and others from the token endpoint. Use when the RP needs immediate proof of authentication (front-channel ID token) but also needs an access token via the more secure back-channel.</p>
+
+    <table class="info-table no-mono">
+      <thead>
+        <tr>
+          <th>response_type</th>
+          <th>From Authorization Endpoint</th>
+          <th>From Token Endpoint</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="rt-chip">code id_token</span></td>
+          <td>code + ID token</td>
+          <td>access token</td>
+        </tr>
+        <tr>
+          <td><span class="rt-chip">code token</span></td>
+          <td>code + access token</td>
+          <td>ID token</td>
+        </tr>
+        <tr>
+          <td><span class="rt-chip">code id_token token</span></td>
+          <td>code + ID token + access token</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <strong>c_hash Binding in Hybrid Flow</strong>
+      <p>The front-channel ID token in hybrid flow contains <code>c_hash</code> — a hash of the authorization code. The RP must verify <code>c_hash</code> to bind the tokens together and confirm they came from the same flow.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ SECTION 4 -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">Section 04</span>
+    <h2>Discovery</h2>
+  </div>
+
+  <div class="subsection">
+    <h3>The <code style="font-size:0.95rem">/.well-known/openid-configuration</code> Document</h3>
+    <p>Every OIDC provider MUST publish a JSON metadata document at <code>{issuer}/.well-known/openid-configuration</code>. This is defined in OpenID Connect Discovery 1.0, extended by RFC 8414. The <code>/.well-known/</code> convention comes from RFC 8615 — a reserved URI space for standardized host metadata.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Full Annotated Discovery Document — Okta Custom AS</span></div>
+      <pre>{
+  <span class="cm">// ── Core identity ──────────────────────────────────────────────────────</span>
+  <span class="key">"issuer"</span>:                                <span class="url">"https://dev-123456.okta.com/oauth2/default"</span>,
+  <span class="cm">// MUST exactly match iss in all tokens. String comparison — trailing slash matters.</span>
+
+  <span class="cm">// ── Endpoints ──────────────────────────────────────────────────────────</span>
+  <span class="key">"authorization_endpoint"</span>:               <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/authorize"</span>,
+  <span class="key">"token_endpoint"</span>:                       <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/token"</span>,
+  <span class="key">"userinfo_endpoint"</span>:                    <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/userinfo"</span>,
+  <span class="key">"jwks_uri"</span>:                             <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/keys"</span>,
+  <span class="cm">// Public keys for verifying token signatures. Fetch on demand; cache with kid.</span>
+
+  <span class="key">"introspection_endpoint"</span>:              <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/introspect"</span>,
+  <span class="key">"revocation_endpoint"</span>:                 <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/revoke"</span>,
+  <span class="key">"end_session_endpoint"</span>:                <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/logout"</span>,
+  <span class="key">"registration_endpoint"</span>:               <span class="url">"https://dev-123456.okta.com/oauth2/v1/clients"</span>,
+  <span class="key">"check_session_iframe"</span>:                <span class="url">"https://dev-123456.okta.com/oauth2/default/v1/sessions/me"</span>,
+
+  <span class="cm">// ── Supported capabilities ─────────────────────────────────────────────</span>
+  <span class="key">"response_types_supported"</span>: [
+    <span class="str">"code"</span>, <span class="str">"id_token"</span>, <span class="str">"code id_token"</span>,
+    <span class="str">"code token"</span>, <span class="str">"id_token token"</span>, <span class="str">"code id_token token"</span>
+  ],
+  <span class="key">"response_modes_supported"</span>:            [<span class="str">"query"</span>, <span class="str">"fragment"</span>, <span class="str">"form_post"</span>, <span class="str">"okta_post_message"</span>],
+  <span class="key">"grant_types_supported"</span>: [
+    <span class="str">"authorization_code"</span>, <span class="str">"implicit"</span>, <span class="str">"refresh_token"</span>,
+    <span class="str">"password"</span>, <span class="str">"urn:ietf:params:oauth:grant-type:device_code"</span>
+  ],
+  <span class="key">"subject_types_supported"</span>:             [<span class="str">"public"</span>],
+  <span class="key">"id_token_signing_alg_values_supported"</span>: [<span class="str">"RS256"</span>],
+  <span class="cm">// Never trust alg "none". Always whitelist expected algorithms.</span>
+
+  <span class="key">"scopes_supported"</span>: [
+    <span class="str">"openid"</span>, <span class="str">"profile"</span>, <span class="str">"email"</span>, <span class="str">"address"</span>, <span class="str">"phone"</span>, <span class="str">"offline_access"</span>
+  ],
+  <span class="key">"token_endpoint_auth_methods_supported"</span>: [
+    <span class="str">"client_secret_basic"</span>, <span class="str">"client_secret_post"</span>,
+    <span class="str">"client_secret_jwt"</span>, <span class="str">"private_key_jwt"</span>, <span class="str">"none"</span>
+  ],
+  <span class="key">"claims_supported"</span>: [
+    <span class="str">"iss"</span>, <span class="str">"ver"</span>, <span class="str">"sub"</span>, <span class="str">"aud"</span>, <span class="str">"iat"</span>, <span class="str">"exp"</span>, <span class="str">"jti"</span>, <span class="str">"auth_time"</span>,
+    <span class="str">"amr"</span>, <span class="str">"idp"</span>, <span class="str">"nonce"</span>, <span class="str">"name"</span>, <span class="str">"nickname"</span>, <span class="str">"preferred_username"</span>,
+    <span class="str">"given_name"</span>, <span class="str">"middle_name"</span>, <span class="str">"family_name"</span>, <span class="str">"email"</span>, <span class="str">"email_verified"</span>,
+    <span class="str">"profile"</span>, <span class="str">"zoneinfo"</span>, <span class="str">"locale"</span>, <span class="str">"address"</span>, <span class="str">"phone_number"</span>,
+    <span class="str">"picture"</span>, <span class="str">"website"</span>, <span class="str">"gender"</span>, <span class="str">"birthdate"</span>, <span class="str">"updated_at"</span>,
+    <span class="str">"at_hash"</span>, <span class="str">"c_hash"</span>
+  ],
+  <span class="key">"code_challenge_methods_supported"</span>:    [<span class="str">"S256"</span>],
+  <span class="cm">// Always require S256. Never accept plain.</span>
+
+  <span class="cm">// ── Advanced capabilities ───────────────────────────────────────────────</span>
+  <span class="key">"request_parameter_supported"</span>:         <span class="val">true</span>,   <span class="cm">// JAR — signed request objects</span>
+  <span class="key">"request_uri_parameter_supported"</span>:     <span class="val">false</span>,
+  <span class="key">"backchannel_logout_supported"</span>:        <span class="val">true</span>,
+  <span class="key">"backchannel_logout_session_supported"</span>: <span class="val">true</span>,
+  <span class="key">"frontchannel_logout_supported"</span>:       <span class="val">true</span>,
+  <span class="key">"frontchannel_logout_session_supported"</span>: <span class="val">true</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Required Discovery Fields</h3>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>issuer</td>
+          <td>Canonical issuer URL. MUST exactly match <code>iss</code> in all tokens issued by this server.</td>
+        </tr>
+        <tr>
+          <td>authorization_endpoint</td>
+          <td>Where users are redirected to authenticate. Entry point for all interactive flows.</td>
+        </tr>
+        <tr>
+          <td>token_endpoint</td>
+          <td>Where authorization codes are exchanged for tokens. Back-channel, server-to-server.</td>
+        </tr>
+        <tr>
+          <td>jwks_uri</td>
+          <td>JSON Web Key Set — public keys for verifying token signatures. Cache by <code>kid</code>; re-fetch on unknown <code>kid</code>.</td>
+        </tr>
+        <tr>
+          <td>userinfo_endpoint</td>
+          <td>Where access tokens are exchanged for user profile claims. Requires Bearer access token.</td>
+        </tr>
+        <tr>
+          <td>end_session_endpoint</td>
+          <td>RP-initiated logout endpoint. Redirect here to terminate the OP session.</td>
+        </tr>
+        <tr>
+          <td>introspection_endpoint</td>
+          <td>Token introspection (RFC 7662). Lets resource servers validate opaque tokens.</td>
+        </tr>
+        <tr>
+          <td>revocation_endpoint</td>
+          <td>Token revocation (RFC 7009). Invalidate access or refresh tokens.</td>
+        </tr>
+        <tr>
+          <td>code_challenge_methods_supported</td>
+          <td>PKCE methods. Always require <code>S256</code> for new clients — never accept <code>plain</code>.</td>
+        </tr>
+        <tr>
+          <td>id_token_signing_alg_values_supported</td>
+          <td>Must include <code>RS256</code>. Never trust <code>none</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="subsection">
+    <h3>Okta Discovery Endpoint Patterns</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">Okta Endpoint URLs by AS Type</span></div>
+      <pre><span class="cm">// ── Org Authorization Server ───────────────────────────────────────────</span>
+OIDC:  <span class="url">https://{yourOktaDomain}/.well-known/openid-configuration</span>
+OAuth: <span class="url">https://{yourOktaDomain}/.well-known/oauth-authorization-server</span>
+
+<span class="cm">// ── Custom Authorization Server (with AS ID) ───────────────────────────</span>
+OIDC:  <span class="url">https://{yourOktaDomain}/oauth2/{authorizationServerId}/.well-known/openid-configuration</span>
+OAuth: <span class="url">https://{yourOktaDomain}/oauth2/{authorizationServerId}/.well-known/oauth-authorization-server</span>
+
+<span class="cm">// ── Default Custom AS (pre-configured in developer orgs) ───────────────</span>
+OIDC:  <span class="url">https://{yourOktaDomain}/oauth2/default/.well-known/openid-configuration</span></pre>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <h3>Org AS vs Custom AS — Capability Comparison</h3>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th class="col-a">Org AS</th>
+          <th class="col-b">Custom AS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SSO with OIDC</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Custom scopes</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Custom claims</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Access policies</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Protecting your own APIs</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Mint Okta API tokens</td>
+          <td>Yes</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td>Token validation by your app</td>
+          <td>Not recommended</td>
+          <td>Yes</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <strong>Practical SE Rule</strong>
+      <p>If a customer is building a custom API or wants custom claims in tokens, they need a Custom AS. For basic SSO with standard profile claims, the Org AS is sufficient. When in doubt, default to the Custom AS — it is a superset of Org AS capabilities.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════ SECTION 5 -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">Section 05</span>
+    <h2>ID Token Validation</h2>
+  </div>
+
+  <p>These are the steps an RP MUST perform after receiving an ID token. Complete all steps. Never use a token before validation is finished.</p>
+
+  <ol class="validation-steps">
+    <li>
+      <div class="vstep-body">
+        <strong>Decode the Header — Check Algorithm</strong>
+        <p>Base64url-decode the JWT header (do not verify yet). Extract <code>kid</code> and <code>alg</code>. Confirm <code>alg</code> is on your allowlist. If <code>alg</code> is <code>none</code>, reject immediately.</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">Decoded Header</span></div>
+          <pre>{
+  <span class="key">"kid"</span>: <span class="str">"abc123"</span>,   <span class="cm">// use this to find the signing key in JWKS</span>
+  <span class="key">"alg"</span>: <span class="str">"RS256"</span>    <span class="cm">// must be an expected algorithm — NEVER "none"</span>
+}</pre>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="vstep-body">
+        <strong>Fetch JWKS and Match the Key</strong>
+        <p>Retrieve the JWKS from the <code>jwks_uri</code> in the discovery document. Find the key where <code>jwk.kid === header.kid</code>. Cache by <code>kid</code>; re-fetch on unknown <code>kid</code> (supports key rotation).</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">JWKS Response — RSA Public Key</span></div>
+          <pre>GET {jwks_uri}   <span class="cm">// e.g., https://dev-123456.okta.com/oauth2/default/v1/keys</span>
+
+{
+  <span class="key">"keys"</span>: [{
+    <span class="key">"kty"</span>: <span class="str">"RSA"</span>,
+    <span class="key">"kid"</span>: <span class="hl">"abc123"</span>,   <span class="cm">// match this to header.kid</span>
+    <span class="key">"use"</span>: <span class="str">"sig"</span>,
+    <span class="key">"alg"</span>: <span class="str">"RS256"</span>,
+    <span class="key">"n"</span>:   <span class="str">"sI6M...base64url..."</span>,
+    <span class="key">"e"</span>:   <span class="str">"AQAB"</span>
+  }]
+}</pre>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="vstep-body">
+        <strong>Verify the Signature</strong>
+        <p>Using the RSA public key from the JWKS, verify that the JWT signature is valid over the concatenation <code>base64url(header) + "." + base64url(payload)</code>. If verification fails, reject — the token was tampered with or forged.</p>
+      </div>
+    </li>
+    <li>
+      <div class="vstep-body">
+        <strong>Validate Claims</strong>
+        <p>Verify each required claim against strict rules. Any mismatch is a hard rejection.</p>
+        <table class="info-table" style="margin-top:0.5rem">
+          <thead>
+            <tr>
+              <th>Claim</th>
+              <th>Validation Rule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>iss</td>
+              <td>MUST exactly match the <code>issuer</code> from the discovery document. Including any trailing slash. String equality — no normalization.</td>
+            </tr>
+            <tr>
+              <td>aud</td>
+              <td>MUST contain your <code>client_id</code>. If <code>aud</code> is an array and has other entries, verify <code>azp</code> equals your <code>client_id</code>.</td>
+            </tr>
+            <tr>
+              <td>exp</td>
+              <td>MUST be in the future: <code>now &lt; exp</code>. Allow a small clock skew (e.g., ±60 seconds) to account for time drift between systems.</td>
+            </tr>
+            <tr>
+              <td>iat</td>
+              <td>SHOULD be recent. Guard against forwarded or reused tokens by rejecting tokens with a very old <code>iat</code>.</td>
+            </tr>
+            <tr>
+              <td>nonce</td>
+              <td>If a nonce was sent in the authorization request, this MUST match the stored nonce exactly. Missing nonce when one was sent is a hard failure.</td>
+            </tr>
+            <tr>
+              <td>acr</td>
+              <td>If you specified <code>acr_values</code> in the request, verify the returned value meets or exceeds your required assurance level.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+    <li>
+      <div class="vstep-body">
+        <strong>Validate <code>at_hash</code> if Access Token is Present</strong>
+        <p>When an access token is returned alongside the ID token and the ID token contains <code>at_hash</code>, verify the binding. This prevents an attacker from substituting a different access token.</p>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">at_hash Binding Formula</span></div>
+          <pre><span class="cm">// 1. Take the raw bytes of the access_token ASCII string</span>
+<span class="cm">// 2. Compute SHA-256</span>
+<span class="cm">// 3. Take the first half (left 128 bits / 16 bytes)</span>
+<span class="cm">// 4. Base64url-encode that half</span>
+
+expected_at_hash = base64url( SHA-256(access_token_bytes)[0:16] )
+
+assert <span class="hl">id_token.at_hash</span> === expected_at_hash
+<span class="cm">// mismatch = access token was swapped — reject both tokens</span></pre>
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <div class="subsection">
+    <h3>Common Mistakes</h3>
+
+    <div class="mistake-item">
+      <div class="mistake-label">Mistake 1 — Sending the ID Token to an API</div>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang">WRONG</span></div>
+        <pre>Authorization: Bearer <span class="val">&lt;id_token&gt;</span>   <span class="cm">// Never do this</span></pre>
+      </div>
+      <p style="margin-top:0.6rem">The ID token is for the RP only. APIs do not know how to validate it as authorization. It contains PII that should not be broadcast to every service. Send the <code>access_token</code> to APIs.</p>
+    </div>
+
+    <div class="mistake-item">
+      <div class="mistake-label">Mistake 2 — Using the Access Token to Identify the User in the RP</div>
+      <p>The access token is for resource servers — its format and contents are opaque to the RP and can change without notice. Always use <code>id_token.sub</code> as the user identifier in the RP.</p>
+    </div>
+
+    <div class="mistake-item">
+      <div class="mistake-label">Mistake 3 — Skipping Nonce Validation</div>
+      <p>Skipping nonce validation opens the door to replay attacks where stolen ID tokens are reused against the same or a different RP. If you sent a nonce, validating it is not optional.</p>
+    </div>
+
+    <div class="mistake-item">
+      <div class="mistake-label">Mistake 4 — Trusting <code>alg: none</code></div>
+      <p>Some early JWT libraries would skip signature verification if <code>alg</code> was <code>"none"</code>. Always whitelist the expected algorithms (e.g., <code>["RS256"]</code>) before processing. Never use a library that defaults to trusting any algorithm header.</p>
+    </div>
+
+    <div class="mistake-item">
+      <div class="mistake-label">Mistake 5 — Trusting Unverified Claims Before Signature Check</div>
+      <p>Never read <code>iss</code> from the payload to decide which key to use before verifying the signature. The header <code>kid</code> is the lookup key. Verify first, read payload claims after.</p>
+    </div>
+
+    <div class="mistake-item">
+      <div class="mistake-label">Mistake 6 — Not Pinning the <code>iss</code> in Multi-Tenant Apps</div>
+      <p>In multi-tenant applications that accept tokens from multiple issuers, each token must be validated against the specific expected issuer for that tenant. A token from one tenant's OP must never be accepted by another tenant's resource.</p>
+    </div>
+  </div>
+
+  <div class="key-point success">
+    <strong>Validation Checklist — Quick Reference</strong>
+    <p>
+      1. Decode header — verify <code>alg</code> is expected, never <code>"none"</code><br>
+      2. Fetch JWKS — match key by <code>kid</code><br>
+      3. Verify signature using RSA public key<br>
+      4. Validate claims: <code>iss</code> exact match, <code>aud</code> contains <code>client_id</code>, <code>exp &gt; now</code>, <code>nonce</code> matches stored value<br>
+      5. Validate <code>at_hash</code> binding if access token is present
+    </p>
+  </div>
+
+</section>
+
+<!-- Embedded styles for Sections 6-9 -->
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6f9;
+    color: #1a1f2e;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; color: #0d1117; }
+  h2 { font-size: 1.5rem; font-weight: 700; color: #0d1117; margin: 2.5rem 0 1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 700; color: #1e3a5f; margin: 1.5rem 0 0.75rem; }
+  h4 { font-size: 0.95rem; font-weight: 700; color: #374151; margin: 1rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  p { margin-bottom: 0.75rem; color: #374151; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 0.75rem; color: #374151; }
+  li { margin-bottom: 0.3rem; }
+  strong { color: #1a1f2e; }
+
+  .section-wrapper {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6366f1;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Concept Card */
+  .concept-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #6366f1;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+  }
+
+  .concept-card h4 {
+    color: #4f46e5;
+    margin-top: 0;
+    font-size: 0.85rem;
+  }
+
+  /* Flow Diagram */
+  .flow-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.25rem 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.9rem 1.25rem;
+    background: #fff;
+    border-bottom: 1px solid #f0f4f8;
+    transition: background 0.15s;
+  }
+
+  .flow-step:last-child { border-bottom: none; }
+  .flow-step:hover { background: #f8faff; }
+
+  .flow-step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .step-detail {
+    flex: 1;
+  }
+
+  .step-detail strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #1e3a5f;
+    margin-bottom: 0.2rem;
+  }
+
+  .step-detail span {
+    font-size: 0.85rem;
+    color: #4b5563;
+  }
+
+  /* Info Table */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+
+  .info-table th {
+    background: #1e3a5f;
+    color: #fff;
+    padding: 0.65rem 1rem;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .info-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid #f0f4f8;
+    color: #374151;
+    vertical-align: top;
+  }
+
+  .info-table tr:last-child td { border-bottom: none; }
+  .info-table tr:nth-child(even) td { background: #f8fafc; }
+
+  .info-table code {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 0.82rem;
+    background: #eff1f5;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: #4f46e5;
+  }
+
+  /* Security Note */
+  .security-note {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-left: 4px solid #f97316;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: #7c2d12;
+  }
+
+  .security-note::before {
+    content: "Security Note";
+    display: block;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #c2410c;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Key Point */
+  .key-point {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: #1e3a5f;
+  }
+
+  .key-point::before {
+    content: "Key Point";
+    display: block;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1d4ed8;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Okta Note */
+  .okta-note {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #16a34a;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: #14532d;
+  }
+
+  .okta-note::before {
+    content: "Okta";
+    display: block;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #15803d;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Code Block */
+  .code-block {
+    background: #0d1117;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-block pre {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.825rem;
+    line-height: 1.65;
+    color: #e6edf3;
+    white-space: pre;
+    margin: 0;
+  }
+
+  .code-block .code-lang {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6e7681;
+  }
+
+  .code-block .comment { color: #6e7681; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .string  { color: #a5d6ff; }
+  .code-block .key     { color: #7ee787; }
+  .code-block .value   { color: #ffa657; }
+  .code-block .url     { color: #a5d6ff; text-decoration: underline; }
+  .code-block .param   { color: #d2a8ff; }
+
+  /* Comparison Grid */
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .comparison-grid .grid-col {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+
+  .comparison-grid .grid-col.col-left { border-top: 3px solid #ef4444; }
+  .comparison-grid .grid-col.col-right { border-top: 3px solid #22c55e; }
+
+  .comparison-grid h4 {
+    font-size: 0.9rem;
+    color: #1e3a5f;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  .comparison-grid ul {
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 0;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .badge-purple { background: #ede9fe; color: #7c3aed; }
+  .badge-green  { background: #dcfce7; color: #16a34a; }
+  .badge-orange { background: #ffedd5; color: #c2410c; }
+  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+
+  /* Delivery modes row */
+  .delivery-modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .delivery-mode-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .delivery-mode-card .mode-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4f46e5;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .delivery-mode-card p {
+    font-size: 0.82rem;
+    color: #4b5563;
+    margin: 0;
+  }
+
+  /* Cheat sheet curl block row layout */
+  .cheat-block { margin-bottom: 1.25rem; }
+  .cheat-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6366f1;
+    margin-bottom: 0.3rem;
+  }
+
+  @media (max-width: 768px) {
+    .comparison-grid { grid-template-columns: 1fr; }
+    .delivery-modes { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SECTION 6 — Session Management & Logout
+     ============================================================ -->
+<div class="section-wrapper">
+  <div class="section-label">Section 6</div>
+  <h2>Session Management &amp; Logout</h2>
+  <p>OIDC defines four complementary specifications for session lifecycle management. Each addresses a different failure mode — from the simplest user-initiated logout to server-to-server signals that work even when the browser is closed.</p>
+
+  <!-- 6.1 RP-Initiated Logout -->
+  <h3>6.1 — RP-Initiated Logout</h3>
+  <p>The client initiates the logout sequence by redirecting the user's browser to the OP's <code>end_session_endpoint</code>. This is the most common logout pattern.</p>
+
+  <div class="code-block">
+    <span class="code-lang">HTTP</span>
+    <pre><span class="comment"># Step 1 — RP clears its local session (invalidate cookies, clear tokens)
+# Step 2 — RP redirects the browser:</span>
+
+GET https://dev-123456.okta.com/oauth2/default/v1/logout
+  ?id_token_hint=<span class="string">eyJraW...WlB8Y9pQ</span>
+  &amp;post_logout_redirect_uri=<span class="url">https://app.example.com/logged-out</span>
+  &amp;state=<span class="param">abc123</span>
+
+<span class="comment"># Parameters:
+#   id_token_hint             — Previously issued ID token (RECOMMENDED).
+#                               Identifies the user and the client without
+#                               requiring a separate auth check.
+#   post_logout_redirect_uri  — Where to send the user after logout.
+#                               Must be pre-registered on the app.
+#   state                     — Opaque value passed back unchanged in redirect.</span></pre>
+  </div>
+
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-step-num">1</div>
+      <div class="step-detail">
+        <strong>RP clears local session</strong>
+        <span>Invalidates its own session cookie and discards stored tokens before redirecting.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">2</div>
+      <div class="step-detail">
+        <strong>Browser redirected to end_session_endpoint</strong>
+        <span>RP sends the user's browser to Okta's logout URL with id_token_hint and redirect URI.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">3</div>
+      <div class="step-detail">
+        <strong>OP invalidates the SSO session</strong>
+        <span>Okta destroys its central session cookie scoped to the Okta domain.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">4</div>
+      <div class="step-detail">
+        <strong>OP triggers logout at connected RPs</strong>
+        <span>Okta notifies other relying parties that have an active session — via front-channel iframes or back-channel HTTP POSTs.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">5</div>
+      <div class="step-detail">
+        <strong>OP redirects to post_logout_redirect_uri</strong>
+        <span>User lands on the app's post-logout page with the <code>state</code> parameter echoed back.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6.2 Front-Channel Logout -->
+  <h3>6.2 — Front-Channel Logout (iframe-based)</h3>
+  <p>When a user's session ends at the OP, the OP renders a page containing hidden iframes — one per connected RP. Each iframe loads the RP's registered <code>frontchannel_logout_uri</code>, causing the RP's server to receive a GET request and invalidate its session.</p>
+
+  <div class="concept-card">
+    <h4>How it works</h4>
+    <p>Each RP registers a <code>frontchannel_logout_uri</code>. When logout is triggered, the OP inserts iframes:</p>
+    <div class="code-block" style="margin-top:0.75rem">
+      <span class="code-lang">HTTP</span>
+      <pre><span class="comment"># RP registers:</span>
+frontchannel_logout_uri = <span class="url">https://app.example.com/oidc-logout</span>
+
+<span class="comment"># OP calls via hidden iframe (browser-rendered):</span>
+GET <span class="url">https://app.example.com/oidc-logout</span>
+  ?iss=<span class="param">https://dev-123456.okta.com/oauth2/default</span>
+  &amp;sid=<span class="param">session123</span></pre>
+    </div>
+  </div>
+
+  <div class="security-note">
+    Third-party cookie blocking in modern browsers (Safari ITP, Chrome Phase-Out) can silently break front-channel logout. When the OP's logout page loads iframes pointing to RP domains, the RP's session cookies may not be sent if classified as third-party. This makes front-channel logout unreliable as a standalone mechanism — always configure back-channel logout as the primary method.
+  </div>
+
+  <!-- 6.3 Back-Channel Logout -->
+  <h3>6.3 — Back-Channel Logout</h3>
+  <p>The OP makes a direct server-to-server POST to each RP's registered <code>backchannel_logout_uri</code>. The request body contains a <strong>Logout Token</strong> — a signed JWT specifically designed for logout notifications.</p>
+
+  <div class="code-block">
+    <span class="code-lang">Logout Token (JWT Payload)</span>
+    <pre>{
+  <span class="key">"iss"</span>: <span class="string">"https://dev-123456.okta.com/oauth2/default"</span>,
+  <span class="key">"sub"</span>: <span class="string">"00u47ijy7sRLaeSdC0g7"</span>,
+  <span class="key">"aud"</span>: <span class="string">"0oa48e74ox4t7mQJX0g7"</span>,
+  <span class="key">"iat"</span>: <span class="value">1661289624</span>,
+  <span class="key">"jti"</span>: <span class="string">"unique-logout-token-id"</span>,
+  <span class="key">"events"</span>: {
+    <span class="key">"http://schemas.openid.net/event/backchannel-logout"</span>: {}
+  },
+  <span class="key">"sid"</span>: <span class="string">"session-id"</span>
+}</pre>
+  </div>
+
+  <div class="code-block">
+    <span class="code-lang">HTTP POST (OP → RP)</span>
+    <pre>POST /oidc-backchannel-logout HTTP/1.1
+Host: app.example.com
+Content-Type: application/x-www-form-urlencoded
+
+logout_token=eyJhbGciOiJSUzI1NiIsImtpZCI6ImFiYzEyMyJ9...
+
+<span class="comment"># RP validates the logout token (same steps as ID token validation),
+# looks up the session matching "sid" or "sub", and invalidates it.
+# RP responds 200 OK on success, 400 on validation failure.</span></pre>
+  </div>
+
+  <div class="key-point">
+    Back-channel logout does not depend on the user's browser being open. The OP calls your server directly. It is immune to third-party cookie blocking and continues to work when users close tabs or their browser crashes.
+  </div>
+
+  <!-- 6.4 Session Management iframe polling -->
+  <h3>6.4 — Session Management: check_session_iframe Polling</h3>
+  <p>The OP publishes a <code>check_session_iframe</code> URL in the discovery document. The RP embeds this URL in a hidden iframe and uses <code>postMessage</code> to periodically poll whether the OP session is still active — without making a full network round-trip.</p>
+
+  <div class="code-block">
+    <span class="code-lang">JavaScript</span>
+    <pre><span class="comment">// RP embeds the OP's check_session_iframe URL as a hidden iframe
+// Then polls every 2 seconds via postMessage:</span>
+const opIframe = document.getElementById('op-iframe');
+
+setInterval(() => {
+  opIframe.contentWindow.postMessage(
+    client_id + <span class="string">' '</span> + session_state,
+    op_iframe_origin
+  );
+}, 2000);
+
+<span class="comment">// OP iframe responds with one of three values:</span>
+window.addEventListener(<span class="string">'message'</span>, (e) => {
+  if (e.origin !== op_iframe_origin) return;
+
+  if (e.data === <span class="string">'unchanged'</span>) {
+    <span class="comment">// Session still active — do nothing</span>
+  } else if (e.data === <span class="string">'changed'</span>) {
+    <span class="comment">// Session changed — trigger silent re-authentication</span>
+    doSilentReauth(); <span class="comment">// /authorize?prompt=none</span>
+  } else if (e.data === <span class="string">'error'</span>) {
+    <span class="comment">// Cannot determine state — may indicate session ended</span>
+    handleSessionError();
+  }
+});</pre>
+  </div>
+
+  <div class="concept-card">
+    <h4>Silent Re-authentication on "changed"</h4>
+    <p>When the iframe returns <code>changed</code>, the RP initiates a silent re-authentication request with <code>prompt=none</code>. If the user is still logged in, Okta issues new tokens silently. If not, Okta returns <code>login_required</code> and the RP redirects the user to a full login page.</p>
+  </div>
+
+  <!-- 6.5 Okta Universal Logout -->
+  <h3>6.5 — Okta Universal Logout (ULO)</h3>
+  <p>Universal Logout is an Okta-specific security feature that goes beyond standard OIDC session termination. When Okta detects a security event — a compromised account signal, admin-forced logout, or a Shared Signals Framework (SSF) event — it can proactively push logout signals to all connected applications that support back-channel logout.</p>
+
+  <div class="okta-note">
+    Universal Logout (ULO) extends back-channel logout into a security response tool. Unlike user-initiated logout, ULO is triggered by Okta's threat detection or by admin action. Applications that have registered a <code>backchannel_logout_uri</code> receive the logout token automatically — no user action or browser session required. This is critical for responding to credential compromise: you can instantly revoke all active sessions across every connected app in seconds.
+  </div>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Mechanism</th>
+        <th>Direction</th>
+        <th>Browser Required</th>
+        <th>Cookie Dependency</th>
+        <th>Reliability</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>RP-Initiated Logout</td>
+        <td>RP → OP</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>High (user-triggered)</td>
+      </tr>
+      <tr>
+        <td>Front-Channel Logout</td>
+        <td>OP → RPs (via iframes)</td>
+        <td>Yes</td>
+        <td>Yes (3rd-party)</td>
+        <td>Low (cookie blocking)</td>
+      </tr>
+      <tr>
+        <td>Back-Channel Logout</td>
+        <td>OP → RPs (server-to-server)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>High</td>
+      </tr>
+      <tr>
+        <td>check_session_iframe</td>
+        <td>RP polls OP</td>
+        <td>Yes</td>
+        <td>Yes (1st-party)</td>
+        <td>Medium (browser open)</td>
+      </tr>
+      <tr>
+        <td>Universal Logout (ULO)</td>
+        <td>Okta → RPs (security event)</td>
+        <td>No</td>
+        <td>No</td>
+        <td>High (admin/threat triggered)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================================
+     SECTION 7 — Advanced OIDC
+     ============================================================ -->
+<div class="section-wrapper">
+  <div class="section-label">Section 7</div>
+  <h2>Advanced OIDC</h2>
+
+  <!-- 7.1 CIBA -->
+  <h3>7.1 — CIBA: Client-Initiated Backchannel Authentication</h3>
+  <p>CIBA (<em>OpenID Connect Client-Initiated Backchannel Authentication Core 1.0</em>) extends OIDC for decoupled, out-of-band authentication. There are no browser redirects. The device initiating the request and the device where the user authenticates are different.</p>
+
+  <div class="concept-card">
+    <h4>Problem CIBA Solves</h4>
+    <p>A <strong>consumption device</strong> (bank POS terminal, call center agent's screen, hospital workstation) needs to authenticate a user who is physically present but whose primary authentication device (their smartphone) is separate. Standard redirect flows require a browser — CIBA does not.</p>
+  </div>
+
+  <h4>CIBA Flow — 5 Steps</h4>
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-step-num">1</div>
+      <div class="step-detail">
+        <strong>Consumption Device sends Backchannel Auth Request</strong>
+        <span>Client POSTs directly to the OP's Backchannel Authentication Endpoint — no browser redirect. Includes a hint identifying the target user (<code>login_hint</code>, <code>id_token_hint</code>, or <code>login_hint_token</code>) and a human-readable <code>binding_message</code> shown on both devices.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">2</div>
+      <div class="step-detail">
+        <strong>OP returns auth_req_id</strong>
+        <span>OP validates the request and returns a transaction identifier (<code>auth_req_id</code>) plus <code>expires_in</code> and <code>interval</code> for polling. No tokens yet.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">3</div>
+      <div class="step-detail">
+        <strong>OP contacts the user's Authentication Device</strong>
+        <span>OP sends a push notification, SMS, or in-app prompt to the user's registered authentication device. The <code>binding_message</code> is displayed on both the consumption device and the auth device so the user can verify they match.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">4</div>
+      <div class="step-detail">
+        <strong>User authenticates on their device</strong>
+        <span>The user approves (or denies) the request on their authentication device. The OP records the completed authentication event against the <code>auth_req_id</code>.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">5</div>
+      <div class="step-detail">
+        <strong>Tokens delivered to consumption device</strong>
+        <span>Depending on the delivery mode (Poll, Ping, or Push), the consumption device receives the ID token and access token. Grant type: <code>urn:openid:params:grant-type:ciba</code>.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <span class="code-lang">HTTP — CIBA Request</span>
+    <pre>POST /oauth2/default/v1/bc-authorize HTTP/1.1
+Host: dev-123456.okta.com
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic &lt;client_credentials&gt;
+
+scope=<span class="string">openid profile</span>
+&amp;login_hint=<span class="string">jane@example.com</span>
+&amp;binding_message=<span class="string">Authorize your bank transfer of $500</span>
+&amp;requested_expiry=<span class="value">120</span>
+
+<span class="comment">--- Response ---</span>
+{
+  <span class="key">"auth_req_id"</span>: <span class="string">"1c266114-a1be-4252-8ad1-04986c5b9ac1"</span>,
+  <span class="key">"expires_in"</span>: <span class="value">120</span>,
+  <span class="key">"interval"</span>: <span class="value">5</span>
+}</pre>
+  </div>
+
+  <h4>Three Token Delivery Modes</h4>
+  <div class="delivery-modes">
+    <div class="delivery-mode-card">
+      <span class="mode-name">Poll</span>
+      <p>Client polls the token endpoint with <code>auth_req_id</code> every <code>interval</code> seconds until authentication completes or the request expires. Simplest to implement.</p>
+    </div>
+    <div class="delivery-mode-card">
+      <span class="mode-name">Ping</span>
+      <p>Client registers a notification endpoint. OP POSTs a notification when the user authenticates. Client then fetches tokens in a separate request. Reduces unnecessary polling.</p>
+    </div>
+    <div class="delivery-mode-card">
+      <span class="mode-name">Push</span>
+      <p>OP directly POSTs all tokens to the client's registered notification endpoint as soon as authentication completes. Lowest latency, requires a publicly accessible endpoint.</p>
+    </div>
+  </div>
+
+  <div class="okta-note">
+    Okta supports CIBA on Identity Engine (IEng) orgs. Real-world use cases: banking PSD2 strong customer authentication (SCA), call center agent identity verification, healthcare patient consent workflows, and POS terminal payment authorization. Auth0 does not support CIBA as of 2026.
+  </div>
+
+  <!-- 7.2 ACR Values -->
+  <h3>7.2 — ACR Values: Authentication Context Class Reference</h3>
+  <p>The <code>acr_values</code> request parameter tells the OP what level of authentication assurance is required. The OP returns the achieved level in the <code>acr</code> claim of the ID token and access token. Resource servers can then enforce access control based on the ACR.</p>
+
+  <h4>Okta Predefined ACR Values</h4>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>ACR Value</th>
+        <th>Meaning</th>
+        <th>Authenticators That Satisfy It</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>urn:okta:loa:1fa:any</code></td>
+        <td>Any single factor</td>
+        <td>Any single authenticator</td>
+      </tr>
+      <tr>
+        <td><code>urn:okta:loa:1fa:pwd</code></td>
+        <td>Password specifically</td>
+        <td>Password only</td>
+      </tr>
+      <tr>
+        <td><code>urn:okta:loa:2fa:any</code></td>
+        <td>Any two factors</td>
+        <td>Any combination of two authenticators</td>
+      </tr>
+      <tr>
+        <td><code>urn:okta:loa:2fa:any:ifpossible</code></td>
+        <td>Two factors if enrolled, otherwise one</td>
+        <td>Graceful MFA — does not fail if MFA not enrolled</td>
+      </tr>
+      <tr>
+        <td><code>phr</code></td>
+        <td>Phishing-Resistant</td>
+        <td>FIDO2 / WebAuthn only (origin-bound)</td>
+      </tr>
+      <tr>
+        <td><code>phrh</code></td>
+        <td>Phishing-Resistant + Hardware-Protected</td>
+        <td>Okta Verify with TPM (Windows) or Secure Enclave (iOS/macOS)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Step-Up Authentication Pattern</h4>
+  <div class="flow-diagram">
+    <div class="flow-step">
+      <div class="flow-step-num">1</div>
+      <div class="step-detail">
+        <strong>User logs in normally</strong>
+        <span>Standard login with any single factor. ID token contains <code>acr=urn:okta:loa:1fa:any</code>.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">2</div>
+      <div class="step-detail">
+        <strong>User requests a sensitive resource</strong>
+        <span>e.g., View social security number, initiate a wire transfer, or access an admin console.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">3</div>
+      <div class="step-detail">
+        <strong>App checks the acr claim</strong>
+        <span>Current token only satisfies 1FA. The resource requires 2FA (or <code>phr</code>). Step-up is needed.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">4</div>
+      <div class="step-detail">
+        <strong>App redirects to /authorize with elevated acr_values</strong>
+        <span><code>acr_values=urn:okta:loa:2fa:any&amp;max_age=0</code> — <code>max_age=0</code> forces re-authentication regardless of existing session.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">5</div>
+      <div class="step-detail">
+        <strong>Okta prompts for the required additional factor</strong>
+        <span>User completes MFA. New tokens are issued with <code>acr=urn:okta:loa:2fa:any</code>.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">6</div>
+      <div class="step-detail">
+        <strong>Resource server validates the acr claim</strong>
+        <span>Grants access only when the token's <code>acr</code> meets the required level. Rejects tokens below the threshold.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="security-note">
+    If the user cannot satisfy the required ACR level (e.g., not enrolled in FIDO2 but <code>acr_values=phr</code> was requested), Okta returns <code>error=unmet_authentication_requirements</code>. Your app must handle this gracefully — typically by routing the user to an enrollment flow.
+  </div>
+
+  <!-- 7.3 AMR Values -->
+  <h3>7.3 — AMR Values: Authentication Methods References (RFC 8176)</h3>
+  <p>While ACR describes the <em>class</em> of authentication achieved, AMR describes the <em>specific methods</em> that were used. The <code>amr</code> claim is an array of strings in the ID token. Resource servers can use AMR to make fine-grained access decisions.</p>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>AMR Value</th>
+        <th>Authentication Method</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>pwd</code></td>
+        <td>Password</td>
+        <td>Knowledge-based, phishable</td>
+      </tr>
+      <tr>
+        <td><code>otp</code></td>
+        <td>One-time password (TOTP/HOTP)</td>
+        <td>e.g., Google Authenticator, Authy</td>
+      </tr>
+      <tr>
+        <td><code>sms</code></td>
+        <td>SMS one-time code</td>
+        <td>Phishable; avoid for high-assurance</td>
+      </tr>
+      <tr>
+        <td><code>mfa</code></td>
+        <td>Multiple factors used</td>
+        <td>Present alongside other AMR values</td>
+      </tr>
+      <tr>
+        <td><code>hwk</code></td>
+        <td>Hardware-secured key</td>
+        <td>Key stored in TPM or Secure Enclave</td>
+      </tr>
+      <tr>
+        <td><code>kba</code></td>
+        <td>Knowledge-based authentication</td>
+        <td>Security questions</td>
+      </tr>
+      <tr>
+        <td><code>fido</code></td>
+        <td>FIDO authenticator</td>
+        <td>WebAuthn / FIDO2 — phishing-resistant</td>
+      </tr>
+      <tr>
+        <td><code>pop</code></td>
+        <td>Proof-of-possession key</td>
+        <td>Demonstrates key ownership</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="concept-card">
+    <h4>Example: Phishing-Resistant MFA (Okta Verify on Secure Enclave)</h4>
+    <div class="code-block" style="margin-top:0.5rem">
+      <span class="code-lang">ID Token Claims</span>
+      <pre>{
+  <span class="key">"amr"</span>: [<span class="string">"mfa"</span>, <span class="string">"hwk"</span>, <span class="string">"fido"</span>],
+  <span class="key">"acr"</span>: <span class="string">"phrh"</span>
+}</pre>
+    </div>
+    <p style="margin-top:0.5rem;font-size:0.875rem">Read as: "Multiple factors were used (<code>mfa</code>). The key is hardware-protected (<code>hwk</code>) and FIDO-bound (<code>fido</code>). The achieved ACR is phishing-resistant + hardware-protected (<code>phrh</code>)."</p>
+  </div>
+
+  <!-- 7.4 Claims Request Parameter -->
+  <h3>7.4 — Claims Request Parameter</h3>
+  <p>The <code>claims</code> request parameter gives the RP precise control over which claims are returned and from which endpoint (ID token vs. UserInfo). Claims marked <code>essential: true</code> must be returned by the OP or the request fails.</p>
+
+  <div class="code-block">
+    <span class="code-lang">Authorization Request — claims parameter (URL-encoded JSON)</span>
+    <pre><span class="comment">// The "claims" parameter value (decoded for readability):</span>
+{
+  <span class="key">"id_token"</span>: {
+    <span class="key">"email"</span>:  { <span class="key">"essential"</span>: <span class="value">true</span> },
+    <span class="key">"acr"</span>:   { <span class="key">"essential"</span>: <span class="value">true</span>, <span class="key">"values"</span>: [<span class="string">"phr"</span>] }
+  },
+  <span class="key">"userinfo"</span>: {
+    <span class="key">"given_name"</span>:  null,
+    <span class="key">"family_name"</span>: null,
+    <span class="key">"address"</span>:    { <span class="key">"essential"</span>: <span class="value">true</span> }
+  }
+}
+
+<span class="comment">// In the authorization request URL:
+// &claims=%7B%22id_token%22%3A%7B%22email%22%3A%7B%22essential%22%3Atrue%7D...</span></pre>
+  </div>
+
+  <div class="key-point">
+    Claims with <code>null</code> (no options object) are requested but not essential — the OP should return them if available. Claims with <code>"essential": true</code> must be returned. If a required ACR value cannot be satisfied, the OP returns <code>error=unmet_authentication_requirements</code> rather than issuing a downgraded token.
+  </div>
+</div>
+
+<!-- ============================================================
+     SECTION 8 — OIDC vs SAML
+     ============================================================ -->
+<div class="section-wrapper">
+  <div class="section-label">Section 8</div>
+  <h2>OIDC vs. SAML</h2>
+
+  <!-- Full comparison table -->
+  <h3>8.1 — Full Protocol Comparison</h3>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th>SAML 2.0</th>
+        <th>OIDC 1.0</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Published</strong></td>
+        <td>OASIS SAML 2.0 (2005)</td>
+        <td>OpenID Connect Core 1.0 (February 2014)</td>
+      </tr>
+      <tr>
+        <td><strong>Data format</strong></td>
+        <td>XML</td>
+        <td>JSON / JWT</td>
+      </tr>
+      <tr>
+        <td><strong>Base protocol</strong></td>
+        <td>Standalone specification</td>
+        <td>Built on top of OAuth 2.0</td>
+      </tr>
+      <tr>
+        <td><strong>Token type</strong></td>
+        <td>XML Assertion</td>
+        <td>JWT (ID Token)</td>
+      </tr>
+      <tr>
+        <td><strong>Transport</strong></td>
+        <td>HTTP redirects + HTML form POST</td>
+        <td>HTTP redirects + REST API</td>
+      </tr>
+      <tr>
+        <td><strong>Mobile support</strong></td>
+        <td>Poor — browser-centric XML POST forms</td>
+        <td>Excellent — PKCE flows for native apps</td>
+      </tr>
+      <tr>
+        <td><strong>API support</strong></td>
+        <td>Poor — REST APIs expect JWTs</td>
+        <td>Excellent — access token for every API call</td>
+      </tr>
+      <tr>
+        <td><strong>Key management</strong></td>
+        <td>X.509 certificates (manual rotation, outage risk)</td>
+        <td>JWKS auto-rotation — no cert coordination</td>
+      </tr>
+      <tr>
+        <td><strong>Discovery</strong></td>
+        <td>SAML metadata XML (manual exchange)</td>
+        <td><code>/.well-known/openid-configuration</code> JSON (automated)</td>
+      </tr>
+      <tr>
+        <td><strong>Encryption</strong></td>
+        <td>XML Encryption</td>
+        <td>JWE (optional) or TLS</td>
+      </tr>
+      <tr>
+        <td><strong>Session logout</strong></td>
+        <td>SAML SLO — fragile, prone to failures</td>
+        <td>Multiple mechanisms: RP-initiated, front-channel, back-channel</td>
+      </tr>
+      <tr>
+        <td><strong>Developer experience</strong></td>
+        <td>Complex — XML signature parsing, sparse modern libraries</td>
+        <td>Simple — JSON, well-supported SDK ecosystem</td>
+      </tr>
+      <tr>
+        <td><strong>AI / agent use</strong></td>
+        <td>Impractical — XML parsing, no token refresh</td>
+        <td>Native — JSON-native, JWT, PKCE, CIBA for human-in-loop</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Where SAML still makes sense / where it fails -->
+  <h3>8.2 — Where Each Protocol Belongs</h3>
+  <div class="comparison-grid">
+    <div class="grid-col col-left">
+      <h4>Where SAML Still Makes Sense</h4>
+      <ul>
+        <li>Legacy enterprise SaaS with long-established SAML integrations (Salesforce Classic, SAP, older HR platforms)</li>
+        <li>Corporate VPN and desktop SSO environments baked into existing IdP contracts</li>
+        <li>Browser-only B2E apps with infrequent logins where session management simplicity matters more than token flexibility</li>
+        <li>Governance and compliance workflows already built around SAML audit trails</li>
+        <li>Integrations that have been running without incident for years — "if it ain't broke, don't fix it"</li>
+      </ul>
+    </div>
+    <div class="grid-col col-right">
+      <h4>Where SAML Actively Fails</h4>
+      <ul>
+        <li><strong>Mobile apps</strong> — SAML's XML POST redirect flow does not function in native iOS/Android apps</li>
+        <li><strong>REST APIs</strong> — APIs expect JWTs; SAML assertions require significant adaptation</li>
+        <li><strong>Token refresh</strong> — SAML has no native access token refresh mechanism</li>
+        <li><strong>Certificate rotation</strong> — X.509 cert expiry is a leading cause of identity-related production outages</li>
+        <li><strong>Modern dev patterns</strong> — Step-up auth, incremental consent, PKCE, CIBA are all awkward or impossible in SAML</li>
+        <li><strong>AI / agent flows</strong> — Machine clients cannot participate in browser-redirect XML POST flows</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Migration insight -->
+  <h3>8.3 — Migration: Dual-Stack is Realistic</h3>
+  <div class="concept-card">
+    <h4>Pattern 1 — Side-by-Side (Dual-Stack)</h4>
+    <p>Run SAML and OIDC simultaneously on the same Okta org. Migrate application by application at your own pace. Centrally enforce consistent policies across both protocols from a single Okta policy engine.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Pattern 2 — Protocol Bridge</h4>
+    <p>Use Okta as a bridge: inbound SAML assertions from a legacy IdP, outbound OIDC tokens to modern apps. Legacy systems keep sending SAML; modern apps get JWTs. Zero disruption to existing integrations.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Pattern 3 — Progressive Replacement</h4>
+    <p>Default to OIDC for every new app or major rewrite. Do not migrate working SAML integrations unless they are causing active pain (cert rotation incidents, mobile requirement, API access need).</p>
+  </div>
+
+  <div class="key-point">
+    Migration risks to document before starting: (1) <code>sub</code> (OIDC) vs. <code>NameID</code> (SAML) — ensure consistent user identity mapping across the cutover. (2) Group attribute format differences — SAML multi-value attributes vs. OIDC <code>groups</code> claim array. (3) Session lifetime expectations — SAML session duration behavior may differ from OIDC token lifetimes. (4) Audit all existing SAML certificate expiry dates before beginning migration work.
+  </div>
+</div>
+
+<!-- ============================================================
+     SECTION 9 — Okta Implementation
+     ============================================================ -->
+<div class="section-wrapper">
+  <div class="section-label">Section 9</div>
+  <h2>Okta Implementation</h2>
+
+  <!-- 9.1 ID Token Customization -->
+  <h3>9.1 — ID Token Customization</h3>
+
+  <h4>Method 1: Custom Claims via Admin Console</h4>
+  <p>Navigate to <strong>Security &gt; API &gt; Authorization Servers &gt; your-server &gt; Claims</strong>. Add a claim targeted at the ID Token and map it to a user profile attribute using Okta Expression Language.</p>
+
+  <div class="concept-card">
+    <h4>Admin Console Configuration</h4>
+    <table class="info-table" style="margin:0.5rem 0 0">
+      <thead>
+        <tr><th>Field</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Claim name</td><td><code>department</code></td></tr>
+        <tr><td>Include in token type</td><td>ID Token — Always</td></tr>
+        <tr><td>Value type</td><td>Expression</td></tr>
+        <tr><td>Value</td><td><code>user.department</code></td></tr>
+        <tr><td>Include in scope</td><td>(select profile)</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.75rem;font-size:0.875rem">Result in the issued ID token:</p>
+    <div class="code-block" style="margin-top:0.5rem">
+      <span class="code-lang">ID Token Payload (excerpt)</span>
+      <pre>{
+  <span class="key">"sub"</span>: <span class="string">"00u47ijy7sRLaeSdC0g7"</span>,
+  <span class="key">"department"</span>: <span class="string">"Engineering"</span>,
+  ...
+}</pre>
+    </div>
+  </div>
+
+  <h4>Method 2: Token Inline Hook (Dynamic Claim Injection)</h4>
+  <p>Okta calls an external HTTPS webhook before issuing any token. The webhook receives the full token context and responds with claim modifications. Use this for real-time lookups against external systems (CRM, HR, entitlement service).</p>
+
+  <div class="code-block">
+    <span class="code-lang">Inline Hook Response — JSON</span>
+    <pre><span class="comment">// Your webhook responds with a "commands" array:
+// Okta applies these operations to the token before signing it.</span>
+{
+  <span class="key">"commands"</span>: [{
+    <span class="key">"type"</span>: <span class="string">"com.okta.identity.patch"</span>,
+    <span class="key">"value"</span>: [
+      {
+        <span class="key">"op"</span>:    <span class="string">"add"</span>,
+        <span class="key">"path"</span>: <span class="string">"/claims/external_role"</span>,
+        <span class="key">"value"</span>: <span class="string">"senior-engineer"</span>
+      },
+      {
+        <span class="key">"op"</span>:    <span class="string">"add"</span>,
+        <span class="key">"path"</span>: <span class="string">"/claims/cost_center"</span>,
+        <span class="key">"value"</span>: <span class="string">"CC-4872"</span>
+      }
+    ]
+  }]
+}
+
+<span class="comment">// Result: ID token now contains:
+// "external_role": "senior-engineer"
+// "cost_center":   "CC-4872"
+//
+// These values were fetched from an external HR system at token issuance time.
+// JSON Patch operations: "add", "replace", "remove" are all supported.</span></pre>
+  </div>
+
+  <!-- 9.2 Auth0 vs Okta -->
+  <h3>9.2 — Auth0 vs. Okta OIDC Differences</h3>
+  <p>Auth0 and Okta are both certified OIDC providers built on the same foundation, but with architectural and implementation differences that matter for SE conversations.</p>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Aspect</th>
+        <th>Okta (Workforce Identity Cloud)</th>
+        <th>Auth0</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Architecture</strong></td>
+        <td>Org AS + Custom AS model — separate authorization servers per use case; custom scopes/claims on Custom AS only</td>
+        <td>Single tenant per domain — one authorization server per tenant, no AS separation</td>
+      </tr>
+      <tr>
+        <td><strong>Universal Login</strong></td>
+        <td>Okta-hosted Sign-In Widget (configurable via Okta Admin Console branding)</td>
+        <td>Auth0 Universal Login — hosted page, customizable via templates</td>
+      </tr>
+      <tr>
+        <td><strong>Claims pipeline</strong></td>
+        <td>Token Inline Hooks — external HTTPS webhook called pre-issuance; JSON Patch response format</td>
+        <td>Auth0 Actions — JavaScript functions running inside the Auth0 pipeline</td>
+      </tr>
+      <tr>
+        <td><strong>Session check</strong></td>
+        <td><code>check_session_iframe</code> (OIDC Session Management spec)</td>
+        <td><code>checkSession()</code> SDK method using <code>prompt=none</code> + <code>response_mode=web_message</code></td>
+      </tr>
+      <tr>
+        <td><strong>CIBA support</strong></td>
+        <td>Full support on Identity Engine orgs</td>
+        <td>Not supported as of 2026</td>
+      </tr>
+      <tr>
+        <td><strong>ACR values</strong></td>
+        <td>Okta-defined URNs: <code>urn:okta:loa:*</code>, <code>phr</code>, <code>phrh</code></td>
+        <td>Different ACR value syntax — not compatible with Okta's LOA URNs</td>
+      </tr>
+      <tr>
+        <td><strong>Universal Logout (ULO)</strong></td>
+        <td>Okta-native: security event drives back-channel logout to all connected apps</td>
+        <td>Available via Auth0 + Okta OIN integration; not native to Auth0</td>
+      </tr>
+      <tr>
+        <td><strong>Back-channel logout</strong></td>
+        <td>Full native support — configurable per app in Admin Console</td>
+        <td>Full support</td>
+      </tr>
+      <tr>
+        <td><strong>Custom domains</strong></td>
+        <td>Supported</td>
+        <td>Supported</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 9.3 HTTP Cheat Sheet -->
+  <h3>9.3 — HTTP Cheat Sheet: Key Okta OIDC Endpoints</h3>
+  <p>All commands use <code>dev-123456.okta.com</code> with the <code>default</code> custom authorization server as the base. Substitute your Okta domain and AS ID.</p>
+
+  <div class="cheat-block">
+    <div class="cheat-label">1. Fetch the Discovery Document</div>
+    <div class="code-block">
+      <span class="code-lang">curl</span>
+      <pre>curl -s https://dev-123456.okta.com/oauth2/default/.well-known/openid-configuration | jq .
+
+<span class="comment"># Returns the full metadata document: all endpoint URLs, supported algorithms,
+# scopes, grant types, and JWKS URI. The canonical starting point for any integration.</span></pre>
+    </div>
+  </div>
+
+  <div class="cheat-block">
+    <div class="cheat-label">2. Fetch JWKS for Signature Verification</div>
+    <div class="code-block">
+      <span class="code-lang">curl</span>
+      <pre>curl -s $(curl -s https://dev-123456.okta.com/oauth2/default/.well-known/openid-configuration \
+  | jq -r .jwks_uri) | jq .
+
+<span class="comment"># Returns the public key set. Match the "kid" in a JWT header to the
+# key in this response to verify the token's signature.
+# Okta rotates keys periodically — always fetch from jwks_uri, never hardcode.</span></pre>
+    </div>
+  </div>
+
+  <div class="cheat-block">
+    <div class="cheat-label">3. Call the UserInfo Endpoint</div>
+    <div class="code-block">
+      <span class="code-lang">curl</span>
+      <pre>curl https://dev-123456.okta.com/oauth2/default/v1/userinfo \
+  -H "Authorization: Bearer &lt;access_token&gt;"
+
+<span class="comment"># Returns JSON object with claims matching the scopes granted.
+# The "sub" in the response MUST match the "sub" in the ID token.
+# Use for richer profiles without bloating the ID token.</span></pre>
+    </div>
+  </div>
+
+  <div class="cheat-block">
+    <div class="cheat-label">4. RP-Initiated Logout</div>
+    <div class="code-block">
+      <span class="code-lang">curl</span>
+      <pre>curl -G "https://dev-123456.okta.com/oauth2/default/v1/logout" \
+  --data-urlencode "id_token_hint=&lt;id_token&gt;" \
+  --data-urlencode "post_logout_redirect_uri=https://app.example.com/logout" \
+  --data-urlencode "state=abc123"
+
+<span class="comment"># Initiates RP-initiated logout. In production this is a browser redirect, not
+# a direct curl call — include it in an &lt;a href&gt; or window.location redirect.
+# "id_token_hint" is strongly recommended: it helps Okta identify which session
+# to terminate without prompting the user for confirmation.</span></pre>
+    </div>
+  </div>
+
+  <div class="cheat-block">
+    <div class="cheat-label">5. Introspect a Token (Active / Inactive Check)</div>
+    <div class="code-block">
+      <span class="code-lang">curl</span>
+      <pre>curl -X POST https://dev-123456.okta.com/oauth2/default/v1/introspect \
+  -u "client_id:client_secret" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "token=&lt;access_or_id_token&gt;&token_type_hint=id_token"
+
+<span class="comment"># Response when active:
+# { "active": true, "sub": "00u...", "exp": 1661293224, ... }
+#
+# Response when expired or revoked:
+# { "active": false }
+#
+# Use introspection for opaque tokens or when you need a definitive
+# server-side active/inactive check rather than local JWT validation.</span></pre>
+    </div>
+  </div>
+
+  <div class="cheat-block">
+    <div class="cheat-label">6. Exchange Authorization Code for Tokens</div>
+    <div class="code-block">
+      <span class="code-lang">curl</span>
+      <pre>curl -X POST https://dev-123456.okta.com/oauth2/default/v1/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=SplxlOBeZQQYbYS6WxSbIA" \
+  -d "redirect_uri=https://app.example.com/callback" \
+  -d "client_id=0oa48e74ox4t7mQJX0g7" \
+  -d "code_verifier=abc123_your_pkce_verifier_here"
+
+<span class="comment"># Returns: access_token, id_token, refresh_token, token_type, expires_in, scope
+# For public clients (SPA, native app): use code_verifier (PKCE) instead of client_secret.
+# For confidential clients: add -u "client_id:client_secret" instead of code_verifier.</span></pre>
+    </div>
+  </div>
+
+  <div class="okta-note">
+    All Okta endpoint URLs are discoverable from the <code>/.well-known/openid-configuration</code> document — never hardcode them. When working with multiple authorization servers or custom domains, always construct the discovery URL from the issuer and let the library handle the rest.
+  </div>
+</div>
+
+
+</div>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>OpenID Connect Deep Dive &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers OIDC Core 1.0, ID token structure and validation, UserInfo endpoint, discovery metadata, and Okta's OIDC implementation.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Flow Diagram Step Toggle ─── */
+function toggleStep(el){
+  const diagram=el.closest('.flow-diagram')||el.closest('.flow-steps')?.parentElement;
+  if(!diagram)return;
+  const wasActive=el.classList.contains('active');
+  diagram.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active'));
+  diagram.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+  if(!wasActive){
+    el.classList.add('active');
+    const stepNum=el.dataset.step;
+    const detail=diagram.querySelector('.step-detail[data-for-step="'+stepNum+'"]');
+    if(detail)detail.classList.add('visible');
+  }
+}
+</script>
+
+</body>
+</html>

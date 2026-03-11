@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Agent Identity &amp; Delegation — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-green);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-green);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Content Components ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+/* ─── Flow Diagrams ─── */
+.flow-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.flow-diagram-title{
+  padding:16px 20px;font-weight:600;font-size:15px;
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-parties{
+  display:flex;justify-content:space-around;padding:16px 20px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+}
+.party{
+  padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;
+}
+.party-client{background:var(--c-okta-blue)}
+.party-auth{background:var(--c-auth0-purple)}
+.party-resource{background:var(--c-accent-green)}
+.party-user{background:var(--c-accent-amber)}
+.party-device{background:var(--c-accent-cyan)}
+
+.flow-steps{padding:8px}
+.flow-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;margin:4px 8px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;border:1px solid transparent;
+}
+.flow-step:hover{background:var(--c-surface);border-color:var(--c-border)}
+.flow-step.active{background:var(--c-surface);border-color:var(--c-okta-blue)}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);
+  flex-shrink:0;transition:all 0.2s;
+}
+.flow-step.active .step-num{background:var(--c-okta-blue);color:#fff;border-color:var(--c-okta-blue)}
+.step-arrow{font-size:16px;color:var(--c-text-dim);flex-shrink:0}
+.step-label{font-size:14px;font-weight:500}
+.step-label-sub{font-size:12px;color:var(--c-text-muted);margin-left:auto}
+
+.step-detail{
+  display:none;margin:0 12px 8px;padding:16px 20px;
+  background:var(--c-surface);border-radius:8px;
+  border-left:3px solid var(--c-okta-blue);
+  animation:fadeIn 0.2s ease;
+}
+.step-detail.visible{display:block}
+.step-http{margin-bottom:12px}
+.step-explain{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .flow-parties{flex-wrap:wrap;gap:6px;justify-content:center}
+  .comparison-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" class="current">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">OIDC &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html" style="font-weight:600;color:var(--c-accent-green)">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      RFC 8693 &middot; Token Exchange &middot; CIBA
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">Agent Identity &amp; Delegation</h1>
+    <p class="section-subtitle">How AI agents authenticate, act on behalf of users, and maintain auditable delegation chains.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 1 — The Agent Identity Problem
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="agent-identity-problem">
+  <div class="section-label">Section 1</div>
+  <h2 class="section-title" style="font-size:clamp(24px,4vw,40px);margin-bottom:12px">The Agent Identity Problem</h2>
+  <p class="section-subtitle" style="margin-bottom:32px">Human identity models break when applied to AI agents. Understanding exactly why requires looking at what agents are and how they act.</p>
+
+  <div class="concept-card">
+    <h3>Why Agent Identity Differs from Human Identity</h3>
+    <p>Human identity is established through interactive authentication: a person proves who they are via password, biometric, or MFA device — at a moment in time, in response to a challenge. Every human auth event has a human present to approve it.</p>
+    <p style="margin-top:12px">AI agents break every assumption in that model:</p>
+    <ul style="margin:12px 0 0 20px;color:var(--c-text-muted);line-height:2">
+      <li><strong style="color:var(--c-text)">Agents run unattended.</strong> No human present to approve individual actions. An orchestrator may call dozens of downstream APIs in a single task without any user interaction.</li>
+      <li><strong style="color:var(--c-text)">Agents are non-human subjects.</strong> They need a distinct identity separate from both the user they serve and the system they run on.</li>
+      <li><strong style="color:var(--c-text)">Agents carry broad context.</strong> A general-purpose agent like Claude Desktop may be authorized to connect to a calendar, email, filesystem, CRM, and code repository simultaneously.</li>
+      <li><strong style="color:var(--c-text)">Agents act on behalf of users.</strong> The user's original intent must be propagated and preserved through multi-hop delegation chains without the user re-authorizing at each hop.</li>
+    </ul>
+    <p style="margin-top:16px">The central design question is: <strong>Does the agent's token represent the agent, the user, or both?</strong> The answer shapes every downstream audit trail, access control decision, and revocation story.</p>
+  </div>
+
+  <h3 style="margin:28px 0 16px">Three Anti-Patterns to Avoid</h3>
+
+  <div class="concept-card">
+    <h3>
+      <span style="display:inline-block;background:rgba(224,62,77,0.12);border:1px solid rgba(224,62,77,0.3);border-radius:6px;padding:2px 10px;font-size:13px;font-family:var(--font-mono);color:var(--c-accent-red);margin-right:4px">ANTI-PATTERN 1</span>
+      Agent Running as the User (Impersonation Without Accountability)
+    </h3>
+    <p>The agent receives the user's full access token and acts as the user. The downstream system cannot distinguish agent actions from human actions. There is no audit trail — logs show "alice@company.com deleted /prod/data/record.json" when in reality an AI agent made that call at 3:17 AM while Alice was asleep.</p>
+    <div class="security-note" style="margin-top:12px">
+      <div class="callout-title">Security Risk</div>
+      If the agent is compromised via prompt injection, the attacker has the user's full-privilege token. There is no scope narrowing, no agent identity to revoke separately, and no way to distinguish legitimate user actions from agent-mediated exfiltration in the audit log.
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <h3>
+      <span style="display:inline-block;background:rgba(224,62,77,0.12);border:1px solid rgba(224,62,77,0.3);border-radius:6px;padding:2px 10px;font-size:13px;font-family:var(--font-mono);color:var(--c-accent-red);margin-right:4px">ANTI-PATTERN 2</span>
+      Agent as a Service Account (No User Context)
+    </h3>
+    <p>The agent authenticates with its own static credentials. All downstream requests look like machine-to-machine calls with no link to the user who initiated them. The 2025 Okta/NHIMG research found 97% of non-human identities already carry excessive privileges — service accounts are the primary culprit.</p>
+    <div class="security-note" style="margin-top:12px">
+      <div class="callout-title">Security Risk</div>
+      The ServiceNow Now Assist vulnerability (October 2025) exploited this exact model: low-privileged agent service accounts were used to discover and enlist higher-privileged agents, leading to data exfiltration — with no user context in the token chain to indicate who authorized any of it.
+    </div>
+    <p style="margin-top:12px;color:var(--c-text-muted)">Service accounts are static — they cannot express "I am acting for Alice right now." They don't convey consent. They don't support revocation at the per-user level. Static credentials cannot be time-bounded to a specific user session.</p>
+  </div>
+
+  <div class="concept-card">
+    <h3>
+      <span style="display:inline-block;background:rgba(224,62,77,0.12);border:1px solid rgba(224,62,77,0.3);border-radius:6px;padding:2px 10px;font-size:13px;font-family:var(--font-mono);color:var(--c-accent-red);margin-right:4px">ANTI-PATTERN 3</span>
+      Static API Keys for Agents
+    </h3>
+    <p>Long-lived, over-permissioned API keys assigned to agents at deployment time. These cannot be scoped per-user, carry no session context, and have no revocation story short of manually rotating the key and redeploying every dependent service.</p>
+    <div class="security-note" style="margin-top:12px">
+      <div class="callout-title">Security Risk</div>
+      If an API key leaks — through logs, environment variables, or a compromised agent host — the blast radius is the key's full permission set across all users, all sessions, all time. There is no "revoke just Alice's access" story.
+    </div>
+  </div>
+
+  <div class="key-point">
+    <div class="callout-title">The Correct Pattern</div>
+    Use a <strong>delegated token with an explicit actor claim</strong>: the token encodes both <code>sub</code> (the user) and <code>act</code> (the agent). User context is preserved for authorization and audit. Agent identity is explicit for accountability and targeted revocation. Scopes are narrowed to the minimum the agent needs for this task. This is exactly what RFC 8693 Token Exchange was designed to produce.
+  </div>
+
+  <h3 style="margin:28px 0 16px">Credential Options — Spectrum of Security</h3>
+  <p style="color:var(--c-text-muted);margin-bottom:16px">This table shows the full spectrum from worst to best for AI agent use cases. The rightmost columns are what enterprise security teams care about in 2026.</p>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Credential Type</th>
+        <th>User Context</th>
+        <th>Revocation</th>
+        <th>Scoping</th>
+        <th>Audit Trail</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Static API Key</strong></td>
+        <td style="color:var(--c-accent-red)">None</td>
+        <td style="color:var(--c-accent-red)">Manual key rotation</td>
+        <td style="color:var(--c-accent-red)">Broad / fixed</td>
+        <td style="color:var(--c-accent-red)">Minimal</td>
+        <td><span style="background:rgba(224,62,77,0.1);color:var(--c-accent-red);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">Avoid</span></td>
+      </tr>
+      <tr>
+        <td><strong>Service Account</strong></td>
+        <td style="color:var(--c-accent-red)">None</td>
+        <td style="color:var(--c-accent-amber)">Manual / per-client</td>
+        <td style="color:var(--c-accent-amber)">Broad</td>
+        <td style="color:var(--c-accent-amber)">System-level only</td>
+        <td><span style="background:rgba(212,138,0,0.1);color:var(--c-accent-amber);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">Legacy — Avoid</span></td>
+      </tr>
+      <tr>
+        <td><strong>Client Credentials</strong></td>
+        <td style="color:var(--c-accent-red)">None</td>
+        <td style="color:var(--c-accent-amber)">Per-client</td>
+        <td style="color:var(--c-accent-amber)">Limited</td>
+        <td style="color:var(--c-accent-amber)">Service-level only</td>
+        <td><span style="background:rgba(212,138,0,0.1);color:var(--c-accent-amber);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">OK for M2M only</span></td>
+      </tr>
+      <tr>
+        <td><strong>OAuth Access Token (user delegated)</strong></td>
+        <td style="color:var(--c-accent-green)">Full user context</td>
+        <td style="color:var(--c-accent-green)">Session-bound</td>
+        <td style="color:var(--c-accent-green)">Scope-limited</td>
+        <td style="color:var(--c-accent-green)">Good</td>
+        <td><span style="background:rgba(31,170,88,0.1);color:var(--c-accent-green);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">Good for interactive</span></td>
+      </tr>
+      <tr>
+        <td><strong>RFC 8693 Delegated Token</strong></td>
+        <td style="color:var(--c-accent-green)">User + Agent (sub + act)</td>
+        <td style="color:var(--c-accent-green)">Short-lived per-exchange</td>
+        <td style="color:var(--c-accent-green)">Narrowable per-hop</td>
+        <td style="color:var(--c-accent-green)">Excellent</td>
+        <td><span style="background:rgba(31,170,88,0.12);color:var(--c-accent-green);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;border:1px solid rgba(31,170,88,0.3)">Recommended</span></td>
+      </tr>
+      <tr>
+        <td><strong>mTLS + Client Certificate</strong></td>
+        <td style="color:var(--c-accent-amber)">Client identity only</td>
+        <td style="color:var(--c-accent-amber)">OCSP / CRL</td>
+        <td style="color:var(--c-accent-green)">Certificate-bound</td>
+        <td style="color:var(--c-accent-green)">Good</td>
+        <td><span style="background:rgba(0,153,187,0.1);color:var(--c-accent-cyan);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">High-security M2M</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 2 — RFC 8693: Token Exchange
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="rfc8693-token-exchange" style="margin-top:60px">
+  <div class="section-label">Section 2</div>
+  <h2 class="section-title" style="font-size:clamp(24px,4vw,40px);margin-bottom:12px">RFC 8693: Token Exchange</h2>
+  <p class="section-subtitle" style="margin-bottom:32px">The finalized (2020) IETF standard that enables one token to be exchanged for a different token — with different audience, scope, or actor. This is the protocol foundation for every multi-hop agent delegation pattern.</p>
+
+  <div class="concept-card">
+    <h3>What Problem RFC 8693 Solves</h3>
+    <p>Standard OAuth 2.0 handles the initial authorization — a user grants an app access, the app gets a token. But once API-A receives a request and needs to call API-B <em>on behalf of the same user</em>, OAuth 2.0 provides no standard mechanism. The pre-RFC 8693 workarounds all fail:</p>
+    <ul style="margin:12px 0 0 20px;color:var(--c-text-muted);line-height:2">
+      <li><strong style="color:var(--c-text)">Pass the original token forward:</strong> The token's audience was API-A. API-B should reject it. Accepting it anyway is an audience-bypass vulnerability.</li>
+      <li><strong style="color:var(--c-text)">Use client credentials for the downstream call:</strong> Works, but loses all user context. API-B sees a machine-to-machine call with no indication of which user initiated it.</li>
+      <li><strong style="color:var(--c-text)">Custom proprietary exchange:</strong> Every vendor does it differently. Does not interoperate. Cannot be audited by tools that understand standard claims.</li>
+    </ul>
+    <p style="margin-top:12px">RFC 8693 defines a new grant type — <code>urn:ietf:params:oauth:grant-type:token-exchange</code> — that acts as a Security Token Service (STS). You present one token and get back a scoped, audience-targeted token that carries full delegation provenance.</p>
+  </div>
+
+  <h3 style="margin:28px 0 16px">Full Interactive Protocol Flow</h3>
+  <p style="color:var(--c-text-muted);margin-bottom:16px">Click any step to expand the HTTP request/response and explanation.</p>
+
+  <div class="flow-diagram" id="rfc8693-flow">
+    <div class="flow-diagram-title">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--c-accent-green);display:inline-block"></span>
+      RFC 8693 Token Exchange — Full Protocol Flow
+    </div>
+    <div class="flow-parties">
+      <span class="party party-user">User / Client App</span>
+      <span class="party party-client">AI Agent (API-A)</span>
+      <span class="party party-auth">Authorization Server</span>
+      <span class="party party-resource">Downstream API (API-B)</span>
+    </div>
+    <div class="flow-steps">
+
+      <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+        <div class="step-num">1</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">Agent receives user's access token</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">From the initial OAuth authorization code flow</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="1">
+        <div class="step-explain">The user authenticates to the client application via standard OAuth 2.0 Authorization Code + PKCE flow. The client receives an access token whose <code>sub</code> is the authenticated user. This token is scoped to the client application's audience — it is NOT yet suitable for calling downstream APIs directly.</div>
+        <div class="code-label">User's Access Token — Decoded Payload</div>
+        <div class="code-block">{
+  "iss": "https://your-okta-domain.okta.com/oauth2/default",
+  "aud": "com.api.client-app",
+  "sub": "user@example.com",
+  "uid": "00u930ooYXgBltqbs9c5",
+  "scp": ["read:calendar", "write:calendar", "read:email", "write:email"],
+  "exp": 1675224391,
+  "iat": 1675220791
+  // Note: audience is "com.api.client-app" — API-B will reject this token
+}</div>
+        <div class="step-explain">The client application passes this token to the AI agent. The agent now has proof of the user's identity and the scopes the user originally granted.</div>
+      </div>
+
+      <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+        <div class="step-num">2</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">Agent POSTs token exchange request to Authorization Server</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">grant_type=token-exchange, subject_token, actor_token, scope, audience</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="2">
+        <div class="step-explain">The agent calls the AS token endpoint with the special <code>token-exchange</code> grant type. It presents two tokens: the user's access token as the <code>subject_token</code> (who this exchange is on behalf of) and its own identity JWT as the <code>actor_token</code> (who is performing the exchange). The agent also specifies the target <code>audience</code> and the <code>scope</code> it needs — which must be a subset of what the user originally granted.</div>
+        <div class="code-label">HTTP Request — Token Exchange</div>
+        <div class="code-block">POST /oauth2/default/v1/token HTTP/1.1
+Host: your-okta-domain.okta.com
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {Base64(client_id:client_secret)}
+
+grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange
+&amp;subject_token=eyJraWQiOiJRV...{user's access token}
+&amp;subject_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aaccess_token
+&amp;actor_token=eyJhbGciOiJSUzI1NiJ9...{agent's identity JWT}
+&amp;actor_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Ajwt
+&amp;scope=read%3Acalendar
+&amp;audience=com.api.downstream
+&amp;requested_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aaccess_token</div>
+        <div class="step-explain">Key parameters: <strong>subject_token</strong> is the token representing the principal (user) on whose behalf the exchange is being made. <strong>actor_token</strong> is the token representing the entity making the request (the agent). Including <code>actor_token</code> is what distinguishes delegation from impersonation — see the comparison table below. <strong>scope</strong> is narrowed from the user's original <code>read:calendar write:calendar read:email write:email</code> down to just <code>read:calendar</code> — the agent only requests what it actually needs for this task.</div>
+      </div>
+
+      <div class="flow-step" data-step="3" onclick="toggleStep(this)">
+        <div class="step-num">3</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">AS validates tokens, applies scope narrowing, checks may_act</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">Policy evaluation — can this actor exchange this subject token?</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="3">
+        <div class="step-explain">The Authorization Server performs a sequence of validation checks before issuing the delegated token. This is where policy is enforced:</div>
+        <div class="code-label">AS Validation Steps (Internal Logic)</div>
+        <div class="code-block">1. Validate subject_token signature and expiry
+   → Is the user's token still valid and issued by a trusted AS?
+
+2. Validate actor_token signature and identity
+   → Is the agent's JWT valid? Is this a registered agent client?
+
+3. Check may_act claim (if present in subject_token)
+   → Does subject_token.may_act.sub match the actor_token.sub?
+   → If may_act is absent, fall back to policy configuration
+
+4. Check policy rules
+   → Is this client_id (agent) allowed to perform token exchange?
+   → Is the requested scope <= scope of subject_token?
+   → Is the requested audience in the allowed audience list?
+
+5. Apply scope narrowing
+   → Requested: read:calendar
+   → Subject token has: read:calendar write:calendar read:email write:email
+   → Granted: read:calendar (intersection — cannot exceed subject_token scope)</div>
+        <div class="step-explain">If any check fails, the AS returns an OAuth error response. For example, if the agent requests <code>write:email</code> but the user never granted that scope, the AS returns <code>invalid_scope</code>. This is a hard enforcement point — the AS cannot be bypassed by the agent claiming broader permissions.</div>
+        <div class="key-point" style="margin-top:12px">
+          <div class="callout-title">Scope Narrowing is Mandatory</div>
+          The issued token's scope MUST be a subset of the subject token's scope. An agent can never gain more permissions than the user originally granted through the token exchange mechanism. This is enforced by the AS, not by the agent's own self-restraint.
+        </div>
+      </div>
+
+      <div class="flow-step" data-step="4" onclick="toggleStep(this)">
+        <div class="step-num">4</div>
+        <span class="step-arrow">&#8592;</span>
+        <div>
+          <div class="step-label">AS returns delegated token with sub=user and act=agent</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">The delegation token — carries full provenance</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="4">
+        <div class="step-explain">The AS issues a new access token. This is the heart of RFC 8693: the token encodes both who the action is on behalf of (<code>sub</code> = user) and who is performing it (<code>act.sub</code> = agent). Any downstream system that validates this token can see the complete delegation context.</div>
+        <div class="code-label">HTTP Response — Token Exchange Success</div>
+        <div class="code-block">HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "access_token": "eyJraWQiOiJBVj...{delegated_token}",
+  "issued_token_type": "urn:ietf:params:oauth:token-type:access_token",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "read:calendar"
+}</div>
+        <div class="code-label" style="margin-top:16px">Decoded Delegated Token Payload — The act Claim</div>
+        <div class="code-block">{
+  "ver": 1,
+  "jti": "AT.nmEEZjEgPk62Us10J5aG4kUfg7DWoLIExSotYJA-rJ4",
+  "iss": "https://your-okta-domain.okta.com/oauth2/default",
+  "aud": "com.api.downstream",
+  "iat": 1675220791,
+  "exp": 1675224391,
+  "cid": "0oa9aw62CPUnXomeU9c5",
+  "uid": "00u930ooYXgBltqbs9c5",
+  "scp": ["read:calendar"],
+  "sub": "user@example.com",      // ← Still the user — preserved from subject_token
+  "act": {
+    "sub": "ai-agent-service@company.com"   // ← The agent — from actor_token
+  }
+}</div>
+        <div class="step-explain">The <code>sub</code> claim is still the user. Standard access control logic in API-B evaluates permissions for the user — the agent inherits the user's permissions, not its own. The <code>act</code> claim identifies the agent as the executor. Any system that cares about audit accountability reads <code>act.sub</code> to know it was an agent, not a direct human action.</div>
+      </div>
+
+      <div class="flow-step" data-step="5" onclick="toggleStep(this)">
+        <div class="step-num">5</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">Agent calls downstream API-B with delegated token</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">Standard Bearer token usage — API-B validates and sees full delegation context</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="5">
+        <div class="step-explain">The agent uses the delegated token as a standard Bearer token in the Authorization header. API-B receives the request, validates the JWT (checks signature, expiry, audience), and proceeds with authorization using the <code>sub</code> claim as the user identity and optionally the <code>act</code> claim for agent-aware access control.</div>
+        <div class="code-label">HTTP Request — Agent Calling API-B</div>
+        <div class="code-block">GET /calendar/events?start=today HTTP/1.1
+Host: api-b.company.com
+Authorization: Bearer eyJraWQiOiJBVj...{delegated_token}
+Accept: application/json</div>
+        <div class="code-label" style="margin-top:16px">API-B Token Validation Logic</div>
+        <div class="code-block">1. Verify JWT signature against AS JWKS endpoint
+2. Check exp — is token still valid?
+3. Check aud — does "com.api.downstream" match my identifier? ✓
+4. Check scp — does "read:calendar" cover this operation? ✓
+5. Identify user: sub = "user@example.com"
+6. (Optional) Agent-aware check: act.sub = "ai-agent-service@company.com"
+   → Log event as: user=alice@company.com via agent=ai-agent-service
+   → Apply any agent-specific rate limits or restrictions
+7. Return calendar events scoped to alice@company.com</div>
+        <div class="step-explain">API-B never needed to know about the token exchange. It just validates a JWT. But because the <code>act</code> claim is present, any downstream system that <em>wants</em> to implement agent-aware access control or audit logging has the full delegation context available in a standard, interoperable claim.</div>
+      </div>
+
+    </div><!-- /.flow-steps -->
+  </div><!-- /.flow-diagram -->
+
+  <h3 style="margin:32px 0 16px">The act Claim — Nested Delegation Chains</h3>
+  <div class="concept-card">
+    <h3>Multi-Hop Delegation: act Nesting</h3>
+    <p>When multiple agents delegate to each other (orchestrator spawns sub-agent, sub-agent invokes a tool), the <code>act</code> claim nests. Reading the structure from inside-out gives the complete delegation chain.</p>
+    <div class="code-label" style="margin-top:16px">Example: Orchestrator → Research Sub-Agent → Calendar Tool</div>
+    <div class="code-block">{
+  "sub": "alice@company.com",          // ← The user — top-level principal
+  "act": {
+    "sub": "https://orchestrator-agent.company.com",   // ← Primary agent
+    "act": {
+      "sub": "https://research-subagent.company.com",  // ← Sub-agent spawned by orchestrator
+      "act": {
+        "sub": "https://calendar-tool.company.com"     // ← Tool invoked by sub-agent
+      }
+    }
+  }
+}</div>
+    <p style="margin-top:12px;color:var(--c-text-muted)">Reading this: <em>"calendar-tool is acting as research-subagent, which is acting as orchestrator-agent, which is acting on behalf of alice."</em></p>
+    <div class="security-note" style="margin-top:16px">
+      <div class="callout-title">RFC 8693 Section 4.1 — Security Warning on Nested act</div>
+      For access control decisions, rely <strong>only</strong> on the top-level <code>sub</code> (the user) and the direct actor (outermost <code>act.sub</code>). Treat nested chain entries as audit information only. A malicious intermediate agent cannot gain additional permissions by inserting itself higher up in a forged delegation chain — the AS that issued the token validated the chain at issuance time.
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 16px">The may_act Claim — Pre-Authorizing Delegation</h3>
+  <div class="concept-card">
+    <h3>Embedding Delegation Authorization in the Subject Token</h3>
+    <p>The <code>may_act</code> claim in the subject token pre-authorizes which entities are allowed to become actors. This shifts the authorization decision from the AS's policy configuration to the token itself — useful when the user's IdP can express delegation intent at authentication time.</p>
+    <div class="code-label" style="margin-top:16px">Subject Token with may_act — User Pre-Authorizes the AI Agent</div>
+    <div class="code-block">{
+  "sub": "user@example.com",
+  "scp": ["read:calendar", "write:calendar", "read:email"],
+  "may_act": {
+    "sub": "ai-agent-clientid@company.com"   // ← Only this entity is pre-authorized to act
+  },
+  "exp": 1675224391
+}</div>
+    <p style="margin-top:12px;color:var(--c-text-muted)">When the AS receives a token exchange request, it checks whether the <code>actor_token.sub</code> matches the <code>may_act.sub</code> in the subject token. If it does, the AS can approve the exchange without additional policy lookup. If <code>may_act</code> is absent, the AS must use its own policy configuration to determine whether the exchange is permitted — which is the approach Okta currently uses in its standard token exchange implementation.</p>
+  </div>
+
+  <h3 style="margin:28px 0 16px">Impersonation vs. Delegation — The Critical Distinction</h3>
+  <p style="color:var(--c-text-muted);margin-bottom:16px">Whether the <code>actor_token</code> parameter is present determines whether the issued token is a delegation token or an impersonation token. This is the single most important choice in token exchange design.</p>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th>Impersonation (no actor_token)</th>
+        <th>Delegation (with actor_token)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Request includes</strong></td>
+        <td><code>subject_token</code> only</td>
+        <td><code>subject_token</code> + <code>actor_token</code></td>
+      </tr>
+      <tr>
+        <td><strong>Issued token sub</strong></td>
+        <td>Original user identity</td>
+        <td>Original user identity</td>
+      </tr>
+      <tr>
+        <td><strong>Issued token act</strong></td>
+        <td style="color:var(--c-accent-red)">Absent — intermediate service is invisible</td>
+        <td style="color:var(--c-accent-green)">Present — agent identity is explicit</td>
+      </tr>
+      <tr>
+        <td><strong>Downstream API sees</strong></td>
+        <td>A call that looks like the user made it directly</td>
+        <td>A call from the user, mediated by a named agent</td>
+      </tr>
+      <tr>
+        <td><strong>Audit accountability</strong></td>
+        <td style="color:var(--c-accent-red)">No agent trace — agent actions attributed to user</td>
+        <td style="color:var(--c-accent-green)">Full chain: user + agent both recorded</td>
+      </tr>
+      <tr>
+        <td><strong>Revocation granularity</strong></td>
+        <td>Revoke user token (affects all user access)</td>
+        <td>Revoke agent client (affects only agent, not user)</td>
+      </tr>
+      <tr>
+        <td><strong>Use case</strong></td>
+        <td>API gateway translating an external token to an internal format while preserving the user identity</td>
+        <td>AI agent calling a downstream API on behalf of a user — the correct pattern for agentic workloads</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="code-label" style="margin:20px 0 6px">Impersonation Token — Intermediate Service is Hidden</div>
+  <div class="code-block">{
+  "sub": "user@example.com"
+  // No act claim — the API gateway that performed the exchange is invisible
+  // Downstream API cannot distinguish this from a direct user call
+}</div>
+
+  <div class="code-label" style="margin:20px 0 6px">Delegation Token — Agent is Explicit</div>
+  <div class="code-block">{
+  "sub": "user@example.com",
+  "act": {
+    "sub": "https://agent.company.com/ai-assistant"
+  }
+  // Downstream API knows: user initiated, agent executed
+}</div>
+
+  <h3 style="margin:28px 0 16px">Token Type URN Reference</h3>
+  <p style="color:var(--c-text-muted);margin-bottom:16px">These URNs appear as <code>subject_token_type</code>, <code>actor_token_type</code>, and <code>requested_token_type</code> parameter values in the exchange request. Using the exact URN string is required — the AS uses them to determine how to validate the input token.</p>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Token Type</th>
+        <th>URN</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Access Token</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:access_token</code></td>
+        <td>Most common subject_token type</td>
+      </tr>
+      <tr>
+        <td><strong>Refresh Token</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:refresh_token</code></td>
+        <td>Rarely used as subject_token; allows long-lived exchange</td>
+      </tr>
+      <tr>
+        <td><strong>ID Token</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:id_token</code></td>
+        <td>Used in Okta's AI Agent Token Exchange flow as the starting subject_token</td>
+      </tr>
+      <tr>
+        <td><strong>JWT</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:jwt</code></td>
+        <td>Generic JWT — used for actor_token when agent presents its identity JWT</td>
+      </tr>
+      <tr>
+        <td><strong>SAML 2.0 Assertion</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:saml2</code></td>
+        <td>Enterprise / legacy IdP bridge — exchange a SAML assertion for an OAuth token</td>
+      </tr>
+      <tr>
+        <td><strong>SAML 1.1 Assertion</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:saml1</code></td>
+        <td>Very legacy, rarely used</td>
+      </tr>
+      <tr>
+        <td><strong>ID-JAG</strong></td>
+        <td><code>urn:ietf:params:oauth:token-type:id-jag</code></td>
+        <td>Identity Assertion JWT Authorization Grant — cross-domain; powers Okta XAA. See Section 3.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin:28px 0 16px">Request Parameters Reference</h3>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Required?</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>grant_type</code></td>
+        <td><span style="color:var(--c-accent-red);font-weight:600">REQUIRED</span></td>
+        <td>Must be exactly <code>urn:ietf:params:oauth:grant-type:token-exchange</code></td>
+      </tr>
+      <tr>
+        <td><code>subject_token</code></td>
+        <td><span style="color:var(--c-accent-red);font-weight:600">REQUIRED</span></td>
+        <td>The token to exchange — represents the user or subject principal</td>
+      </tr>
+      <tr>
+        <td><code>subject_token_type</code></td>
+        <td><span style="color:var(--c-accent-red);font-weight:600">REQUIRED</span></td>
+        <td>URN identifying the type of the subject_token (see URN table above)</td>
+      </tr>
+      <tr>
+        <td><code>actor_token</code></td>
+        <td><span style="color:var(--c-accent-amber);font-weight:600">OPTIONAL</span></td>
+        <td>The agent's identity token. When present, produces a <strong>delegation</strong> token with an <code>act</code> claim. When absent, produces an <strong>impersonation</strong> token with no <code>act</code> claim.</td>
+      </tr>
+      <tr>
+        <td><code>actor_token_type</code></td>
+        <td><span style="color:var(--c-accent-amber);font-weight:600">CONDITIONAL</span></td>
+        <td>Required when <code>actor_token</code> is present. Identifies the token type URN.</td>
+      </tr>
+      <tr>
+        <td><code>scope</code></td>
+        <td><span style="color:var(--c-accent-amber);font-weight:600">OPTIONAL</span></td>
+        <td>Requested scopes for the issued token. MUST be a subset of the subject_token's scopes — the AS enforces this and will reject any scope the user did not originally grant.</td>
+      </tr>
+      <tr>
+        <td><code>audience</code></td>
+        <td><span style="color:var(--c-accent-amber);font-weight:600">OPTIONAL</span></td>
+        <td>The target service identifier. The issued token's <code>aud</code> claim will match this value, ensuring the token is only accepted by the intended downstream API.</td>
+      </tr>
+      <tr>
+        <td><code>resource</code></td>
+        <td><span style="color:var(--c-accent-amber);font-weight:600">OPTIONAL</span></td>
+        <td>URI of the resource server (per RFC 8707 Resource Indicators). An alternative to <code>audience</code> using the resource's URI rather than its identifier.</td>
+      </tr>
+      <tr>
+        <td><code>requested_token_type</code></td>
+        <td><span style="color:var(--c-accent-amber);font-weight:600">OPTIONAL</span></td>
+        <td>Desired output token format URN. Defaults to <code>access_token</code> if omitted.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="okta-note" style="margin-top:24px">
+    <div class="callout-title">Okta Implementation Note — act Claim</div>
+    In Okta's standard On-Behalf-Of / token exchange implementation, the <code>act</code> claim is NOT automatically added to the issued token. The <code>sub</code> remains the user, and the <code>cid</code> (client ID) identifies the service that performed the exchange. To get explicit delegation tracking with an <code>act</code> claim, use the newer <strong>AI Agent Token Exchange</strong> (Early Access) or Cross App Access (XAA) flows. Standard token exchange in Okta still preserves user context — it just doesn't add the explicit <code>act</code> claim in the token payload.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SECTION 3 — Identity Chaining Across Domains
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="identity-chaining" style="margin-top:60px">
+  <div class="section-label">Section 3</div>
+  <h2 class="section-title" style="font-size:clamp(24px,4vw,40px);margin-bottom:12px">Identity Chaining Across Domains</h2>
+  <p class="section-subtitle" style="margin-bottom:32px">RFC 8693 handles delegation within a single trust domain. When an agent in Company A's environment needs to access an API in Company B's environment, a different mechanism is needed — one that bridges trust boundaries without requiring every domain to know every user.</p>
+
+  <div class="concept-card">
+    <h3>draft-ietf-oauth-identity-chaining-07 Overview</h3>
+    <p><strong>Status:</strong> Standards Track, IETF WG Consensus reached, awaiting write-up for publication (as of February 2026).</p>
+    <p style="margin-top:8px"><strong>Authors:</strong> Arndt Schwenkschuster (Defakto Security), Pieter Kasselman, Kelley Burgin (MITRE), Michael Jenkins (NSA-CCSS), Brian Campbell (Ping Identity), Aaron Parecki (Okta)</p>
+    <p style="margin-top:12px">This spec defines how to preserve identity and authorization context across <strong>multiple trust domains</strong> — the essential capability for MCP servers in one organization that need to call upstream APIs in another organization on behalf of a shared user.</p>
+    <p style="margin-top:12px"><strong>The problem it solves:</strong> An MCP client registered in Company A's domain needs to access an API protected by Company B's Authorization Server. Company B's AS has never seen Company A's users. There is no pre-existing federation trust. Yet the access must be user-attributed, user-consented, and auditable in both domains.</p>
+    <p style="margin-top:12px">The solution is a two-step process: first get a <strong>JWT Authorization Grant</strong> from Domain A's AS that attests the user's identity, then present that grant to Domain B's AS to get a Domain B access token.</p>
+    <div class="key-point" style="margin-top:16px">
+      <div class="callout-title">Why Not Just Use RFC 8693 Directly?</div>
+      RFC 8693 requires the receiving AS to be able to validate the presented token. If Company B's AS doesn't trust Company A's AS as an issuer, it cannot validate a token from Company A. The identity chaining spec adds a trust-bridging layer: Company B explicitly trusts the JWT authorization grant format, and the grant is specifically structured to be verifiable without needing full token validation across domains.
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 16px">Two-Step Cross-Domain Flow — Interactive Diagram</h3>
+  <p style="color:var(--c-text-muted);margin-bottom:16px">Click each step to see the HTTP details and the claims structure at each stage.</p>
+
+  <div class="flow-diagram" id="identity-chaining-flow">
+    <div class="flow-diagram-title">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--c-accent-cyan);display:inline-block"></span>
+      draft-ietf-oauth-identity-chaining — Cross-Domain Authorization Flow
+    </div>
+    <div class="flow-parties">
+      <span class="party party-client" style="background:var(--c-okta-blue)">MCP Client / Agent</span>
+      <span class="party party-auth" style="background:var(--c-auth0-purple)">Domain A AS (as.a.org)</span>
+      <span class="party party-device" style="background:var(--c-accent-cyan)">Domain B AS (as.b.org)</span>
+      <span class="party party-resource" style="background:var(--c-accent-green)">Domain B Resource API</span>
+    </div>
+    <div class="flow-steps">
+
+      <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+        <div class="step-num">1</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">Token exchange within Domain A — get JWT Authorization Grant</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">Present Domain A user token; receive a short-lived JWT grant targeted at Domain B</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="1">
+        <div class="step-explain">The agent (registered in Domain A) presents the user's Domain A access token to Domain A's AS. The critical difference from standard RFC 8693: the <code>resource</code> parameter points to <em>Domain B's authorization server endpoint</em> rather than an API. This tells Domain A's AS to produce a cross-domain JWT grant rather than a regular access token.</div>
+        <div class="code-label">HTTP Request — Token Exchange in Domain A (Step 1)</div>
+        <div class="code-block">POST /auth/token HTTP/1.1
+Host: as.a.org
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {Base64(client_id:client_secret)}
+
+grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange
+&amp;resource=https%3A%2F%2Fas.b.org%2Fauth
+&amp;subject_token=ey...{user token issued by as.a.org}
+&amp;subject_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aaccess_token</div>
+        <div class="code-label" style="margin-top:16px">HTTP Response — JWT Authorization Grant (NOT an access token)</div>
+        <div class="code-block">HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "N_A",
+  "issued_token_type": "urn:ietf:params:oauth:token-type:jwt",
+  "expires_in": 60
+}</div>
+        <div class="code-label" style="margin-top:16px">Decoded JWT Authorization Grant Payload</div>
+        <div class="code-block">{
+  "iss": "https://as.a.org",
+  "sub": "alice@a.org",                    // ← User identity in Domain A
+  "aud": "https://as.b.org/auth",          // ← Audience: Domain B's AS (not an API)
+  "exp": {now + 60},                       // ← 60-second expiry — single use window
+  "iat": {now},
+  "jti": "unique-grant-id-abc123",         // ← Prevents replay if single-use enforced
+  "client_id": "mcp-client-agent",
+  "scope": "read:reports write:reports"    // ← Scopes transcribed from Domain A token
+}</div>
+        <div class="step-explain">Notice: <code>token_type: "N_A"</code> — this is not a Bearer token you can use to call an API directly. It is an authorization <em>grant</em>: a notarized statement from Domain A's AS that says "alice has authorized this client to act with these scopes at Domain B." The 60-second expiry is intentional — this grant is meant to be immediately presented to Domain B, not cached.</div>
+      </div>
+
+      <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+        <div class="step-num">2</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">Present JWT grant at Domain B's token endpoint</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">JWT Bearer grant (RFC 7523) — Domain B issues its own access token</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="2">
+        <div class="step-explain">The agent presents the JWT authorization grant to Domain B's token endpoint using the JWT Bearer grant type from RFC 7523. Domain B's AS validates the JWT (signature, expiry, audience), performs its own claims transcription if needed, and issues a Domain B access token scoped to the user's permissions in Domain B's context.</div>
+        <div class="code-label">HTTP Request — JWT Bearer Grant at Domain B (Step 2)</div>
+        <div class="code-block">POST /auth/token HTTP/1.1
+Host: as.b.org
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {Base64(domain-b-client-id:client-secret)}
+
+grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer
+&amp;assertion=eyJhbGciOiJSUzI1NiIs...{JWT authorization grant from Step 1}</div>
+        <div class="code-label" style="margin-top:16px">HTTP Response — Domain B Access Token</div>
+        <div class="code-block">HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "access_token": "eyJraWQiOiJCLWtleS0x...{domain-b-access-token}",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "read:reports"
+  // Note: NO refresh_token — spec requires Domain B not issue refresh tokens
+}</div>
+        <div class="code-label" style="margin-top:16px">Decoded Domain B Access Token</div>
+        <div class="code-block">{
+  "iss": "https://as.b.org",              // ← Issued by Domain B's AS
+  "sub": "alice.doe@b.org",               // ← Identity mapped to Domain B's user store
+  "aud": "https://api.b.org/reports",     // ← Domain B's resource API
+  "scp": ["read:reports"],               // ← Downscoped per Domain B's policy
+  "exp": {now + 3600},
+  // The delegation context from Domain A may or may not be preserved
+  // depending on Domain B's claims transcription configuration
+}</div>
+        <div class="step-explain">Domain B's AS performed <strong>claims transcription</strong>: it mapped <code>alice@a.org</code> to <code>alice.doe@b.org</code> using its configured identity mapping. It also downscoped from <code>read:reports write:reports</code> to <code>read:reports</code> — Domain B's policy may grant only read access to cross-domain clients even if the Domain A grant includes write. No refresh token is issued; when this token expires, the agent must go through the full chain again, forcing re-validation at Domain A.</div>
+        <div class="key-point" style="margin-top:12px">
+          <div class="callout-title">Why No Refresh Token at Domain B?</div>
+          The spec explicitly requires Domain B not to issue refresh tokens for cross-domain grants. This forces periodic re-authorization through the full chain when tokens expire, ensuring that if the user revokes access in Domain A (or if Domain A's AS revokes the client), the effect propagates to Domain B naturally — at the next token expiry.
+        </div>
+      </div>
+
+      <div class="flow-step" data-step="3" onclick="toggleStep(this)">
+        <div class="step-num">3</div>
+        <span class="step-arrow">&#8594;</span>
+        <div>
+          <div class="step-label">Agent calls Domain B Resource API with Domain B access token</div>
+          <div class="step-label-sub" style="font-size:12px;color:var(--c-text-muted);margin-top:2px">Standard Bearer usage — full user attribution in Domain B's context</div>
+        </div>
+      </div>
+      <div class="step-detail" data-for-step="3">
+        <div class="step-explain">The agent now has a first-class Domain B access token — issued by Domain B's own AS, scoped to Domain B's resources, carrying Domain B's user identity. The Domain B resource API validates it as any other local token. No special cross-domain logic needed in the API itself.</div>
+        <div class="code-label">HTTP Request — Agent Calling Domain B Resource API</div>
+        <div class="code-block">GET /reports/q1-2026 HTTP/1.1
+Host: api.b.org
+Authorization: Bearer eyJraWQiOiJCLWtleS0x...{domain-b-access-token}
+Accept: application/json</div>
+        <div class="step-explain">From Domain B's API perspective, this is a normal user request authenticated with a valid local token. The entire trust bridge between Domain A and Domain B happened at the authorization layer, invisible to the resource API. This is the spec's key architectural decision: the resource server doesn't need to know about cross-domain complexity.</div>
+        <div class="security-note" style="margin-top:12px">
+          <div class="callout-title">Audit Responsibility is Split</div>
+          Domain A's AS logs the token exchange event (who asked for a cross-domain grant, for which resource, on behalf of which user). Domain B's AS logs the JWT bearer grant event (which JWT grant was presented, what token was issued). The agent must correlate these across domains for a complete audit trail. This is why <code>jti</code> in the JWT grant and consistent user identifiers matter for forensics.
+        </div>
+      </div>
+
+    </div><!-- /.flow-steps -->
+  </div><!-- /.flow-diagram -->
+
+  <h3 style="margin:32px 0 16px">ID-JAG — Identity Assertion JWT Authorization Grant</h3>
+  <div class="concept-card">
+    <h3>What ID-JAG Is and How It Differs from Standard Token Exchange</h3>
+    <p>The <strong>Identity Assertion JWT Authorization Grant</strong> (ID-JAG) is the underlying OAuth specification powering Okta's Cross App Access (XAA) product. It is defined in <code>draft-ietf-oauth-identity-assertion-authz-grant</code> and builds on the identity chaining concept with one important addition: the <strong>enterprise IdP becomes the mandatory policy gatekeeper</strong> for all cross-app connections.</p>
+    <p style="margin-top:12px">In standard RFC 8693 exchange, two services perform OAuth with each other directly — there is no required central authority. In ID-JAG, the enterprise IdP decides which AI clients are allowed to connect to which resource apps, under what conditions, with what scopes. No connection is possible without the IdP's authorization.</p>
+    <div class="code-label" style="margin-top:20px">ID-JAG Token Structure</div>
+    <div class="code-block">{
+  "typ": "identity-assertion-jwt-authorization-grant",
+  "alg": "RS256",
+  "kid": "okta-signing-key-2026"
+}
+.
+{
+  "iss": "https://your-okta-org.okta.com",  // ← Enterprise IdP as issuer
+  "aud": "https://resource-app-as.example.com/oauth2/v1/token",  // ← Resource app's token endpoint
+  "sub": "00u930ooYXgBltqbs9c5",            // ← Okta user ID (immutable Okta ID)
+  "client_id": "0oa9aw62CPUnXomeU9c5",      // ← The requesting app (AI agent client ID)
+  "iat": 1675220791,
+  "exp": 1675221091,                        // ← Short expiry: 5 minutes maximum
+  "jti": "unique-jag-id-xyz789",
+  "scope": "read:documents write:calendar"  // ← Approved scopes for this connection
+}</div>
+    <p style="margin-top:12px;color:var(--c-text-muted)">This token is <strong>NOT yet an access token.</strong> It is a notarized permission slip from the enterprise IdP — a signed attestation that says "I, the enterprise IdP, confirm that this AI agent client is authorized to access this resource app on behalf of this user with these scopes." The resource app's AS accepts this as the basis for issuing an actual access token.</p>
+  </div>
+
+  <div class="concept-card">
+    <h3>Okta AI Agent Token Exchange — ID-JAG in Practice</h3>
+    <p>Okta's AI Agent Token Exchange flow (Early Access, March 2026) is the production implementation of ID-JAG. It adds an extra step compared to the generic identity chaining spec: the agent must first exchange an ID token for an ID-JAG at Okta's Org AS before presenting the ID-JAG to the Custom AS.</p>
+    <div class="code-label" style="margin-top:16px">Full Okta AI Agent Token Exchange Flow</div>
+    <div class="code-block">Step 1: User authenticates to Okta via OIDC web app (standard Authorization Code + PKCE)
+        → Web app receives ID token with sub = Okta user ID
+
+Step 2: Web app passes ID token to AI agent
+
+Step 3: AI agent requests ID-JAG from Okta Org AS:
+  POST /oauth2/v1/token
+  Host: your-okta-org.okta.com
+  grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+  subject_token={id_token}
+  subject_token_type=urn:ietf:params:oauth:token-type:id_token
+  requested_token_type=urn:ietf:params:oauth:token-type:id-jag
+  audience={resource_app_authorization_server_issuer}
+
+  → Response: ID-JAG token (see structure above), token_type=N_A, expires_in=300
+
+Step 4: AI agent presents ID-JAG to Custom AS (the resource app's auth server):
+  POST /oauth2/{customAS}/v1/token
+  Host: your-okta-org.okta.com
+  grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
+  assertion={id_jag_token}
+
+  → Response: access_token with standard Bearer token_type, scope, expires_in
+
+Step 5: Agent uses access token to call protected API</div>
+    <div class="okta-note" style="margin-top:16px">
+      <div class="callout-title">Okta XAA Admin Configuration</div>
+      The ID-JAG flow only works for connections that an admin has pre-approved in the Okta Admin Console's "Managed Connections" tab. Under the requesting app (AI agent), the admin selects which resource apps the agent is allowed to access. This creates the enterprise-governed allowlist — without an explicit managed connection, the ID-JAG request will fail at Step 3. Current limitation: both apps must be OIN-listed apps with XAA support (custom OIDC apps not yet supported as of March 2026). Contact: <code>xaa@okta.com</code>.
+    </div>
+  </div>
+
+  <h3 style="margin:28px 0 16px">Claims Transcription and Data Minimization</h3>
+  <div class="concept-card">
+    <h3>What Happens to Claims at the Trust Boundary</h3>
+    <p>The identity chaining spec gives Domain A's AS explicit control over what claims cross the trust boundary. This is not just a technical detail — it is a privacy and compliance mechanism that determines what information about Company A's users is exposed to Company B.</p>
+    <table class="info-table" style="margin-top:16px">
+      <thead>
+        <tr>
+          <th>Transcription Operation</th>
+          <th>Example</th>
+          <th>When to Use</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Identity Mapping</strong></td>
+          <td><code>alice@a.com</code> → <code>alice.doe@b.com</code></td>
+          <td>When Domain B has its own user directory with different identifiers</td>
+        </tr>
+        <tr>
+          <td><strong>Claim Removal</strong></td>
+          <td>Strip internal group memberships, HR attributes</td>
+          <td>Data minimization — only send what Domain B needs</td>
+        </tr>
+        <tr>
+          <td><strong>Scope Downscoping</strong></td>
+          <td><code>read:write:admin</code> → <code>read:only</code></td>
+          <td>Cross-domain clients may get fewer permissions than same-domain clients</td>
+        </tr>
+        <tr>
+          <td><strong>Claim Addition</strong></td>
+          <td>Add <code>cross_domain_client: "domain-a-agent"</code></td>
+          <td>Domain B needs metadata about where the request originated</td>
+        </tr>
+        <tr>
+          <td><strong>Claim Renaming</strong></td>
+          <td><code>employee_id</code> → <code>external_ref</code></td>
+          <td>Namespace alignment between domains</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;color:var(--c-text-muted)">Claims transcription configuration lives in Domain A's AS policy — Domain B cannot request claims that Domain A's AS has not been configured to provide. This maintains Domain A's data sovereignty: they control what information leaves their trust boundary, even when users authorize cross-domain access.</p>
+  </div>
+
+  <h3 style="margin:28px 0 16px">Security Requirements from the Spec</h3>
+  <div class="concept-card">
+    <h3>Mandatory Security Properties (draft-ietf-oauth-identity-chaining-07 Section 7)</h3>
+    <p>The identity chaining spec imposes requirements beyond standard OAuth to prevent cross-domain attack vectors specific to chained authorization:</p>
+    <table class="info-table" style="margin-top:16px">
+      <thead>
+        <tr>
+          <th>Requirement</th>
+          <th>Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Domain B MUST NOT issue refresh tokens</strong></td>
+          <td>Forces re-authorization through the full chain at token expiry. When Domain A revokes access, the effect reaches Domain B at the next token refresh cycle without requiring cross-domain revocation coordination.</td>
+        </tr>
+        <tr>
+          <td><strong>JWT authorization grants SHOULD be single-use</strong></td>
+          <td>Prevents replay attacks. If an attacker captures the JWT grant in transit, they cannot use it a second time. The <code>jti</code> claim is used by Domain B's AS to track and reject previously-seen grants.</td>
+        </tr>
+        <tr>
+          <td><strong>JWT grants MUST be short-lived</strong></td>
+          <td>Typically 60 seconds. This minimizes the window for replay even if single-use tracking fails. The grant is meant to be immediately consumed, not cached.</td>
+        </tr>
+        <tr>
+          <td><strong>Domain B SHOULD validate the grant's issuer against a trusted list</strong></td>
+          <td>Domain B must only accept JWT grants from Domain A's ASes that it has explicitly configured as trusted. This is the trust establishment step — Domain B's admin configures which foreign domain ASes are trusted sources.</td>
+        </tr>
+        <tr>
+          <td><strong>Scope at Domain B MUST NOT exceed scopes in the grant</strong></td>
+          <td>Standard token exchange narrowing principle applies cross-domain. Domain B can issue tokens with a subset of the granted scopes, but cannot expand them. Domain B's own authorization policies may further restrict what it will grant.</td>
+        </tr>
+        <tr>
+          <td><strong>PKCE or mTLS client authentication for the agent</strong></td>
+          <td>The agent presenting the JWT grant to Domain B must authenticate itself as a known client at Domain B, preventing unauthorized use of captured grants by other clients.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="security-note" style="margin-top:16px">
+      <div class="callout-title">Trust Establishment Is Out of Scope for the Spec</div>
+      The identity chaining spec defines <em>what happens</em> once trust is established, but not <em>how</em> two domains establish trust in the first place. In practice, this is an administrative process: the admin at Domain B configures Domain A's AS as a trusted issuer (typically by registering Domain A's JWKS URI). The Okta XAA "Managed Connections" feature implements this trust establishment step for Okta-to-Okta cross-org scenarios.
+    </div>
+  </div>
+
+  <div class="okta-note">
+    <div class="callout-title">Current Draft Status — March 2026</div>
+    <strong>draft-ietf-oauth-identity-chaining-07</strong> was published February 2026. The IETF OAuth WG has reached consensus and the draft is awaiting RFC Editor write-up before final publication as a Standards Track RFC. This means the spec is functionally stable — breaking changes are not expected — but it is not yet an RFC number. Okta's XAA and ID-JAG features are an early implementation of the conceptual model in this draft, though Okta's implementation predates the draft's finalization and has some differences from the draft spec (notably the two-step Org AS → Custom AS pattern rather than a single cross-domain exchange).
+  </div>
+</section>
+
+
+<!-- SECTION 4: Consent Models for AI Agents -->
+<section id="consent-models">
+  <h2>4. Consent Models for AI Agents</h2>
+  <p>How and when a user (or admin) authorizes an AI agent to act is one of the most critical design decisions in an agent deployment. Four distinct patterns exist, each with different trade-offs between friction, security, and enterprise control.</p>
+
+  <!-- Pattern 1: Human-in-the-Loop -->
+  <div class="concept-card">
+    <h3>Pattern 1 — Human-in-the-Loop Consent (Standard OAuth PKCE)</h3>
+    <p>The user is redirected to an authorization screen at connection time. They review the requested scopes and explicitly approve or deny. This is standard browser-based OAuth Authorization Code + PKCE.</p>
+    <ul>
+      <li><strong>Best for:</strong> Initial setup, sensitive scope requests, consumer-facing apps</li>
+      <li><strong>Limitation for agents:</strong> Does not work for background or unattended agent tasks — requires an interactive user session</li>
+    </ul>
+  </div>
+
+  <!-- Pattern 2: Pre-Authorized Admin Consent -->
+  <div class="concept-card">
+    <h3>Pattern 2 — Pre-Authorized Admin Consent (Okta Managed Connections)</h3>
+    <p>An IT admin pre-approves specific agent-to-application connections at the organizational level. All users covered by the admin's approval can use the agent without seeing individual consent prompts.</p>
+    <ul>
+      <li><strong>Best for:</strong> Enterprise deployments, approved corporate tools</li>
+      <li><strong>Okta implementation:</strong> Cross App Access — the admin uses the <strong>Manage Connections</strong> tab to establish tenant-level connections between the requesting app (AI agent) and the resource app</li>
+      <li><strong>Trade-off:</strong> Less granular — admin decides on behalf of all users in scope</li>
+    </ul>
+    <div class="okta-note">
+      <strong>Okta XAA Managed Connections:</strong> Once admin establishes the connection, any user assigned to both apps can trigger the token exchange without an individual consent prompt. The IdP is the policy gatekeeper, not each user.
+    </div>
+  </div>
+
+  <!-- Pattern 3: Just-in-Time Consent -->
+  <div class="concept-card">
+    <h3>Pattern 3 — Just-in-Time Consent (Dynamic Permission Requests)</h3>
+    <p>The agent requests permission at the exact moment it needs to invoke a specific tool — not at login time. The user is prompted contextually when the action is about to occur.</p>
+    <ul>
+      <li><strong>Best for:</strong> High-value or sensitive individual actions where user awareness is required</li>
+      <li><strong>Challenge:</strong> Friction at runtime; users can suffer "permission fatigue" if many tools trigger prompts in quick succession</li>
+    </ul>
+  </div>
+
+  <!-- Pattern 4: CIBA -->
+  <div class="concept-card">
+    <h3>Pattern 4 — CIBA: Client Initiated Backchannel Authentication</h3>
+    <p>CIBA (OpenID Foundation standard, supported by Auth0 Enterprise) enables <strong>out-of-band, asynchronous authorization</strong>. The agent and the user interact via entirely separate devices — the agent on a server, the user on their phone. This is the most powerful consent mechanism for AI agents performing high-risk actions.</p>
+
+    <h4>CIBA Interactive Flow</h4>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <strong>Step 1 — Agent calls /bc-authorize</strong>
+        <div class="step-detail">The agent sends a backchannel authorization request to the IdP, including a <code>binding_message</code> — a human-readable description of the action needing approval (e.g., "Approve deletion of 50 files in /prod/data?"). This message ties the push notification to the agent's specific request so the user knows exactly what they are approving.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 2 — AS sends push notification to user's phone</strong>
+        <div class="step-detail">The Authorization Server sends a push notification via Auth0 Guardian (or email) to the user's registered authentication device. The <code>binding_message</code> appears in the notification so the user can verify the context before opening the app.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 3 — User reviews and approves or denies on phone</strong>
+        <div class="step-detail">The user opens the Guardian app (or email), reads the binding message, and taps Approve or Deny. This step happens entirely out-of-band — the agent is not involved and the user's browser is not involved.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 4 — Agent polls /token until response</strong>
+        <div class="step-detail">After receiving the initial <code>auth_req_id</code> from the /bc-authorize response, the agent begins polling the /token endpoint at the specified <code>interval</code>. It continues polling until the user responds or the request expires.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 5 — Agent receives tokens upon approval</strong>
+        <div class="step-detail">When the user approves, the AS returns a standard token response (access token, ID token, refresh token if requested). If the user denies, the polling returns an <code>access_denied</code> error. The agent proceeds or halts based on the outcome.</div>
+      </div>
+    </div>
+
+    <h4>Auth0 CIBA HTTP Request Example</h4>
+    <div class="code-block">
+<pre>POST /bc-authorize HTTP/1.1
+Host: tenant.auth0.com
+Content-Type: application/x-www-form-urlencoded
+
+login_hint=eyJhbGciOiJIUzI1NiJ9...{user hint}
+&amp;scope=openid+profile+email
+&amp;binding_message=Approve+delete+of+50+files+in+/prod/data?
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET</pre>
+    </div>
+    <p><strong>Initial response from /bc-authorize:</strong></p>
+    <div class="code-block">
+<pre>{
+  "auth_req_id": "eyJhbGciOiJIUzI1NiJ9...{auth_req_id}",
+  "expires_in": 300,
+  "interval": 5
+}</pre>
+    </div>
+    <p><strong>Agent polling /token:</strong></p>
+    <div class="code-block">
+<pre>POST /oauth/token HTTP/1.1
+Host: tenant.auth0.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn%3Aopenid%3Aparams%3Agrant-type%3Aciba
+&amp;auth_req_id=eyJhbGciOiJIUzI1NiJ9...
+&amp;client_id=YOUR_CLIENT_ID
+&amp;client_secret=YOUR_CLIENT_SECRET</pre>
+    </div>
+    <div class="security-note">
+      <strong>CIBA Limitations:</strong> CIBA does NOT persist consent — each request is ephemeral. Rate limits apply: 500 requests/minute, 5,000 pending requests per tenant. Auth0 Enterprise plan is required.
+    </div>
+    <p><strong>Auth0 CIBA notification channels:</strong></p>
+    <ul>
+      <li>Auth0 Guardian mobile push notifications (most secure)</li>
+      <li>Email notifications (available as add-on)</li>
+    </ul>
+    <p><strong>Use cases for CIBA with AI agents:</strong></p>
+    <ul>
+      <li>Agent needs to execute a potentially destructive database operation</li>
+      <li>Agent wants to send a financial transaction over a configured threshold</li>
+      <li>Agent needs access to a sensitive document the user has not explicitly shared</li>
+      <li>Any action where security policy requires out-of-band human approval</li>
+    </ul>
+  </div>
+
+  <!-- Step-Up Authorization -->
+  <div class="concept-card">
+    <h3>Step-Up Authorization for High-Risk Actions</h3>
+    <p>Step-up is distinct from CIBA. When an agent already holds a session token but attempts an action requiring higher assurance, the resource server challenges the agent to re-authenticate at a higher level before proceeding.</p>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <strong>Step 1</strong>
+        <div class="step-detail">Agent attempts a sensitive action using its current access token.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 2</strong>
+        <div class="step-detail">Resource server returns <code>401 Insufficient Scope</code> or <code>403</code> with header: <code>WWW-Authenticate: Bearer scope="high-risk:write"</code></div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 3</strong>
+        <div class="step-detail">Agent re-initiates the authorization flow requesting the elevated scope and a higher Authentication Context Class Reference (ACR) value (e.g., MFA required).</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 4</strong>
+        <div class="step-detail">User completes step-up challenge (MFA, biometric, etc.) in-band or via backchannel.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 5</strong>
+        <div class="step-detail">New token issued with elevated assurance level. Agent retries the action and succeeds.</div>
+      </div>
+    </div>
+    <div class="key-point">
+      <strong>CIBA vs. Step-Up:</strong> Step-up is synchronous (inline with the action, user must be present) while CIBA is asynchronous (out-of-band, agent waits for user to respond on a separate device). CIBA is more appropriate for background agents; step-up is more appropriate for interactive agent sessions.
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <h3>Consent Model Comparison</h3>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Consent Model</th>
+        <th>User Involvement</th>
+        <th>Works for Unattended Agents</th>
+        <th>Granularity</th>
+        <th>Enterprise Control</th>
+        <th>Best Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Human-in-the-Loop (PKCE)</td>
+        <td>Required at login</td>
+        <td>No</td>
+        <td>Per-app at login</td>
+        <td>Low</td>
+        <td>Consumer apps, initial setup</td>
+      </tr>
+      <tr>
+        <td>Pre-Authorized Admin (XAA)</td>
+        <td>None (admin decides)</td>
+        <td>Yes</td>
+        <td>Per-connection (admin)</td>
+        <td>High</td>
+        <td>Enterprise corporate tools</td>
+      </tr>
+      <tr>
+        <td>Just-in-Time (JIT)</td>
+        <td>Required at tool invocation</td>
+        <td>No</td>
+        <td>Per-action</td>
+        <td>Medium</td>
+        <td>High-value individual actions</td>
+      </tr>
+      <tr>
+        <td>CIBA (Backchannel)</td>
+        <td>Async on separate device</td>
+        <td>Yes</td>
+        <td>Per-request</td>
+        <td>High</td>
+        <td>High-risk background agent actions</td>
+      </tr>
+      <tr>
+        <td>Step-Up Authorization</td>
+        <td>Required inline</td>
+        <td>No</td>
+        <td>Per-action risk tier</td>
+        <td>High</td>
+        <td>Sensitive actions in interactive sessions</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SECTION 5: Agent Attestation & Trust -->
+<section id="attestation">
+  <h2>5. Agent Attestation &amp; Trust</h2>
+
+  <!-- The Current Gap -->
+  <div class="concept-card">
+    <h3>The Current Gap</h3>
+    <p>As of March 2026, <strong>there is no widely-adopted standard for proving that an AI agent is the legitimate, unmodified software it claims to be.</strong></p>
+    <p>Contrast this with the mobile device ecosystem:</p>
+    <ul>
+      <li>Apple's DeviceCheck / App Attest can prove "this is a genuine, unmodified iOS app running on an uncompromised Apple device"</li>
+      <li>Android's Play Integrity API provides equivalent attestation for Android apps</li>
+      <li>Windows has TPM-backed attestation for device and software state</li>
+    </ul>
+    <p>For AI agents (Claude Desktop, Cursor, GitHub Copilot, custom MCP clients): <strong>no standard attestation mechanism exists.</strong> An agent claiming to be "Claude Desktop v3.2" cannot cryptographically prove it to a relying party.</p>
+    <p>For a complete agent identity attestation solution, the system would need to prove four properties simultaneously:</p>
+    <ol>
+      <li><strong>Software identity:</strong> The agent is the specific named software</li>
+      <li><strong>Software integrity:</strong> The software has not been modified or tampered with</li>
+      <li><strong>Runtime environment:</strong> The software is running in the expected environment</li>
+      <li><strong>User binding:</strong> The software is running under a specific user's authenticated session</li>
+    </ol>
+    <div class="security-note">
+      No current IdP or protocol standard fulfills all four properties for AI desktop agents. This is the core attestation gap that NIST NCCoE is beginning to address.
+    </div>
+  </div>
+
+  <!-- Existing Attestation Primitives -->
+  <h3>Existing Attestation Primitives</h3>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Primitive</th>
+        <th>Type</th>
+        <th>What It Proves</th>
+        <th>Maturity</th>
+        <th>Applicability to AI Agents</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>TPM (Trusted Platform Module)</td>
+        <td>Hardware</td>
+        <td>Device identity and software state via PCR measurements</td>
+        <td>Mature</td>
+        <td>Can prove the device an agent runs on, not the agent itself</td>
+      </tr>
+      <tr>
+        <td>Apple App Attest</td>
+        <td>Hardware-backed (Secure Enclave)</td>
+        <td>Genuine, unmodified iOS/macOS app on uncompromised Apple device</td>
+        <td>Mature (Apple platforms only)</td>
+        <td>Applicable to iOS/macOS AI agents; not cross-platform</td>
+      </tr>
+      <tr>
+        <td>FIDO2 / WebAuthn</td>
+        <td>Hardware (authenticator)</td>
+        <td>User presence and hardware key binding; not software identity</td>
+        <td>Mature</td>
+        <td>User authentication only; cannot prove agent software identity</td>
+      </tr>
+      <tr>
+        <td>SPIFFE / SPIRE</td>
+        <td>Software workload identity</td>
+        <td>Cryptographic identity (SVID) for cloud-native workloads via attestation plugins</td>
+        <td>Emerging in cloud-native</td>
+        <td>Best fit for server-side agents in Kubernetes/cloud; less applicable to desktop agents</td>
+      </tr>
+      <tr>
+        <td>GitHub Actions OIDC</td>
+        <td>CI/CD pipeline identity</td>
+        <td>Proves the specific GitHub Actions workflow run — repository, ref, job</td>
+        <td>Mature (GitHub)</td>
+        <td>Applicable for agents deployed via CI/CD pipelines; not for desktop agents</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Software Statements in DCR -->
+  <div class="concept-card">
+    <h3>Software Statements in Dynamic Client Registration (DCR) for Agent Identity</h3>
+    <p>RFC 7591 defines Dynamic Client Registration, which the MCP specification recommends MCP clients support. DCR allows an agent to register itself with an Authorization Server and receive credentials. The registration request can include a <strong>software statement</strong> — a signed JWT asserting the client's identity.</p>
+    <p>The key insight: the software statement can be signed by a trusted party such as the AI company itself (Anthropic, GitHub, OpenAI). This allows a relying party to verify that the software statement was issued by a party they trust, even if they cannot independently verify the agent binary's integrity.</p>
+
+    <h4>DCR Request with Software Statement</h4>
+    <div class="code-block">
+<pre>POST /oauth/register HTTP/1.1
+Host: authorization-server.example.com
+Content-Type: application/json
+
+{
+  "client_name": "Claude Desktop",
+  "redirect_uris": ["https://localhost:7532/callback"],
+  "grant_types": ["authorization_code"],
+  "token_endpoint_auth_method": "none",
+  "software_id": "claude-desktop",
+  "software_version": "3.2.0",
+  "software_statement": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImFudGhyb3BpYy0yMDI1In0..."
+}</pre>
+    </div>
+    <p>The <code>software_statement</code> JWT is signed by Anthropic's private key and verifiable by checking against Anthropic's published JWKS endpoint. The payload of the software statement contains the canonical software identity claims:</p>
+    <div class="code-block">
+<pre>// software_statement JWT payload (signed by Anthropic)
+{
+  "iss": "https://anthropic.com",
+  "iat": 1741564800,
+  "software_id": "claude-desktop",
+  "software_version": "3.2.0",
+  "software_roles": ["mcp-client"],
+  "redirect_uris": ["https://localhost:7532/callback"]
+}</pre>
+    </div>
+    <div class="security-note">
+      <strong>Limitation:</strong> DCR with a software statement proves the client was registered with a credential issued by a trusted party. It does NOT prove that the running binary is unmodified or that a compromised/impersonating client isn't replaying a legitimate software statement. This is a meaningful improvement over no attestation, but is not equivalent to hardware-backed attestation.
+    </div>
+  </div>
+
+  <!-- NIST NCCoE -->
+  <div class="concept-card">
+    <h3>NIST NCCoE Initiative — February 2026</h3>
+    <p>NIST's National Cybersecurity Center of Excellence (NCCoE) published a concept paper in February 2026: <strong>"Accelerating the Adoption of Software and AI Agent Identity and Authorization"</strong> with a public comment period open through April 2, 2026.</p>
+    <p>Key scope areas the NCCoE is exploring:</p>
+    <ul>
+      <li>Standards-based approaches to identify, manage, and authorize AI agents</li>
+      <li>How existing identity standards apply to agents with "capability for autonomous decision-making and taking action with limited human supervision"</li>
+      <li>The exponential scale and risk increase when agents replace manual automation</li>
+      <li>Attestation requirements for software and AI agent identity claims</li>
+    </ul>
+    <div class="key-point">
+      This is not a standard yet. It is NIST formally recognizing the gap and beginning to define requirements. The output of this project will directly influence future NIST SP 800-series guidance and likely shape how IdP vendors build attestation support. Watch the April 2026 comment resolution for early signals on the direction.
+    </div>
+    <p><strong>Reference:</strong> <a href="https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization" target="_blank">https://www.nccoe.nist.gov/projects/software-and-ai-agent-identity-and-authorization</a></p>
+  </div>
+</section>
+
+<!-- SECTION 6: Okta & Auth0 Implementation -->
+<section id="implementation">
+  <h2>6. Okta &amp; Auth0 Implementation</h2>
+
+  <!-- Okta Token Exchange OBO -->
+  <div class="concept-card">
+    <h3>Okta Token Exchange (On-Behalf-Of / RFC 8693) — Configuration Walkthrough</h3>
+    <div class="okta-note">
+      <strong>Requirement:</strong> Custom Authorization Server required (not the Org AS). Service app with "Token Exchange" grant type enabled.
+    </div>
+
+    <h4>Step-by-Step Admin Console Setup</h4>
+    <ol>
+      <li>
+        <strong>Create a Service App (API Services type)</strong><br>
+        Applications &rarr; Applications &rarr; Create App Integration &rarr; API Services<br>
+        Name it (e.g., "AI-Agent-Service"). Under <em>Advanced &rarr; Grant type</em>, enable <strong>Token Exchange</strong>.
+      </li>
+      <li>
+        <strong>Create custom scopes on the Custom AS</strong><br>
+        Security &rarr; API &rarr; {Your Custom AS} &rarr; Scopes tab<br>
+        Add scopes such as <code>api:access:read</code>, <code>api:access:write</code>
+      </li>
+      <li>
+        <strong>Create access policies</strong><br>
+        The native or web app gets a policy to call API-A. The service app (API-A) gets a policy to call API-B using token exchange. Policy rules specify which scopes are permitted for the exchange.
+      </li>
+      <li>
+        <strong>For cross-AS exchange: add trusted servers</strong><br>
+        Security &rarr; API &rarr; {AS handling exchange} &rarr; Trusted servers tab<br>
+        Add the AS that issued the subject token.
+      </li>
+    </ol>
+
+    <h4>Token Exchange Request (curl)</h4>
+    <div class="code-block">
+<pre>curl --location --request POST \
+  --url 'https://{yourOktaDomain}/oauth2/default/v1/token' \
+  --header 'Accept: application/json' \
+  --header 'Authorization: Basic {Base64(service_client_id:client_secret)}' \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data-urlencode 'grant_type=urn:ietf:params:oauth:grant-type:token-exchange' \
+  --data-urlencode 'subject_token_type=urn:ietf:params:oauth:token-type:access_token' \
+  --data-urlencode 'subject_token={access_token_from_user_authn}' \
+  --data-urlencode 'scope=api:access:read api:access:write' \
+  --data-urlencode 'audience=com.api.downstream'</pre>
+    </div>
+
+    <h4>Decoded Response Token Claims</h4>
+    <div class="code-block">
+<pre>{
+  "iss": "https://your-okta-domain.okta.com/oauth2/default",
+  "aud": "com.api.downstream",
+  "sub": "user@example.com",          // Original user — preserved
+  "cid": "0oa9aw62CPUnXomeU9c5",       // Service app client ID (which agent exchanged)
+  "uid": "00u930ooYXgBltqbs9c5",       // Okta user ID
+  "scp": ["api:access:read", "api:access:write"],
+  "exp": 1675224391
+}</pre>
+    </div>
+    <div class="security-note">
+      <strong>Important Okta note:</strong> In Okta's current standard OBO implementation, the <code>act</code> claim is NOT automatically added to the response token. The <code>sub</code> remains the user and <code>cid</code> identifies the exchanging service. For explicit delegation tracking with the <code>act</code> claim, use the newer AI Agent Token Exchange (Early Access) or Cross App Access (XAA) flows described below.
+    </div>
+  </div>
+
+  <!-- Okta XAA -->
+  <div class="concept-card">
+    <h3>Okta Cross App Access (XAA) — Configuration</h3>
+    <p>XAA inserts the enterprise IdP as a mandatory policy checkpoint in all AI agent-to-app connections. Built on the ID-JAG draft standard. Self-service Early Access as of January 2026.</p>
+
+    <h4>Enable XAA</h4>
+    <p>Settings &rarr; Features &rarr; Early Access &rarr; <strong>Cross App Access</strong> &rarr; Enable</p>
+
+    <h4>AI Agent Token Exchange Flow (ID-JAG)</h4>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <strong>Step 1 — User authenticates to Okta Org AS</strong>
+        <div class="step-detail">User logs in via OIDC web app and receives an ID token from the Org AS.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 2 — Web app passes ID token to AI agent</strong>
+        <div class="step-detail">The web application passes the ID token to the AI agent layer.</div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 3 — AI agent requests ID-JAG from Org AS</strong>
+        <div class="step-detail">
+          <div class="code-block">
+<pre>POST /oauth2/v1/token
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+&amp;subject_token={id_token}
+&amp;subject_token_type=urn:ietf:params:oauth:token-type:id_token
+&amp;requested_token_type=urn:ietf:params:oauth:token-type:id-jag
+&amp;audience={resource_app_authorization_server}</pre>
+          </div>
+          Response: an ID-JAG token (short-lived, single-use authorization grant — not yet an access token).
+        </div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 4 — AI agent presents ID-JAG to Custom AS</strong>
+        <div class="step-detail">
+          <div class="code-block">
+<pre>POST /oauth2/{customAS}/v1/token
+grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
+&amp;assertion={id_jag_token}</pre>
+          </div>
+          Response: access token for the downstream resource API.
+        </div>
+      </div>
+      <div class="flow-step">
+        <strong>Step 5 — Agent calls protected API</strong>
+        <div class="step-detail">Agent uses the access token as a Bearer token to call the downstream resource. The resource server can verify the token's audience and scopes.</div>
+      </div>
+    </div>
+
+    <h4>Managed Connections Tab</h4>
+    <p>In the Okta Admin Console, each registered AI agent has a <strong>Managed Connections</strong> tab where admins configure:</p>
+    <ul>
+      <li>Which Authorization Servers the agent can access</li>
+      <li>Which Secrets from Okta Privileged Access the agent can request</li>
+      <li>Which Service Accounts the agent can use</li>
+    </ul>
+    <div class="okta-note">
+      <strong>Current limitations (March 2026):</strong> XAA is designed for cross-domain use — requesting app and resource app should be in separate trust domains. Both apps must currently be OIN apps with XAA support (custom OIDC apps not yet supported). The <code>sub</code> claim in ID-JAG is the Okta user's immutable Okta ID and cannot be remapped to email. Additional claims cannot be added to ID-JAG tokens in the current implementation. First-party / internal-only setup is on the roadmap. Contact: <a href="mailto:xaa@okta.com">xaa@okta.com</a> for enterprise implementation support.
+    </div>
+  </div>
+
+  <!-- Auth0 Token Vault -->
+  <div class="concept-card">
+    <h3>Auth0 Token Vault — SDK Code Examples</h3>
+    <p>Auth0 Token Vault provides centralized, encrypted storage for third-party provider tokens (Google, Slack, GitHub, Salesforce, 30+ providers). Agents never touch provider refresh tokens directly. Built on the RFC 8693 Token Exchange pattern, executed internally by Auth0.</p>
+
+    <h4>How Token Vault Works</h4>
+    <ol>
+      <li>User signs in via Auth0 with a social or enterprise connection (e.g., Google)</li>
+      <li>Provider tokens are stored in Token Vault (encrypted at rest)</li>
+      <li>Agent calls <code>getAccessTokenForConnection()</code> — no direct provider credential access</li>
+      <li>Auth0 performs the RFC 8693 exchange internally and refreshes if needed</li>
+      <li>Agent receives a fresh short-lived provider access token</li>
+    </ol>
+
+    <h4>Basic Next.js Route Handler</h4>
+    <div class="code-block">
+<pre>// app/api/google/route.ts
+import { auth0 } from "./lib/auth0";
+
+export async function GET() {
+  try {
+    const token = await auth0.getAccessTokenForConnection({
+      connection: "google-oauth2"
+    });
+    // Use token to call Google APIs on behalf of the authenticated user
+    const response = await fetch("https://www.googleapis.com/calendar/v3/events", {
+      headers: { Authorization: `Bearer ${token.token}` }
+    });
+    return Response.json(await response.json());
+  } catch (err) {
+    // FederatedConnectionError — user needs to re-consent to Google connection
+    return Response.json({ error: "Re-authorization required" }, { status: 401 });
+  }
+}</pre>
+    </div>
+
+    <h4>Vercel AI SDK Integration (Google Calendar Tool)</h4>
+    <div class="code-block">
+<pre>// lib/agent-tools.ts
+import { auth0AI } from "@auth0/ai-sdk";
+import { auth0 } from "./auth0";
+
+export const withGoogleConnection = auth0AI.withTokenForConnection({
+  connection: "google-oauth2",
+  scopes: ["https://www.googleapis.com/auth/calendar.events"],
+  refreshToken: async () => {
+    const session = await auth0.getSession();
+    return session?.tokenSet?.refreshToken;
+  },
+});
+
+// Wrap your AI tool with the connection handler
+export const calendarTool = withGoogleConnection(
+  async ({ token }) => {
+    // token is a fresh Google access token — Token Vault handled the exchange
+    const events = await fetch(
+      "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return events.json();
+  }
+);</pre>
+    </div>
+    <p><strong>Framework support:</strong> LangChain, LlamaIndex, Cloudflare Agents, Vercel AI, Firebase Genkit</p>
+  </div>
+
+  <!-- Auth0 CIBA Endpoints -->
+  <div class="concept-card">
+    <h3>Auth0 CIBA Endpoints</h3>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Method</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>/bc-authorize</code></td>
+          <td>POST</td>
+          <td>Initiate backchannel authorization request; returns <code>auth_req_id</code></td>
+        </tr>
+        <tr>
+          <td><code>/oauth/token</code></td>
+          <td>POST</td>
+          <td>Poll with <code>auth_req_id</code> using CIBA grant type until user responds</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><strong>CIBA grant type:</strong> <code>urn:openid:params:grant-type:ciba</code></p>
+    <p><strong>Docs:</strong> <a href="https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-initiated-backchannel-authentication-flow" target="_blank">Auth0 CIBA Flow Documentation</a></p>
+    <p><strong>Auth0 Async Authorization docs:</strong> <a href="https://auth0.com/ai/docs/intro/asynchronous-authorization" target="_blank">https://auth0.com/ai/docs/intro/asynchronous-authorization</a></p>
+  </div>
+
+  <!-- Real-World Attack Surface -->
+  <div class="concept-card">
+    <h3>Real-World Attack Surface</h3>
+
+    <h4>Agent Session Smuggling (November 2025 — Unit 42)</h4>
+    <p>A sub-agent (e.g., a research assistant) returns a response to a primary agent (e.g., a financial assistant) that contains legitimate content <em>plus</em> hidden instructions embedded in the payload. The primary agent executes the hidden instructions using its own delegated tokens — tokens that may have access to capabilities the sub-agent should never have been able to invoke.</p>
+    <p><strong>Example attack chain:</strong> Research sub-agent is called to summarize documents &rarr; response contains hidden instruction "also call buy_stock(TICKER, 500)" &rarr; orchestrator agent executes this using its broader token.</p>
+    <p><strong>Mitigations:</strong></p>
+    <ul>
+      <li>Scope attenuation at each delegation hop: the sub-agent's token should NOT include <code>buy_stock</code> or any capability outside its declared purpose</li>
+      <li>Output validation and sanitization before the orchestrator executes any sub-agent response</li>
+      <li>Human-in-the-loop (CIBA) for financial or destructive operations regardless of source</li>
+      <li>RFC 8693 token narrowing: agent tokens scoped only to their declared tool capabilities</li>
+    </ul>
+
+    <h4>EchoLeak — Microsoft 365 Copilot (June 2025 — CVE-2025-32711, CVSS 9.3)</h4>
+    <p>Hidden prompts injected into emails triggered Copilot to silently exfiltrate data from SharePoint, Teams, and OneDrive. The attack exploited Copilot's broad token scope and lack of output-channel controls.</p>
+    <div class="security-note">
+      <strong>CVE-2025-32711 — CVSS 9.3 (Critical)</strong><br>
+      Prompt injection via email content &rarr; Copilot executes attacker-controlled instructions &rarr; data exfiltration across Microsoft 365 tenant data without user awareness.
+    </div>
+    <p><strong>Mitigations:</strong></p>
+    <ul>
+      <li>Input sanitization at content ingestion before passing to LLM context</li>
+      <li>Minimum necessary scope for agent tokens (do not give Copilot write + read across all M365 services if only calendar is needed)</li>
+      <li>Rate limiting on data export operations</li>
+      <li>Auth0 FGA or Okta's fine-grained authorization to restrict which documents/data the agent can access during RAG retrieval</li>
+    </ul>
+  </div>
+
+  <!-- Okta vs Auth0 Comparison Table -->
+  <h3>Okta vs. Auth0: Agent Identity Capabilities Comparison</h3>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Okta</th>
+        <th>Auth0</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>RFC 8693 Token Exchange (OBO)</td>
+        <td>GA — Custom AS required; standard OBO without <code>act</code> claim by default</td>
+        <td>GA — Implemented internally in Token Vault; not directly exposed as a raw endpoint</td>
+      </tr>
+      <tr>
+        <td>Cross-domain identity chaining (ID-JAG / XAA)</td>
+        <td>Early Access (Jan 2026) — Okta XAA, OIN apps required, built on ID-JAG draft</td>
+        <td>Not available as of March 2026</td>
+      </tr>
+      <tr>
+        <td>Third-party token vault</td>
+        <td>Via Okta Privileged Access (separate product), not native to IdP token flow</td>
+        <td>Auth0 Token Vault — GA, 30+ providers, SDK-native</td>
+      </tr>
+      <tr>
+        <td>CIBA (async user approval)</td>
+        <td>Not natively supported (as of March 2026)</td>
+        <td>GA on Enterprise plan — Guardian push + email notification channels</td>
+      </tr>
+      <tr>
+        <td>Fine-grained authorization for RAG</td>
+        <td>Via OPA integration or custom policies; no native RAG-specific product</td>
+        <td>Auth0 FGA (Zanzibar model) — GA, per-document/per-user authorization for RAG pipelines</td>
+      </tr>
+      <tr>
+        <td>Agent admin governance console</td>
+        <td>Managed Connections tab per registered AI agent; admin-governed allowlists</td>
+        <td>Auth0 Dashboard app settings; less dedicated agent governance UI</td>
+      </tr>
+      <tr>
+        <td>Dynamic Client Registration (DCR)</td>
+        <td>Supported via OAuth 2.0 DCR endpoint</td>
+        <td>Supported via OAuth 2.0 DCR endpoint</td>
+      </tr>
+      <tr>
+        <td>MCP spec authorization support</td>
+        <td>Supported via standard OAuth flows; XAA adds enterprise governance layer</td>
+        <td>Supported; Auth0 AI SDK has MCP-specific helpers</td>
+      </tr>
+      <tr>
+        <td>Audit trail for agent actions</td>
+        <td>Okta System Log captures sub, cid, aud, scp per token grant; XAA adds managing connection ID</td>
+        <td>Auth0 Logs capture grant events; less granular chain visibility than Okta for multi-hop flows</td>
+      </tr>
+      <tr>
+        <td>Framework SDKs for AI agents</td>
+        <td>No dedicated AI agent SDK; standard Okta SDKs</td>
+        <td>auth0-ai SDK with helpers for LangChain, Vercel AI, LlamaIndex, Cloudflare Agents</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="key-point">
+    <strong>Summary positioning:</strong> Okta leads on enterprise governance and cross-app access control (XAA, Managed Connections, System Log audit trail). Auth0 leads on developer-facing AI agent tooling (Token Vault SDK, CIBA, FGA for RAG, framework integrations). For a customer with both products in their stack, they are complementary — Okta governs who can connect to what, Auth0 handles the agent-level token mechanics and third-party integrations.
+  </div>
+</section>
+
+
+</div>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>Agent Identity &amp; Delegation &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers RFC 8693 Token Exchange, CIBA (Client-Initiated Backchannel Authentication), and Okta's agentic identity patterns.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Flow Diagram Step Toggle ─── */
+function toggleStep(el){
+  const diagram=el.closest('.flow-diagram')||el.closest('.flow-steps')?.parentElement;
+  if(!diagram)return;
+  const wasActive=el.classList.contains('active');
+  diagram.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active'));
+  diagram.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+  if(!wasActive){
+    el.classList.add('active');
+    const stepNum=el.dataset.step;
+    const detail=diagram.querySelector('.step-detail[data-for-step="'+stepNum+'"]');
+    if(detail)detail.classList.add('visible');
+  }
+}
+</script>
+
+</body>
+</html>

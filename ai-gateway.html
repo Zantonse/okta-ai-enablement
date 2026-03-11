@@ -1,0 +1,3099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>AI Gateway &amp; API Security — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-red);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-red);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Content Components ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+/* ─── Flow Diagrams ─── */
+.flow-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.flow-diagram-title{
+  padding:16px 20px;font-weight:600;font-size:15px;
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-parties{
+  display:flex;justify-content:space-around;padding:16px 20px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+}
+.party{
+  padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;
+}
+.party-client{background:var(--c-okta-blue)}
+.party-auth{background:var(--c-auth0-purple)}
+.party-resource{background:var(--c-accent-green)}
+.party-user{background:var(--c-accent-amber)}
+.party-device{background:var(--c-accent-cyan)}
+
+.flow-steps{padding:8px}
+.flow-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;margin:4px 8px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;border:1px solid transparent;
+}
+.flow-step:hover{background:var(--c-surface);border-color:var(--c-border)}
+.flow-step.active{background:var(--c-surface);border-color:var(--c-okta-blue)}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);
+  flex-shrink:0;transition:all 0.2s;
+}
+.flow-step.active .step-num{background:var(--c-okta-blue);color:#fff;border-color:var(--c-okta-blue)}
+.step-arrow{font-size:16px;color:var(--c-text-dim);flex-shrink:0}
+.step-label{font-size:14px;font-weight:500}
+.step-label-sub{font-size:12px;color:var(--c-text-muted);margin-left:auto}
+
+.step-detail{
+  display:none;margin:0 12px 8px;padding:16px 20px;
+  background:var(--c-surface);border-radius:8px;
+  border-left:3px solid var(--c-okta-blue);
+  animation:fadeIn 0.2s ease;
+}
+.step-detail.visible{display:block}
+.step-http{margin-bottom:12px}
+.step-explain{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .flow-parties{flex-wrap:wrap;gap:6px;justify-content:center}
+  .comparison-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" class="current">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">OIDC &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html" style="font-weight:600;color:var(--c-accent-red)">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      API Security &middot; DLP &middot; Observability
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">AI Gateway &amp; API Security</h1>
+    <p class="section-subtitle">Securing enterprise LLM access with identity-aware gateways, content filtering, and observability.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Gateway &amp; API Security for LLM Workloads</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #1a1a2e;
+    background: #f7f8fc;
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1b2a4a 60%, #2c3e6b 100%);
+    color: #fff;
+    padding: 56px 48px 48px;
+    border-bottom: 4px solid #4f6ef7;
+  }
+  .page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+  .page-header p {
+    color: #a8b8d8;
+    font-size: 0.95rem;
+    max-width: 700px;
+  }
+  .header-meta {
+    margin-top: 18px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-meta span {
+    background: rgba(79,110,247,0.18);
+    border: 1px solid rgba(79,110,247,0.35);
+    color: #c5d4ff;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .toc-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e6f0;
+    padding: 14px 48px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .toc-bar a {
+    font-size: 0.82rem;
+    color: #4f6ef7;
+    text-decoration: none;
+    padding: 4px 12px;
+    border-radius: 16px;
+    border: 1px solid #dce4fd;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+  .toc-bar a:hover { background: #eef1ff; }
+
+  .content-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  /* Section layout */
+  .section {
+    margin-bottom: 64px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e6f0;
+  }
+  .section-number {
+    background: #4f6ef7;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0d1b2a;
+    letter-spacing: -0.3px;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1b2a4a;
+    margin: 28px 0 12px;
+  }
+
+  p {
+    margin-bottom: 14px;
+    color: #2d3748;
+  }
+
+  /* Concept cards */
+  .concept-card {
+    background: #fff;
+    border: 1px solid #e2e6f0;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .concept-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0d1b2a;
+    margin-bottom: 8px;
+  }
+  .concept-card p {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    color: #4a5568;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .card-accent-red    { border-left: 4px solid #e53e3e; }
+  .card-accent-orange { border-left: 4px solid #ed8936; }
+  .card-accent-yellow { border-left: 4px solid #d69e2e; }
+  .card-accent-purple { border-left: 4px solid #805ad5; }
+  .card-accent-teal   { border-left: 4px solid #319795; }
+  .card-accent-blue   { border-left: 4px solid #4f6ef7; }
+  .card-accent-green  { border-left: 4px solid #38a169; }
+
+  /* Flow diagram */
+  .flow-diagram {
+    background: #0d1b2a;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .flow-diagram pre {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    color: #a8c5f0;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid #e2e6f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .flow-step-num {
+    background: #4f6ef7;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-detail {
+    flex: 1;
+  }
+  .step-detail strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #0d1b2a;
+    margin-bottom: 3px;
+  }
+  .step-detail span {
+    font-size: 0.85rem;
+    color: #4a5568;
+  }
+
+  /* Tables */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 0.88rem;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .info-table thead tr {
+    background: #1b2a4a;
+    color: #fff;
+  }
+  .info-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.3px;
+  }
+  .info-table tbody tr { border-bottom: 1px solid #edf0f7; }
+  .info-table tbody tr:last-child { border-bottom: none; }
+  .info-table tbody tr:nth-child(even) { background: #f7f8fc; }
+  .info-table tbody td {
+    padding: 11px 16px;
+    vertical-align: top;
+    color: #2d3748;
+    line-height: 1.5;
+  }
+  .info-table tbody td:first-child { font-weight: 600; color: #1b2a4a; }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .badge-blue   { background: #ebf0ff; color: #4f6ef7; }
+  .badge-green  { background: #e6ffed; color: #2f855a; }
+  .badge-red    { background: #fff5f5; color: #c53030; }
+  .badge-orange { background: #fffaf0; color: #c05621; }
+  .badge-purple { background: #faf5ff; color: #6b46c1; }
+
+  /* Security / Key notes */
+  .security-note {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-left: 4px solid #e53e3e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.88rem;
+    color: #742a2a;
+  }
+  .security-note strong { color: #c53030; }
+
+  .key-point {
+    background: #ebf0ff;
+    border: 1px solid #c3d0ff;
+    border-left: 4px solid #4f6ef7;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.88rem;
+    color: #1b2a4a;
+  }
+  .key-point strong { color: #2c52c8; }
+
+  .warning-note {
+    background: #fffaf0;
+    border: 1px solid #fbd38d;
+    border-left: 4px solid #ed8936;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.88rem;
+    color: #7b341e;
+  }
+
+  /* Code blocks */
+  .code-block {
+    background: #0f1923;
+    border-radius: 10px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .code-block-header {
+    background: #1a2a3a;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .code-block-header span {
+    font-size: 0.75rem;
+    color: #7a90a8;
+    font-family: "SF Mono", Consolas, monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .code-block pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+  }
+  .code-block code {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.83rem;
+    color: #c9d5e8;
+    line-height: 1.7;
+    white-space: pre;
+  }
+
+  /* Syntax token colors */
+  .t-kw   { color: #ff79c6; }
+  .t-str  { color: #f1fa8c; }
+  .t-cmt  { color: #6272a4; font-style: italic; }
+  .t-fn   { color: #50fa7b; }
+  .t-num  { color: #bd93f9; }
+  .t-key  { color: #8be9fd; }
+  .t-val  { color: #ffb86c; }
+
+  /* Stat callouts */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid #e2e6f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-align: center;
+  }
+  .stat-card .stat-num {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #4f6ef7;
+    line-height: 1.2;
+  }
+  .stat-card .stat-label {
+    font-size: 0.78rem;
+    color: #4a5568;
+    margin-top: 4px;
+  }
+
+  /* Scope tag display */
+  .scope-tag {
+    display: inline-block;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 0.78rem;
+    background: #1b2a4a;
+    color: #8be9fd;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin: 2px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #c3d0ff, transparent);
+    margin: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>AI Gateway &amp; API Security for LLM Workloads</h1>
+  <p>Enterprise identity and access management patterns for securing AI/LLM APIs. Maps directly to Okta API Access Management and identity-aware proxy architecture.</p>
+  <div class="header-meta">
+    <span>Sections 1-4 of 8</span>
+    <span>Research: 2026-03-10</span>
+    <span>Market: $3.9B (2024) → $9.8B (2031)</span>
+    <span>Source: Okta SE Enablement</span>
+  </div>
+</header>
+
+<nav class="toc-bar">
+  <a href="#section1">1. What is an AI Gateway?</a>
+  <a href="#section2">2. Authentication &amp; Authorization</a>
+  <a href="#section3">3. Content Security</a>
+  <a href="#section4">4. Observability &amp; Audit</a>
+</nav>
+
+<div class="content-wrapper">
+
+  <!-- ===== SECTION 1 ===== -->
+  <section class="section" id="section1">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>What is an AI Gateway?</h2>
+    </div>
+
+    <p>An AI Gateway (also called an LLM Gateway, AI API Gateway, AI Control Plane, Model Router, or Prompt Firewall) is a <strong>policy-enforced reverse proxy</strong> that sits between application consumers and LLM providers — OpenAI, Anthropic, AWS Bedrock, Google Vertex, Azure OpenAI, or self-hosted models.</p>
+
+    <div class="key-point">
+      <strong>Core definition:</strong> The AI gateway is the single front door for all AI API calls. It chooses and fails over between models, enforces token budgets and rate limits, applies safety and DLP rules, pins traffic to compliant data residency regions, and exposes auditable usage and cost metrics.
+    </div>
+
+    <h3>Traditional Stack vs. AI-Augmented Stack</h3>
+
+    <div class="flow-diagram">
+      <pre>
+  Traditional Stack:
+    Client ─────► [API Gateway] ─────► Microservices
+
+  AI-Augmented Stack:
+    Client ─────► [API Gateway] ─────► [AI Gateway] ─────► LLM Providers
+                                                            ├── OpenAI
+                                                            ├── Anthropic
+                                                            ├── AWS Bedrock
+                                                            └── Internal Models
+
+  Note: The AI gateway is NOT a replacement for a traditional API gateway.
+  The API gateway handles authentication, routing, and microservice traffic.
+  The AI gateway handles model-aware governance.</pre>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num">$3.9B</div>
+        <div class="stat-label">AI Gateway market value, 2024</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">$9.8B</div>
+        <div class="stat-label">Projected market, 2031 (14.3% CAGR)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">233</div>
+        <div class="stat-label">AI security incidents in 2024 (Stanford AI Index)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">56.4%</div>
+        <div class="stat-label">YoY increase in AI security incidents</div>
+      </div>
+    </div>
+
+    <h3>Five Enterprise Problems an AI Gateway Solves</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-red">
+        <h4>Problem 1 — Cost Spirals</h4>
+        <p>GPT-4 can cost 10-100x more than smaller models per token. Without governance, costs explode. 90%+ of organizations have employees actively using AI — mostly through unapproved personal accounts.</p>
+      </div>
+      <div class="concept-card card-accent-orange">
+        <h4>Problem 2 — Data Leakage</h4>
+        <p>Sensitive corporate data flows through unmonitored channels. Source code, customer records, and financial data reach external LLMs with zero DLP enforcement or audit trail.</p>
+      </div>
+      <div class="concept-card card-accent-yellow">
+        <h4>Problem 3 — Compliance Gaps</h4>
+        <p>EU AI Act enforcement begins August 2026. SEC 2026 priorities classify AI as a clear operational risk. Regulated industries need complete audit trails of every AI interaction.</p>
+      </div>
+      <div class="concept-card card-accent-purple">
+        <h4>Problem 4 — Shadow AI</h4>
+        <p>Employees using personal ChatGPT or Claude accounts bypass enterprise controls entirely. No visibility, no DLP, no audit trail. Only 40% of companies have purchased official AI subscriptions.</p>
+      </div>
+      <div class="concept-card card-accent-teal">
+        <h4>Problem 5 — Agentic Attack Surface</h4>
+        <p>Gartner projects 40% of enterprise apps will embed AI agents by end of 2026. Agents initiate autonomous actions, requiring centralized governance that request-by-request controls cannot provide.</p>
+      </div>
+    </div>
+
+    <h3>Core Capabilities: AI Gateway vs. Traditional API Gateway</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Traditional API Gateway</th>
+          <th>AI Gateway</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Authentication / AuthZ</td>
+          <td>OAuth, API keys</td>
+          <td>OAuth + model-level scoping</td>
+        </tr>
+        <tr>
+          <td>Rate Limiting</td>
+          <td>Requests/minute</td>
+          <td>Tokens/min, requests/min, budget/month</td>
+        </tr>
+        <tr>
+          <td>Caching</td>
+          <td>Exact-match URL cache</td>
+          <td>Semantic caching (meaning-aware)</td>
+        </tr>
+        <tr>
+          <td>Security</td>
+          <td>WAF, auth, CORS</td>
+          <td>Prompt injection, DLP, PII redaction</td>
+        </tr>
+        <tr>
+          <td>Observability</td>
+          <td>Latency, errors, RPS</td>
+          <td>Token usage, cost, model performance, TTFT</td>
+        </tr>
+        <tr>
+          <td>Routing</td>
+          <td>Service routing</td>
+          <td>Model routing, failover, A/B testing</td>
+        </tr>
+        <tr>
+          <td>Compliance</td>
+          <td>Audit logs</td>
+          <td>Prompt/response logging, data residency</td>
+        </tr>
+        <tr>
+          <td>Content Moderation</td>
+          <td>None native</td>
+          <td>Guardrails, output filtering</td>
+        </tr>
+        <tr>
+          <td>Cost Management</td>
+          <td>Bandwidth tracking</td>
+          <td>Per-token, per-user, per-team budget enforcement</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Market Context</h3>
+    <p>The AI gateway market was valued at USD $3.9 billion in 2024 and is projected to reach USD $9.8 billion by 2031 at a CAGR of 14.3%. The Stanford 2025 AI Index documented 233 AI-related security incidents in 2024 — a 56.4% increase year-over-year. Global AI spending is projected to reach $2.52 trillion in 2026 (Gartner).</p>
+
+    <div class="warning-note">
+      <strong>Compliance deadlines in effect:</strong> EU AI Act enforcement phase begins August 2, 2026. Colorado SB24-205 mandates risk management and impact assessments starting February 2026. SEC 2026 examination priorities have shifted AI from "emerging concern" to "clear area of operational risk."
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== SECTION 2 ===== -->
+  <section class="section" id="section2">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>Authentication &amp; Authorization for AI APIs</h2>
+    </div>
+
+    <h3>The Problem with Static API Keys</h3>
+    <p>Traditional LLM API access uses static API keys in the form <code>Authorization: Bearer sk-abc123...</code>. This creates structural problems at enterprise scale:</p>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-red">
+        <h4>No User Identity</h4>
+        <p>Cannot distinguish which employee or service called the model. All usage is attributed to the key, not the person.</p>
+      </div>
+      <div class="concept-card card-accent-red">
+        <h4>No Model-Level Scoping</h4>
+        <p>One key grants access to all models. There is no mechanism to restrict a developer to GPT-3.5 only while reserving GPT-4 for premium users.</p>
+      </div>
+      <div class="concept-card card-accent-red">
+        <h4>No Per-User Rate Limiting</h4>
+        <p>A single compromised key can drain the entire organization's budget. There is no per-person or per-team quota enforcement.</p>
+      </div>
+      <div class="concept-card card-accent-red">
+        <h4>Token Theft Risk</h4>
+        <p>Bearer token theft provides full API access. There is no sender-constraint mechanism to bind the token to a specific client identity.</p>
+      </div>
+    </div>
+
+    <h3>OAuth 2.1 Scope Taxonomy for AI APIs</h3>
+    <p>OAuth 2.1 (the consolidated and hardened version of OAuth 2.0) is the correct standard for enterprise AI API authorization. The key hardening requirements: PKCE required for all public clients, exact-match redirect URIs, sender-constrained or one-time-use refresh tokens, and short-lived access tokens.</p>
+
+    <p>The following scope taxonomy is designed for an Okta Custom Authorization Server protecting an AI gateway endpoint:</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Scope Category</th>
+          <th>Scope Value</th>
+          <th>Meaning</th>
+          <th>Typical Grantee</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="4"><span class="badge badge-blue">Model-Level</span></td>
+          <td><span class="scope-tag">ai:model:gpt4</span></td>
+          <td>Access to GPT-4</td>
+          <td>Premium users, AI engineers</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:model:gpt35</span></td>
+          <td>Access to GPT-3.5-turbo</td>
+          <td>All employees, service accounts</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:model:claude-opus</span></td>
+          <td>Access to Claude Opus</td>
+          <td>Premium users, AI engineers</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:model:internal</span></td>
+          <td>Access to internal fine-tuned models</td>
+          <td>AI engineers, data teams</td>
+        </tr>
+        <tr>
+          <td rowspan="5"><span class="badge badge-purple">Feature-Level</span></td>
+          <td><span class="scope-tag">ai:feature:chat</span></td>
+          <td>Chat completions endpoint</td>
+          <td>All employees</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:feature:embeddings</span></td>
+          <td>Embeddings API</td>
+          <td>Developers, ML teams</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:feature:finetune</span></td>
+          <td>Model fine-tuning access</td>
+          <td>AI engineers only</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:feature:images</span></td>
+          <td>Image generation API</td>
+          <td>Designated creative teams</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:feature:audio</span></td>
+          <td>Speech and transcription</td>
+          <td>Designated use cases</td>
+        </tr>
+        <tr>
+          <td rowspan="3"><span class="badge badge-orange">Tier (Quota)</span></td>
+          <td><span class="scope-tag">ai:tier:standard</span></td>
+          <td>100K tokens/day</td>
+          <td>All employees</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:tier:premium</span></td>
+          <td>1M tokens/day</td>
+          <td>Premium users</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:tier:unlimited</span></td>
+          <td>No daily limit</td>
+          <td>Engineering only</td>
+        </tr>
+        <tr>
+          <td rowspan="3"><span class="badge badge-red">Data Classification</span></td>
+          <td><span class="scope-tag">ai:data:public</span></td>
+          <td>Can send public data to external LLMs</td>
+          <td>Standard employees</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:data:internal</span></td>
+          <td>Can send internal data to external LLMs</td>
+          <td>Trusted roles with DLP enabled</td>
+        </tr>
+        <tr>
+          <td><span class="scope-tag">ai:data:confidential</span></td>
+          <td>External LLMs blocked; internal models only</td>
+          <td>Legal, finance, sensitive roles</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Okta Custom Authorization Server — AI API Policy Configuration</h3>
+    <p>The recommended pattern is one authorization server per AI API product. This isolates token lifetime policies, scope name collision, and access rules from other enterprise applications.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>OKTA CUSTOM AS — CONFIGURATION</span>
+        <span>Policy: AI API Access</span>
+      </div>
+      <pre><code><span class="t-cmt"># Authorization Server: ai-gateway.company.com</span>
+<span class="t-cmt"># Audience: https://ai-gateway.company.com</span>
+
+<span class="t-key">Policy:</span> <span class="t-str">"AI API Access"</span>
+
+  <span class="t-key">Rule 1:</span> <span class="t-str">"Standard Users"</span>
+    <span class="t-key">Conditions:</span> Group = <span class="t-str">"employees"</span>
+    <span class="t-key">Grant scopes:</span>
+      ai:model:gpt35, ai:feature:chat
+      ai:tier:standard, ai:data:public
+    <span class="t-key">Token lifetime:</span> Access = 1h, Refresh = 24h
+
+  <span class="t-key">Rule 2:</span> <span class="t-str">"Premium Users"</span>
+    <span class="t-key">Conditions:</span> Group = <span class="t-str">"premium-ai-users"</span>
+    <span class="t-key">Grant scopes:</span>
+      ai:model:gpt4, ai:model:gpt35, ai:model:claude-opus
+      ai:feature:chat, ai:feature:embeddings
+      ai:tier:premium, ai:data:internal
+
+  <span class="t-key">Rule 3:</span> <span class="t-str">"AI Developers"</span>
+    <span class="t-key">Conditions:</span> Group = <span class="t-str">"ai-engineers"</span>
+    <span class="t-key">Grant scopes:</span> ai:model:*, ai:feature:*, ai:tier:unlimited, ai:data:internal
+    <span class="t-key">Token lifetime:</span> Access = 15min (highly sensitive), Refresh = 4h
+
+  <span class="t-key">Rule 4:</span> <span class="t-str">"External Services"</span> (M2M)
+    <span class="t-key">Conditions:</span> Client = service accounts
+    <span class="t-key">Grant type:</span> client_credentials
+    <span class="t-key">Grant scopes:</span> ai:model:gpt35, ai:feature:chat, ai:tier:standard</code></pre>
+    </div>
+
+    <div class="key-point">
+      <strong>Okta recommendation:</strong> Assign one authorization server per AI API product. This allows separate authorization policies and token expiration times while eliminating scope name collisions. Use a specific audience value — <code>aud = "https://ai-gateway.company.com"</code> — rather than a broad domain-level audience.
+    </div>
+
+    <h3>OAuth 2.1 Flow for Enterprise AI API Access</h3>
+
+    <div class="flow-step">
+      <div class="flow-step-num">1</div>
+      <div class="step-detail">
+        <strong>User or service requests a token from Okta Custom AS</strong>
+        <span>The client requests an access token with specific AI scopes. The authorization server evaluates the policy: which group is the user in, what scopes are they allowed?</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">2</div>
+      <div class="step-detail">
+        <strong>Okta issues a signed JWT access token with AI scopes and custom claims</strong>
+        <span>The token carries <code>sub</code> (user identity), <code>scp</code> (authorized AI scopes), <code>cid</code> (client app), plus custom claims: <code>cost_center</code>, <code>data_classification</code>, <code>ai_budget_remaining</code>.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">3</div>
+      <div class="step-detail">
+        <strong>Client calls the AI gateway with the JWT in the Authorization header</strong>
+        <span>The AI gateway validates the token signature against Okta's JWKS endpoint, extracts scopes and claims, and enforces model/feature access rules before forwarding to the LLM provider.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">4</div>
+      <div class="step-detail">
+        <strong>AI gateway enforces scope-based authorization per model and feature</strong>
+        <span>If the token contains <code>ai:model:gpt35</code> but the request asks for GPT-4, the gateway returns HTTP 403 with "Insufficient scope: ai:model:gpt4 required." This is the enforcement point.</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">5</div>
+      <div class="step-detail">
+        <strong>Gateway logs every interaction with full identity context for audit and cost attribution</strong>
+        <span>The audit record links the LLM API call to the user identity, team, cost center, model, token count, and USD cost. This is the foundation of chargeback reporting and compliance audits.</span>
+      </div>
+    </div>
+
+    <h3>Quota Management: Token Budgets by Team</h3>
+    <p>The AI gateway enforces token and spending budgets per user, per team, and per time period. The following LiteLLM configuration illustrates the pattern:</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>LITELLM — TEAM BUDGET CONFIGURATION (YAML)</span>
+        <span>litellm_config.yaml</span>
+      </div>
+      <pre><code><span class="t-key">teams:</span>
+  <span class="t-cmt"># Engineering: high budget, all models, no per-minute limits</span>
+  - <span class="t-key">team_id:</span> <span class="t-str">"engineering"</span>
+    <span class="t-key">max_budget:</span> <span class="t-num">500.00</span>
+    <span class="t-key">budget_duration:</span> <span class="t-str">"30d"</span>
+    <span class="t-key">models:</span> [<span class="t-str">"gpt-4"</span>, <span class="t-str">"gpt-3.5-turbo"</span>, <span class="t-str">"claude-opus"</span>]
+
+  <span class="t-cmt"># Marketing: restricted budget, single model, rate-limited</span>
+  - <span class="t-key">team_id:</span> <span class="t-str">"marketing"</span>
+    <span class="t-key">max_budget:</span> <span class="t-num">100.00</span>
+    <span class="t-key">budget_duration:</span> <span class="t-str">"30d"</span>
+    <span class="t-key">models:</span> [<span class="t-str">"gpt-3.5-turbo"</span>]
+    <span class="t-key">tpm_limit:</span> <span class="t-num">50000</span>    <span class="t-cmt"># tokens per minute</span>
+    <span class="t-key">rpm_limit:</span> <span class="t-num">100</span>      <span class="t-cmt"># requests per minute</span>
+
+  <span class="t-cmt"># Customer support: moderate budget, concurrent request cap</span>
+  - <span class="t-key">team_id:</span> <span class="t-str">"customer-support"</span>
+    <span class="t-key">max_budget:</span> <span class="t-num">200.00</span>
+    <span class="t-key">budget_duration:</span> <span class="t-str">"30d"</span>
+    <span class="t-key">models:</span> [<span class="t-str">"gpt-3.5-turbo"</span>]
+    <span class="t-key">max_parallel_requests:</span> <span class="t-num">10</span></code></pre>
+    </div>
+
+    <div class="key-point">
+      <strong>Enforcement logic:</strong> When a request arrives, the AI gateway validates the OAuth token, extracts the user's tier scope and <code>sub</code> claim, queries the current token usage for that user for the period, and rejects with HTTP 429 if the quota is exceeded. The tier scope (from Okta) determines which budget limit applies — standard, premium, or unlimited.
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== SECTION 3 ===== -->
+  <section class="section" id="section3">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Content Security</h2>
+    </div>
+
+    <p>Content security at the AI gateway layer addresses two distinct surfaces: what goes in (prompt inspection, DLP, injection detection) and what comes out (response validation, output filtering, system prompt leakage prevention).</p>
+
+    <h3>OWASP LLM Top 10 (2025) Mapped to Gateway Mitigations</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Vulnerability</th>
+          <th>Description</th>
+          <th>Gateway Mitigation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-red">LLM01</span></td>
+          <td>Prompt Injection</td>
+          <td>User input or external content alters model behavior or bypasses instructions</td>
+          <td>Input filtering, semantic analysis, context validation, LLM-as-guard classifier</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-red">LLM02</span></td>
+          <td>Sensitive Information Disclosure</td>
+          <td>Model reveals training data, PII, or confidential information in responses</td>
+          <td>DLP scanning on prompts and responses, PII redaction with Presidio, output filtering</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">LLM05</span></td>
+          <td>Improper Output Handling</td>
+          <td>Model output is passed to downstream systems without validation</td>
+          <td>Response validation policies, content moderation on all completions</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">LLM06</span></td>
+          <td>Excessive Agency</td>
+          <td>Agentic AI takes unauthorized actions beyond its intended scope</td>
+          <td>Scope-limited tool access via OAuth, human-in-the-loop controls for high-risk actions</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">LLM07</span></td>
+          <td>System Prompt Leakage</td>
+          <td>System prompt contents are returned in model output, exposing instructions</td>
+          <td>Output inspection for system prompt markers, sanitization before returning to caller</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">LLM10</span></td>
+          <td>Unbounded Consumption</td>
+          <td>Uncontrolled token usage leading to cost exhaustion or denial of service</td>
+          <td>Token budgets per user/team, rate limiting (RPM/TPM), circuit breakers</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Prompt Injection Detection</h3>
+    <p>There are two forms of prompt injection that the gateway must address. <strong>Direct injection</strong> is when the user's own prompt attempts to override model instructions. <strong>Indirect injection</strong> is when malicious instructions are embedded in external content retrieved by the model (documents, websites, RAG chunks).</p>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-blue">
+        <h4>Pattern-Based Detection</h4>
+        <p>Fast, low-latency regex matching against known injection signatures. Good for catching obvious attacks ("ignore previous instructions", "DAN mode", "jailbreak"). Prone to bypass by novel phrasing.</p>
+      </div>
+      <div class="concept-card card-accent-purple">
+        <h4>LLM-as-Guard</h4>
+        <p>Route the prompt through a dedicated classifier model before sending it to the primary model. More accurate against novel attacks, but adds latency. Best reserved for high-sensitivity endpoints.</p>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>PYTHON — PROMPT INJECTION DETECTION</span>
+        <span>gateway/security/injection.py</span>
+      </div>
+      <pre><code><span class="t-kw">import</span> re
+
+<span class="t-cmt"># Pattern-based detection (fast, lower accuracy)</span>
+INJECTION_PATTERNS = [
+    <span class="t-str">r"ignore (all )?(previous|prior|above) instructions"</span>,
+    <span class="t-str">r"disregard (your )?(system|original) prompt"</span>,
+    <span class="t-str">r"you are now"</span>,
+    <span class="t-str">r"act as (if you are|a)"</span>,
+    <span class="t-str">r"DAN mode"</span>,
+    <span class="t-str">r"jailbreak"</span>,
+    <span class="t-str">r"hypothetically speaking"</span>,
+    <span class="t-str">r"pretend you (have no|don't have) restrictions"</span>,
+]
+
+<span class="t-kw">def</span> <span class="t-fn">pattern_check</span>(prompt: str) -> bool:
+    <span class="t-kw">for</span> pattern <span class="t-kw">in</span> INJECTION_PATTERNS:
+        <span class="t-kw">if</span> re.search(pattern, prompt, re.IGNORECASE):
+            <span class="t-kw">return</span> <span class="t-val">True</span>
+    <span class="t-kw">return</span> <span class="t-val">False</span>
+
+<span class="t-cmt"># LLM-as-guard approach (higher accuracy, more latency)</span>
+<span class="t-kw">def</span> <span class="t-fn">check_for_injection</span>(prompt: str):
+    response = classifier_model.check(
+        prompt=prompt,
+        system=<span class="t-str">"You are a security classifier. Detect prompt injection attempts."</span>
+    )
+    <span class="t-kw">return</span> response.is_injection, response.confidence</code></pre>
+    </div>
+
+    <h3>DLP and PII Redaction with Microsoft Presidio</h3>
+
+    <div class="security-note">
+      <strong>Core enterprise DLP policy:</strong> No customer data, PII, or confidential information may be sent to external LLM providers. The gateway must intercept and redact or block: SSNs, credit card numbers, passport numbers, medical record numbers, account numbers, PHI, source code with internal hostnames or credentials, and API keys.
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>PYTHON — PRESIDIO DLP REDACTION</span>
+        <span>gateway/security/dlp.py</span>
+      </div>
+      <pre><code><span class="t-kw">import</span> presidio_analyzer, presidio_anonymizer
+
+<span class="t-kw">def</span> <span class="t-fn">apply_dlp</span>(prompt_text: str, policy: str = <span class="t-str">"redact"</span>):
+    analyzer = AnalyzerEngine()
+    anonymizer = AnonymizerEngine()
+
+    <span class="t-cmt"># Detect PII entities in the prompt text</span>
+    results = analyzer.analyze(
+        text=prompt_text,
+        entities=[
+            <span class="t-str">"PERSON"</span>, <span class="t-str">"EMAIL_ADDRESS"</span>, <span class="t-str">"PHONE_NUMBER"</span>,
+            <span class="t-str">"CREDIT_CARD"</span>, <span class="t-str">"US_SSN"</span>, <span class="t-str">"MEDICAL_LICENSE"</span>
+        ],
+        language=<span class="t-str">"en"</span>
+    )
+
+    <span class="t-kw">if</span> policy == <span class="t-str">"block"</span> <span class="t-kw">and</span> results:
+        <span class="t-kw">raise</span> DLPViolationError(
+            <span class="t-str">f"PII detected: {[r.entity_type for r in results]}"</span>
+        )
+
+    <span class="t-kw">if</span> policy == <span class="t-str">"redact"</span> <span class="t-kw">and</span> results:
+        anonymized = anonymizer.anonymize(
+            text=prompt_text,
+            analyzer_results=results
+        )
+        <span class="t-cmt"># Return redacted text + audit evidence of what was found</span>
+        <span class="t-kw">return</span> anonymized.text, results
+
+    <span class="t-kw">return</span> prompt_text, []
+
+<span class="t-cmt"># Before redaction: "My SSN is 078-05-1120 and my email is jane@corp.com"</span>
+<span class="t-cmt"># After redaction:  "My SSN is &lt;US_SSN&gt; and my email is &lt;EMAIL_ADDRESS&gt;"</span></code></pre>
+    </div>
+
+    <h3>Output Filtering: System Prompt Leakage Prevention</h3>
+    <p>The gateway must inspect responses before returning them to the caller. A model can be manipulated via prompt injection to reveal its system prompt, return PII it encountered during RAG retrieval, or produce harmful content.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>PYTHON — OUTPUT INSPECTION PATTERN</span>
+        <span>gateway/security/output_filter.py</span>
+      </div>
+      <pre><code><span class="t-kw">def</span> <span class="t-fn">inspect_output</span>(response_text: str, original_request_context: dict):
+
+    <span class="t-cmt"># 1. Check for system prompt leakage</span>
+    <span class="t-kw">if</span> contains_system_prompt_markers(response_text):
+        log_security_event(<span class="t-str">"SYSTEM_PROMPT_LEAKAGE"</span>, original_request_context)
+        <span class="t-kw">return</span> sanitize_system_prompt_content(response_text)
+
+    <span class="t-cmt"># 2. Scan response for PII (model may hallucinate or retrieve sensitive data)</span>
+    pii_results = dlp_scan(response_text)
+    <span class="t-kw">if</span> pii_results:
+        log_security_event(<span class="t-str">"PII_IN_RESPONSE"</span>, pii_results, original_request_context)
+        <span class="t-kw">if</span> policy == <span class="t-str">"block_pii_responses"</span>:
+            <span class="t-kw">return</span> error_response(<span class="t-str">"Response blocked: contains PII"</span>)
+
+    <span class="t-cmt"># 3. Check for harmful content via content guard</span>
+    guard_result = content_guard.check(response_text)
+    <span class="t-kw">if</span> guard_result.harmful:
+        log_security_event(<span class="t-str">"HARMFUL_OUTPUT"</span>, guard_result, original_request_context)
+        <span class="t-kw">return</span> error_response(<span class="t-str">"Response blocked: policy violation"</span>)
+
+    <span class="t-kw">return</span> response_text</code></pre>
+    </div>
+
+    <h3>Compliance Logging: Full Audit Record Format</h3>
+    <p>For regulated industries, every prompt and response must be retained with complete identity and security context. The OAuth token claims are the foundation of attribution — the gateway enriches every log entry with claims from the validated JWT.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>JSON — COMPLIANCE LOG ENTRY SCHEMA</span>
+        <span>audit/log-schema.json</span>
+      </div>
+      <pre><code>{
+  <span class="t-key">"log_id"</span>: <span class="t-str">"uuid-v4"</span>,
+  <span class="t-key">"timestamp"</span>: <span class="t-str">"2026-03-10T14:23:45.123Z"</span>,
+  <span class="t-key">"request"</span>: {
+    <span class="t-key">"user_id"</span>: <span class="t-str">"jane.doe@company.com"</span>,       <span class="t-cmt">// OAuth token sub claim</span>
+    <span class="t-key">"client_id"</span>: <span class="t-str">"ai-chatbot-app"</span>,             <span class="t-cmt">// OAuth token cid claim</span>
+    <span class="t-key">"team"</span>: <span class="t-str">"legal-department"</span>,               <span class="t-cmt">// OAuth token groups claim</span>
+    <span class="t-key">"cost_center"</span>: <span class="t-str">"CC-1042"</span>,                <span class="t-cmt">// custom claim from user profile</span>
+    <span class="t-key">"model_requested"</span>: <span class="t-str">"gpt-4"</span>,
+    <span class="t-key">"model_served"</span>: <span class="t-str">"gpt-4"</span>,                 <span class="t-cmt">// may differ if routed or failover</span>
+    <span class="t-key">"provider"</span>: <span class="t-str">"openai"</span>,
+    <span class="t-key">"prompt_tokens"</span>: <span class="t-num">523</span>,
+    <span class="t-key">"prompt_hash"</span>: <span class="t-str">"sha256:abc..."</span>,          <span class="t-cmt">// hash for privacy + audit</span>
+    <span class="t-key">"dlp_violations"</span>: [],
+    <span class="t-key">"injection_score"</span>: <span class="t-num">0.02</span>
+  },
+  <span class="t-key">"response"</span>: {
+    <span class="t-key">"completion_tokens"</span>: <span class="t-num">187</span>,
+    <span class="t-key">"total_tokens"</span>: <span class="t-num">710</span>,
+    <span class="t-key">"cost_usd"</span>: <span class="t-num">0.02130</span>,
+    <span class="t-key">"latency_ms"</span>: <span class="t-num">1842</span>,
+    <span class="t-key">"ttft_ms"</span>: <span class="t-num">423</span>,                           <span class="t-cmt">// time to first token</span>
+    <span class="t-key">"output_dlp_violations"</span>: [],
+    <span class="t-key">"content_policy_flags"</span>: []
+  },
+  <span class="t-key">"compliance"</span>: {
+    <span class="t-key">"retained_until"</span>: <span class="t-str">"2029-03-10"</span>,
+    <span class="t-key">"data_residency"</span>: <span class="t-str">"us-east-1"</span>,
+    <span class="t-key">"regulation"</span>: [<span class="t-str">"SOX"</span>, <span class="t-str">"HIPAA"</span>]
+  }
+}</code></pre>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ===== SECTION 4 ===== -->
+  <section class="section" id="section4">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>Observability &amp; Audit</h2>
+    </div>
+
+    <p>Traditional APM metrics — requests per second, latency, error rate — are necessary but not sufficient for AI workloads. LLM workloads require a set of AI-native metrics that map to cost, security posture, and compliance requirements.</p>
+
+    <h3>AI-Native Metrics Table</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Description</th>
+          <th>Why It Matters</th>
+          <th>Alert Trigger</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Token Velocity</td>
+          <td>Tokens per second by user, team, and model</td>
+          <td>Cost attribution, anomaly detection for runaway agents or compromised keys</td>
+          <td>&gt; 3x baseline for user within 5 min</td>
+        </tr>
+        <tr>
+          <td>Time to First Token (TTFT)</td>
+          <td>Latency from request to first streaming token received</td>
+          <td>Primary user experience metric for streaming completions; SLA baseline</td>
+          <td>P99 &gt; SLA threshold</td>
+        </tr>
+        <tr>
+          <td>Total Token Count</td>
+          <td>Input + output tokens per request</td>
+          <td>Primary cost driver. Required for chargeback reporting and budget forecasting</td>
+          <td>Single request &gt; configured max</td>
+        </tr>
+        <tr>
+          <td>Cost per Request (USD)</td>
+          <td>USD cost attributed to the requesting identity</td>
+          <td>Chargeback, budget management, per-team cost center reporting</td>
+          <td>Monthly spend &gt; 90% of budget</td>
+        </tr>
+        <tr>
+          <td>Semantic Cache Hit Rate</td>
+          <td>Percentage of requests served from semantic cache vs. live LLM</td>
+          <td>Cost optimization metric. High hit rate = significant cost savings</td>
+          <td>Drop in hit rate indicates cache degradation</td>
+        </tr>
+        <tr>
+          <td>Prompt Injection Score</td>
+          <td>Classifier-assigned probability of injection in each request</td>
+          <td>Security posture metric. Tracks adversarial probing and active attacks</td>
+          <td>Avg score &gt; 0.7 for session within 10 min</td>
+        </tr>
+        <tr>
+          <td>Content Policy Flags</td>
+          <td>Count of DLP and guardrail triggers by user</td>
+          <td>Compliance reporting. Identifies users sending sensitive data to external LLMs</td>
+          <td>&gt; 10 DLP violations per hour per user</td>
+        </tr>
+        <tr>
+          <td>Model Routing Decisions</td>
+          <td>Which model actually served each request (may differ from requested)</td>
+          <td>Governance audit. Required to verify policy compliance and failover behavior</td>
+          <td>Unexpected provider routing events</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Cost Attribution via OAuth Token Claims</h3>
+    <p>The OAuth token's <code>sub</code> (subject) claim is the foundation of attribution. Every log entry the gateway writes is enriched with claims from the validated JWT, creating an immutable link between the AI API call and the business identity that initiated it.</p>
+
+    <div class="flow-diagram">
+      <pre>
+  OAuth Token Claims  ──►  Attribution Dimensions
+
+    sub    ──►  User identity (jane.doe@company.com)
+    cid    ──►  Client application (which app made the call)
+    scp    ──►  Authorized scopes (what was permitted)
+    groups ──►  Team and department membership
+    cost_center      ──►  Finance chargeback code (CC-1042)
+    project_code     ──►  Project attribution (PROJECT-2025-AI-AUDIT)
+    data_classification  ──►  Drives DLP routing policy</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>JSON — OKTA ACCESS TOKEN WITH AI ATTRIBUTION CLAIMS</span>
+        <span>Decoded JWT payload</span>
+      </div>
+      <pre><code>{
+  <span class="t-key">"sub"</span>: <span class="t-str">"jane.doe@company.com"</span>,
+  <span class="t-key">"cid"</span>: <span class="t-str">"ai-chat-application"</span>,
+  <span class="t-key">"scp"</span>: [
+    <span class="t-str">"ai:model:gpt4"</span>,
+    <span class="t-str">"ai:feature:chat"</span>,
+    <span class="t-str">"ai:tier:premium"</span>
+  ],
+  <span class="t-key">"groups"</span>: [<span class="t-str">"premium-ai-users"</span>, <span class="t-str">"legal-department"</span>],
+  <span class="t-key">"cost_center"</span>: <span class="t-str">"CC-1042"</span>,           <span class="t-cmt">// custom claim from user profile</span>
+  <span class="t-key">"project_code"</span>: <span class="t-str">"PROJECT-2025-AI-AUDIT"</span>,
+  <span class="t-key">"data_classification"</span>: <span class="t-str">"confidential"</span>,  <span class="t-cmt">// drives DLP policy at gateway</span>
+  <span class="t-key">"ai_budget_remaining"</span>: <span class="t-num">847.23</span>      <span class="t-cmt">// injected via Token Inline Hook</span>
+}</code></pre>
+    </div>
+
+    <h3>Anomaly Detection Alert Thresholds</h3>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span>YAML — ANOMALY DETECTION ALERT CONFIGURATION</span>
+        <span>gateway/alerts.yaml</span>
+      </div>
+      <pre><code><span class="t-key">alerts:</span>
+
+  <span class="t-cmt"># Token spike: compromised key or runaway agentic loop</span>
+  - <span class="t-key">name:</span> <span class="t-str">"token-spike"</span>
+    <span class="t-key">condition:</span> <span class="t-str">"token_usage_rate > 3x_baseline for user"</span>
+    <span class="t-key">window:</span> <span class="t-str">"5m"</span>
+    <span class="t-key">action:</span> [<span class="t-str">"slack-notify"</span>, <span class="t-str">"rate-limit-user"</span>, <span class="t-str">"security-log"</span>]
+
+  <span class="t-cmt"># DLP rate: potential data exfiltration attempt</span>
+  - <span class="t-key">name:</span> <span class="t-str">"dlp-rate"</span>
+    <span class="t-key">condition:</span> <span class="t-str">"dlp_violations_per_hour > 10 for user"</span>
+    <span class="t-key">window:</span> <span class="t-str">"1h"</span>
+    <span class="t-key">action:</span> [<span class="t-str">"suspend-key"</span>, <span class="t-str">"security-alert"</span>, <span class="t-str">"manager-notify"</span>]
+
+  <span class="t-cmt"># Injection score: adversarial probing in progress</span>
+  - <span class="t-key">name:</span> <span class="t-str">"injection-score"</span>
+    <span class="t-key">condition:</span> <span class="t-str">"avg_injection_score > 0.7 for session"</span>
+    <span class="t-key">window:</span> <span class="t-str">"10m"</span>
+    <span class="t-key">action:</span> [<span class="t-str">"block-session"</span>, <span class="t-str">"security-incident"</span>]
+
+  <span class="t-cmt"># Budget exhaustion: proactive financial control</span>
+  - <span class="t-key">name:</span> <span class="t-str">"budget-exhaustion"</span>
+    <span class="t-key">condition:</span> <span class="t-str">"monthly_spend > 90%_of_budget for team"</span>
+    <span class="t-key">window:</span> <span class="t-str">"24h"</span>
+    <span class="t-key">action:</span> [<span class="t-str">"notify-team-lead"</span>, <span class="t-str">"finance-alert"</span>]</code></pre>
+    </div>
+
+    <h3>Industry-Specific Compliance Requirements</h3>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-blue">
+        <h4>Financial Services — SOX / FINRA</h4>
+        <p>Complete audit trail of all AI-generated content used in financial decisions. Immutable log retention (typically 7 years). Evidence that humans reviewed AI recommendations before execution. Cost attribution to specific business lines and cost centers.</p>
+      </div>
+      <div class="concept-card card-accent-green">
+        <h4>Healthcare — HIPAA</h4>
+        <p>All PHI or near-PHI must be masked before leaving the organization's infrastructure. Audit trail of who accessed patient-adjacent AI features. Self-hosted deployment required when prompts may contain PHI. Business Associate Agreement (BAA) required with any AI gateway vendor handling PHI.</p>
+      </div>
+      <div class="concept-card card-accent-purple">
+        <h4>Legal / Professional Services</h4>
+        <p>Attorney-client privilege considerations for AI-generated prompts and responses. Document retention policies apply to AI conversation logs. Conflicts-of-interest screening can be applied at the gateway layer before routing requests.</p>
+      </div>
+    </div>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Industry</th>
+          <th>Regulation</th>
+          <th>AI Gateway Requirement</th>
+          <th>Retention Period</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Financial Services</td>
+          <td><span class="badge badge-blue">SOX</span> <span class="badge badge-orange">FINRA</span></td>
+          <td>Immutable audit logs, human review evidence, cost center attribution</td>
+          <td>7 years</td>
+        </tr>
+        <tr>
+          <td>Healthcare</td>
+          <td><span class="badge badge-green">HIPAA</span></td>
+          <td>PHI masking before external LLMs, BAA with gateway vendor, self-hosted option</td>
+          <td>6 years minimum</td>
+        </tr>
+        <tr>
+          <td>Legal Services</td>
+          <td>State bar rules, privilege doctrine</td>
+          <td>Prompt/response logging, privilege tagging, conflict screening at gateway</td>
+          <td>Matter-specific</td>
+        </tr>
+        <tr>
+          <td>EU Operations</td>
+          <td><span class="badge badge-red">EU AI Act</span></td>
+          <td>Risk classification logging, transparency records, human oversight evidence</td>
+          <td>10 years (high-risk)</td>
+        </tr>
+        <tr>
+          <td>Public Companies (US)</td>
+          <td><span class="badge badge-purple">SEC 2026</span></td>
+          <td>AI usage in material decisions must be disclosed; audit trail required</td>
+          <td>7 years</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <strong>Okta SE talking point — the audit gap:</strong> With static API keys, none of this attribution is possible. You cannot answer "which employee sent this prompt?", "which cost center incurred this spend?", or "was PHI sent to an external LLM?" The moment you replace static keys with Okta-issued OAuth tokens, every log entry is automatically enriched with the user identity, team, cost center, and data classification — directly from the token claims.
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Gateway and API Security — Sections 5–8</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #1a1a2e;
+    background: #f5f6fa;
+    padding: 32px 16px;
+  }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f3460; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f3460; margin: 48px 0 20px; padding-bottom: 10px; border-bottom: 3px solid #e94560; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #16213e; margin: 28px 0 12px; }
+  h4 { font-size: 0.95rem; font-weight: 600; color: #0f3460; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  p { margin-bottom: 12px; }
+  ul, ol { margin: 10px 0 14px 20px; }
+  li { margin-bottom: 5px; }
+  code { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 0.85em; background: #eef0f8; padding: 2px 5px; border-radius: 3px; color: #c0392b; }
+
+  .page-wrap { max-width: 1100px; margin: 0 auto; }
+
+  /* Section dividers */
+  .section { margin-bottom: 64px; }
+  .section-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    background: #e94560;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  /* Concept Card */
+  .concept-card {
+    background: #ffffff;
+    border: 1px solid #dde1f0;
+    border-left: 5px solid #0f3460;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .concept-card .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f3460;
+    margin-bottom: 10px;
+  }
+  .concept-card.accent { border-left-color: #e94560; }
+  .concept-card.green { border-left-color: #27ae60; }
+  .concept-card.purple { border-left-color: #8e44ad; }
+  .concept-card.orange { border-left-color: #e67e22; }
+
+  /* Info Table */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 0.88rem;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .info-table thead tr { background: #0f3460; color: #fff; }
+  .info-table thead th {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+  }
+  .info-table tbody tr { border-bottom: 1px solid #eef0f8; }
+  .info-table tbody tr:nth-child(even) { background: #f8f9fd; }
+  .info-table tbody tr:last-child { border-bottom: none; }
+  .info-table td { padding: 10px 14px; vertical-align: top; }
+  .info-table td:first-child { font-weight: 600; color: #0f3460; }
+
+  /* Security Note */
+  .security-note {
+    background: #fff8f0;
+    border: 1px solid #f0a500;
+    border-left: 5px solid #e67e22;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 0.9rem;
+  }
+  .security-note .sn-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #e67e22;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Key Point */
+  .key-point {
+    background: #eaf4ff;
+    border: 1px solid #b3d4f0;
+    border-left: 5px solid #2980b9;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 0.9rem;
+  }
+  .key-point .kp-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #2980b9;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Okta Note */
+  .okta-note {
+    background: #f0f7ff;
+    border: 1px solid #a8cbf5;
+    border-left: 5px solid #007dc1;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 0.9rem;
+  }
+  .okta-note .on-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #007dc1;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Code Block */
+  .code-block {
+    background: #1e2235;
+    color: #e8eaf6;
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    border: 1px solid #2d3250;
+  }
+  .code-block .cb-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9fa8da;
+    display: block;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #2d3250;
+    padding-bottom: 8px;
+  }
+  .code-block pre { white-space: pre; margin: 0; }
+  .code-block .comment { color: #7986cb; }
+  .code-block .keyword { color: #80cbc4; }
+  .code-block .string { color: #a5d6a7; }
+  .code-block .key { color: #fff176; }
+
+  /* Comparison Grid */
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 18px 0;
+  }
+  .comparison-grid .cg-item {
+    background: #fff;
+    border: 1px solid #dde1f0;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+  }
+  .comparison-grid .cg-item .cg-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0f3460;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e94560;
+  }
+  .comparison-grid .cg-item .cg-body {
+    font-size: 0.82rem;
+    color: #444;
+    line-height: 1.55;
+  }
+
+  /* Architecture diagram (preformatted text) */
+  .arch-diagram {
+    background: #0f1629;
+    color: #b0bec5;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    border: 1px solid #1e2a45;
+  }
+  .arch-diagram pre { margin: 0; white-space: pre; }
+
+  /* Pill badges */
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin: 0 2px;
+    vertical-align: middle;
+  }
+  .badge-yes { background: #d4edda; color: #155724; }
+  .badge-no { background: #f8d7da; color: #721c24; }
+  .badge-partial { background: #fff3cd; color: #856404; }
+  .badge-okta { background: #cce5ff; color: #004085; }
+  .badge-enterprise { background: #e2d9f3; color: #4a235a; }
+
+  /* Two-column layout for prose + code */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Trust layer cards */
+  .trust-layers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 16px 0; }
+  .trust-layer-card {
+    border-radius: 8px;
+    padding: 18px;
+    border: 1px solid #dde1f0;
+  }
+  .trust-layer-card .layer-num {
+    font-size: 2rem;
+    font-weight: 800;
+    opacity: 0.15;
+    float: right;
+    line-height: 1;
+  }
+  .trust-layer-card .layer-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+  .trust-layer-card .layer-body { font-size: 0.85rem; color: #444; }
+  .trust-layer-card.l1 { background: #e8f5e9; border-color: #81c784; }
+  .trust-layer-card.l1 .layer-title { color: #2e7d32; }
+  .trust-layer-card.l2 { background: #e3f2fd; border-color: #64b5f6; }
+  .trust-layer-card.l2 .layer-title { color: #1565c0; }
+  .trust-layer-card.l3 { background: #fce4ec; border-color: #f48fb1; }
+  .trust-layer-card.l3 .layer-title { color: #ad1457; }
+  .trust-layer-card.l4 { background: #f3e5f5; border-color: #ce93d8; }
+  .trust-layer-card.l4 .layer-title { color: #6a1b9a; }
+  @media (max-width: 600px) { .trust-layers { grid-template-columns: 1fr; } }
+
+  /* Decision guide */
+  .decision-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eef0f8;
+  }
+  .decision-row:last-child { border-bottom: none; }
+  .decision-scenario {
+    flex: 1;
+    font-size: 0.88rem;
+    color: #444;
+    font-style: italic;
+  }
+  .decision-arrow { color: #e94560; font-weight: 700; font-size: 1rem; padding-top: 1px; }
+  .decision-recommendation {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0f3460;
+  }
+
+  /* Table yes/no helpers */
+  .yes { color: #27ae60; font-weight: 700; }
+  .no { color: #c0392b; font-weight: 600; }
+  .ent { color: #8e44ad; font-weight: 600; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ======================================================
+       SECTION 5 — ARCHITECTURE PATTERNS
+  ======================================================= -->
+  <div class="section">
+    <span class="section-label">Section 5</span>
+    <h2>Architecture Patterns</h2>
+
+    <!-- 5.1 Centralized Gateway Pattern -->
+    <h3>5.1 Centralized Gateway Pattern</h3>
+    <p>The most common enterprise deployment: all AI traffic from all teams flows through a single AI gateway cluster. Consistent policy enforcement, single observability plane, single credential store.</p>
+
+    <div class="arch-diagram">
+<pre>
+                       CENTRALIZED AI GATEWAY
+                                |
+        +-------------------+---+---+--------------------+
+        |                   |       |                    |
+  [Web App Team]     [Mobile Team]  [Internal Tools]  [AI Agents]
+        |                   |       |                    |
+        +-------------------+---+---+--------------------+
+                                |
+                       [AI Gateway Cluster]
+               +----------------------------------+
+               |   Auth (OAuth 2.1 / JWT)         |
+               |   DLP / Guardrails               |
+               |   Rate Limiting (tokens/min)     |
+               |   Semantic Caching               |
+               |   Multi-Provider Routing Logic   |
+               |   Audit Logging (per identity)   |
+               +----------------------------------+
+                                |
+        +-------------------+---+---+--------------------+
+        |                   |       |                    |
+    [OpenAI]          [Anthropic]  [AWS Bedrock]   [Internal LLMs]
+</pre>
+    </div>
+
+    <div class="two-col">
+      <div class="concept-card green">
+        <div class="card-title">Pros</div>
+        <ul>
+          <li>Consistent policy across all teams and apps</li>
+          <li>Single pane of glass for cost, usage, and audit</li>
+          <li>Simpler operations: one place to update policies</li>
+          <li>Centralized credential management (no team-level API keys)</li>
+        </ul>
+      </div>
+      <div class="concept-card accent">
+        <div class="card-title">Cons / Mitigations</div>
+        <ul>
+          <li>Single point of failure — mitigate with HA deployment across AZs</li>
+          <li>Potential bottleneck — mitigate with horizontal scaling, semantic cache</li>
+          <li>Network hop adds latency — mitigate with co-location or edge deployment</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 5.2 Sidecar Proxy Pattern -->
+    <h3>5.2 Sidecar Proxy Pattern (Kubernetes)</h3>
+    <p>Deploy an AI gateway as a sidecar container alongside each AI-consuming application pod. Each team gets team-specific policy while sharing common base configuration via ConfigMaps.</p>
+
+    <div class="code-block">
+      <span class="cb-label">Kubernetes — AI Gateway Sidecar Pod Spec</span>
+      <pre><span class="comment"># Pod spec: application container + LiteLLM sidecar</span>
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ai-application
+  labels:
+    app: ai-app
+spec:
+  containers:
+
+  <span class="comment"># Primary application — calls sidecar on localhost:4000</span>
+  - name: app
+    image: myapp:latest
+    env:
+    - name: LLM_ENDPOINT
+      value: <span class="string">"http://localhost:4000"</span>
+    - name: LLM_API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: ai-app-secret
+          key: virtual-key          <span class="comment"># team-scoped virtual key</span>
+
+  <span class="comment"># AI gateway sidecar</span>
+  - name: ai-gateway-sidecar
+    image: ghcr.io/berriai/litellm:main-latest
+    ports:
+    - containerPort: 4000
+    env:
+    - name: MASTER_KEY
+      valueFrom:
+        secretKeyRef:
+          name: ai-gateway-secret
+          key: master-key
+    - name: OKTA_JWKS_URI
+      value: <span class="string">"https://company.okta.com/oauth2/aigateway/v1/keys"</span>
+    volumeMounts:
+    - name: config
+      mountPath: /app/config.yaml
+      subPath: config.yaml
+
+  volumes:
+  - name: config
+    configMap:
+      name: ai-gateway-config</pre>
+    </div>
+
+    <div class="security-note">
+      <span class="sn-label">Policy Drift Risk</span>
+      Managing policy updates across many sidecars requires a centralized ConfigMap or GitOps pipeline. Without it, teams diverge on guardrail thresholds, DLP rules, and model allowlists. Consider a central control plane (LiteLLM master proxy) that sidecars register with, or use Kubernetes admission webhooks to enforce base configuration.
+    </div>
+
+    <!-- 5.3 Service Mesh Integration -->
+    <h3>5.3 Service Mesh Integration — Istio + Okta JWT</h3>
+    <p>For organizations already running Istio, the AI gateway is deployed as a workload service. Istio enforces JWT validation and scope-based access at the mesh layer before traffic reaches the gateway.</p>
+
+    <div class="code-block">
+      <span class="cb-label">Istio RequestAuthentication — Validate Okta JWTs</span>
+      <pre>apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: ai-gateway-jwt
+  namespace: ai-platform
+spec:
+  selector:
+    matchLabels:
+      app: ai-gateway
+  jwtRules:
+  - issuer: <span class="string">"https://company.okta.com/oauth2/aigateway"</span>
+    jwksUri: <span class="string">"https://company.okta.com/oauth2/aigateway/v1/keys"</span>
+    audiences:
+    - <span class="string">"https://ai-gateway.company.com"</span>
+    forwardOriginalToken: <span class="keyword">true</span>   <span class="comment"># pass token to AI gateway for claim extraction</span></pre>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Istio AuthorizationPolicy — Scope-Based Access</span>
+      <pre>apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ai-gateway-auth
+  namespace: ai-platform
+spec:
+  selector:
+    matchLabels:
+      app: ai-gateway
+  rules:
+  - from:
+    - source:
+        requestPrincipals:
+        - <span class="string">"https://company.okta.com/*"</span>   <span class="comment"># any Okta-issued identity</span>
+    to:
+    - operation:
+        methods: [<span class="string">"POST"</span>]
+        paths:
+        - <span class="string">"/v1/chat/completions"</span>
+        - <span class="string">"/v1/embeddings"</span>
+    when:
+    - key: request.auth.claims[scp]
+      values:
+      - <span class="string">"ai:feature:chat"</span>
+      - <span class="string">"ai:feature:embeddings"</span></pre>
+    </div>
+
+    <div class="okta-note">
+      <span class="on-label">Okta Integration Point</span>
+      Istio validates the Okta JWT signature using the JWKS endpoint. The <code>forwardOriginalToken: true</code> setting passes the validated token to the AI gateway, which then extracts custom claims (<code>cost_center</code>, <code>data_classification</code>, <code>ai_tier</code>) for downstream enforcement and audit logging.
+    </div>
+
+    <!-- 5.4 API Management Platform Integration -->
+    <h3>5.4 API Management Platform Integration</h3>
+
+    <div class="concept-card">
+      <div class="card-title">Kong AI Gateway + Okta</div>
+      <p>Kong functions as both the traditional API gateway and the AI-aware enforcement layer. The OIDC plugin handles Okta JWT validation; AI Proxy, Semantic Cache, and Guardrail plugins handle LLM-specific controls.</p>
+    </div>
+
+    <div class="arch-diagram">
+<pre>
+[Client App]
+     |
+     |  Bearer: Okta JWT (with ai:feature:chat scope)
+     v
+[Kong Gateway]
+     |
+     +-- OIDC Plugin ---------> Validates JWT via Okta JWKS
+     |                          Maps sub claim to Kong Consumer
+     |
+     +-- Rate Limiting -------> Per-consumer token + request limits
+     |
+     +-- AI Proxy Plugin -----> Routes to OpenAI / Anthropic / Bedrock
+     |
+     +-- AI Semantic Cache ---> Returns cached response if semantically similar
+     |
+     +-- AI Guardrail --------> Prompt injection detection, content filtering
+     |
+     v
+[LLM Provider API]
+</pre>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Kong — OIDC Plugin Configuration for Okta AI Gateway AS</span>
+      <pre>plugins:
+- name: openid-connect
+  config:
+    issuer: <span class="string">"https://company.okta.com/oauth2/ai-gateway"</span>
+    bearer_only: <span class="keyword">true</span>
+    scopes_required:
+    - <span class="string">"ai:feature:chat"</span>
+    introspection_endpoint:
+      <span class="string">"https://company.okta.com/oauth2/ai-gateway/v1/introspect"</span>
+    introspection_endpoint_auth_method: <span class="string">"client_secret_post"</span>
+    consumer_claim: <span class="string">"sub"</span>     <span class="comment"># maps Okta sub to Kong consumer for rate limiting</span>
+    consumer_by:
+    - <span class="string">"username"</span></pre>
+    </div>
+
+    <div class="concept-card purple">
+      <div class="card-title">Apigee + Okta Pattern</div>
+      <ul>
+        <li>Apigee handles routing, rate limiting, and analytics</li>
+        <li>Okta Custom AS issues tokens with AI-specific scopes</li>
+        <li>Apigee verifies tokens via Okta JWKS endpoint (local JWT validation — no introspection latency)</li>
+        <li>Custom attributes from Okta user profile (<code>cost_center</code>, <code>department</code>) mapped to Apigee analytics tags for chargeback</li>
+        <li>Token <code>exp</code> claim drives Apigee's token cache TTL — no stale token risk</li>
+      </ul>
+    </div>
+
+    <div class="concept-card orange">
+      <div class="card-title">MuleSoft + Okta Pattern</div>
+      <ul>
+        <li>MuleSoft API Manager uses Okta as external OAuth 2.0 provider</li>
+        <li>Token introspection or local JWT validation with Okta JWKS</li>
+        <li>Custom scopes (<code>ai:model:*</code>, <code>ai:tier:*</code>) enforced in MuleSoft policies</li>
+        <li>Mule flows can enrich routing decisions using claims from the Okta token</li>
+      </ul>
+    </div>
+
+    <!-- 5.5 Multi-Provider Routing -->
+    <h3>5.5 Multi-Provider Routing with LiteLLM</h3>
+    <p>A core value of AI gateways is abstracting multiple LLM providers behind a single OpenAI-compatible endpoint. Applications change one config line; routing, failover, and cost optimization happen transparently.</p>
+
+    <div class="code-block">
+      <span class="cb-label">LiteLLM — Multi-Provider Config with Cost-Based Routing</span>
+      <pre><span class="comment"># litellm_config.yaml — Multi-provider enterprise setup</span>
+model_list:
+
+  <span class="comment"># chat-smart: GPT-4 primary, Claude failover</span>
+  - model_name: <span class="string">chat-smart</span>
+    litellm_params:
+      model: <span class="string">openai/gpt-4</span>
+      api_key: <span class="string">os.environ/OPENAI_API_KEY</span>
+    model_info:
+      input_cost_per_token: 0.00003
+      output_cost_per_token: 0.00006
+
+  - model_name: <span class="string">chat-smart</span>           <span class="comment"># fallback — same alias</span>
+    litellm_params:
+      model: <span class="string">anthropic/claude-opus-4-5</span>
+      api_key: <span class="string">os.environ/ANTHROPIC_API_KEY</span>
+    model_info:
+      max_tokens: 200000
+
+  <span class="comment"># chat-fast: cost-optimized for standard tasks</span>
+  - model_name: <span class="string">chat-fast</span>
+    litellm_params:
+      model: <span class="string">openai/gpt-3.5-turbo</span>
+      api_key: <span class="string">os.environ/OPENAI_API_KEY</span>
+
+  <span class="comment"># chat-secure: internal model for confidential data</span>
+  - model_name: <span class="string">chat-secure</span>
+    litellm_params:
+      model: <span class="string">ollama/llama3</span>
+      api_base: <span class="string">http://internal-llm-server:11434</span>
+
+router_settings:
+  routing_strategy: <span class="string">"cost-based-routing"</span>
+  num_retries: 3
+  fallbacks:
+    - chat-smart: [<span class="string">"chat-fast"</span>]       <span class="comment"># degrade gracefully on failure</span></pre>
+    </div>
+
+    <div class="key-point">
+      <span class="kp-label">Data Classification + Routing</span>
+      Combine multi-provider routing with data classification claims from the Okta token. If the user's <code>data_classification</code> claim is <code>confidential</code>, the gateway rewrites the model target to <code>chat-secure</code> (internal LLM) regardless of what the application requested. No code changes required in the application.
+    </div>
+
+  </div><!-- /section 5 -->
+
+
+  <!-- ======================================================
+       SECTION 6 — PRODUCT LANDSCAPE
+  ======================================================= -->
+  <div class="section">
+    <span class="section-label">Section 6</span>
+    <h2>Product Landscape</h2>
+
+    <!-- 6.1 Comparison Table -->
+    <h3>6.1 AI Gateway Feature Comparison</h3>
+
+    <div style="overflow-x:auto;">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Auth Model</th>
+            <th>DLP</th>
+            <th>Cost Tracking</th>
+            <th>MCP Support</th>
+            <th>Pricing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LiteLLM Proxy</td>
+            <td>Virtual keys; JWT + SSO <span class="ent">(enterprise)</span></td>
+            <td class="yes">Yes</td>
+            <td class="yes">Yes — tags, teams, users</td>
+            <td class="yes">Yes</td>
+            <td>Open source (MIT); Enterprise license for SSO/RBAC</td>
+          </tr>
+          <tr>
+            <td>Portkey</td>
+            <td>API key; OAuth 2.1; External IdP (Okta, Auth0, Azure AD)</td>
+            <td class="yes">Yes</td>
+            <td class="yes">Yes — virtual key metadata</td>
+            <td class="yes">Yes — MCP Gateway with OAuth auto</td>
+            <td>Free tier; $49/mo Developer; Enterprise custom</td>
+          </tr>
+          <tr>
+            <td>Kong AI Gateway</td>
+            <td>OIDC plugin (Okta native); JWT; API keys; OAuth 2.0</td>
+            <td class="yes">Yes — enterprise DLP plugin</td>
+            <td class="yes">Yes — Kong Analytics</td>
+            <td class="yes">Yes — MCP Gateway (v3.12+)</td>
+            <td>Kong OSS free; Kong Enterprise custom pricing</td>
+          </tr>
+          <tr>
+            <td>Cloudflare AI Gateway</td>
+            <td>Token-based (Cloudflare API tokens); no external IdP native</td>
+            <td class="yes">Yes — GDPR, HIPAA, PCI DSS</td>
+            <td class="yes">Yes — custom costs, analytics</td>
+            <td class="no">No</td>
+            <td>Free (100K requests/day); $5/mo Paid; Enterprise custom</td>
+          </tr>
+          <tr>
+            <td>Bifrost (Maxim)</td>
+            <td>API key + JWT; External IdP support</td>
+            <td class="yes">Yes</td>
+            <td class="yes">Yes — Maxim platform integration</td>
+            <td class="yes">Yes</td>
+            <td>Open source (Apache); Maxim platform SaaS pricing</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Detailed product notes -->
+    <h3>6.2 Product Profiles</h3>
+
+    <div class="comparison-grid">
+      <div class="cg-item">
+        <div class="cg-title">LiteLLM Proxy</div>
+        <div class="cg-body">
+          <strong>Best for:</strong> Python-centric teams, self-hosted, budget control, 100+ provider coverage.<br><br>
+          <strong>Strength:</strong> Deepest model coverage, virtual keys with per-key budgets, LLM Guard integration, secret redaction.<br><br>
+          <strong>Watch out:</strong> JWT/SSO requires enterprise license. DPoP not natively supported.
+        </div>
+      </div>
+      <div class="cg-item">
+        <div class="cg-title">Portkey</div>
+        <div class="cg-body">
+          <strong>Best for:</strong> Agentic AI, MCP ecosystem, multi-IdP enterprise with Okta/Auth0/Azure AD.<br><br>
+          <strong>Strength:</strong> Best-in-class MCP Gateway; identity forwarding to downstream MCP servers via signed JWT; semantic caching; 250+ providers.<br><br>
+          <strong>Watch out:</strong> Latency ~10ms vs competitors' ~5ms.
+        </div>
+      </div>
+      <div class="cg-item">
+        <div class="cg-title">Kong AI Gateway</div>
+        <div class="cg-body">
+          <strong>Best for:</strong> Enterprises with existing Kong deployment; Okta-native integration via OIDC plugin.<br><br>
+          <strong>Strength:</strong> Seamless Okta OIDC; 6 LLM load-balancing algorithms; semantic caching (v3.8+); MCP (v3.12+).<br><br>
+          <strong>Watch out:</strong> Full enterprise DLP requires Kong Enterprise license.
+        </div>
+      </div>
+      <div class="cg-item">
+        <div class="cg-title">Cloudflare AI Gateway</div>
+        <div class="cg-body">
+          <strong>Best for:</strong> Edge-distributed apps, minimal latency, BYOK, developer-friendly.<br><br>
+          <strong>Strength:</strong> Edge-native (~1ms overhead); up to 90% latency reduction via caching; DLP covers GDPR/HIPAA/PCI DSS; Bring Your Own Keys.<br><br>
+          <strong>Watch out:</strong> No native Okta/external IdP integration. Not self-hostable. No MCP.
+        </div>
+      </div>
+      <div class="cg-item">
+        <div class="cg-title">Bifrost (Maxim)</div>
+        <div class="cg-body">
+          <strong>Best for:</strong> Latency-critical applications; teams using Maxim for evaluation and observability.<br><br>
+          <strong>Strength:</strong> Lowest overhead at &lt;11 microseconds at 5K RPS; Go-based; Docker deploy under 60 seconds; 45+ providers.<br><br>
+          <strong>Watch out:</strong> Smaller ecosystem; observability best realized with full Maxim platform.
+        </div>
+      </div>
+    </div>
+
+    <!-- 6.3 Decision Guide -->
+    <h3>6.3 Decision Guide — When to Use Which</h3>
+
+    <div class="concept-card">
+      <div style="margin-bottom:4px;">
+        <div class="decision-row">
+          <div class="decision-scenario">Enterprise with existing Okta + Kong or Apigee deployment</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">Kong AI Gateway + Okta OIDC plugin</div>
+        </div>
+        <div class="decision-row">
+          <div class="decision-scenario">Startup or team needing fast multi-provider routing with minimal infra</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">LiteLLM (self-hosted) or Portkey (SaaS)</div>
+        </div>
+        <div class="decision-row">
+          <div class="decision-scenario">Edge or CDN-distributed AI application with global latency requirements</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">Cloudflare AI Gateway</div>
+        </div>
+        <div class="decision-row">
+          <div class="decision-scenario">HIPAA, FedRAMP, or regulated industry requiring self-hosted, air-gappable</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">LiteLLM (self-hosted) or Bifrost</div>
+        </div>
+        <div class="decision-row">
+          <div class="decision-scenario">Maximum security: DPoP + Okta sender-constrained tokens for fine-tuning</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">Okta API AM (Custom AS) + Kong + DPoP-capable client library</div>
+        </div>
+        <div class="decision-row">
+          <div class="decision-scenario">Agentic AI workloads, MCP tool ecosystem, multi-agent orchestration</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">Portkey MCP Gateway or Kong MCP Gateway (v3.12+)</div>
+        </div>
+        <div class="decision-row">
+          <div class="decision-scenario">Pure AWS shop with IAM-first security model</div>
+          <div class="decision-arrow">→</div>
+          <div class="decision-recommendation">AWS Bedrock + Application Inference Profiles + CloudWatch</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /section 6 -->
+
+
+  <!-- ======================================================
+       SECTION 7 — OKTA INTEGRATION
+  ======================================================= -->
+  <div class="section">
+    <span class="section-label">Section 7</span>
+    <h2>Okta Integration</h2>
+
+    <!-- 7.1 Custom AS Setup -->
+    <h3>7.1 Okta Custom Authorization Server Setup for AI APIs</h3>
+    <p>Create a <strong>dedicated AI Gateway authorization server</strong> in Okta. One AS per API product is the official Okta recommendation — it prevents scope collisions, allows separate token lifetimes, and enables distinct access policies per audience.</p>
+
+    <div class="okta-note">
+      <span class="on-label">Okta Recommendation</span>
+      Assign one authorization server per API product. This allows separate authorization policies and token expiration times while eliminating scope name collisions. Use a specific audience (<code>https://ai-gateway.company.com</code>), not a broad one (<code>api.company.com</code>), to prevent token reuse across services.
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Okta Admin Console — AI Gateway AS Configuration Steps</span>
+      <pre><span class="comment"># 1. Create the Authorization Server</span>
+Security > API > Authorization Servers > Add Authorization Server
+  Name:        AI Gateway
+  Audience:    https://ai-gateway.company.com
+  Description: Authorization server for AI/LLM API access control
+
+<span class="comment"># 2. Custom Scopes</span>
+Scopes tab > Add Scopes:
+  ai:model:gpt4           Display: "Access GPT-4"
+  ai:model:gpt35          Display: "Access GPT-3.5-Turbo"
+  ai:model:claude         Display: "Access Claude"
+  ai:feature:chat         Display: "Chat Completions"
+  ai:feature:embeddings   Display: "Embeddings API"
+  ai:feature:finetune     Display: "Model Fine-tuning"
+  ai:tier:standard        Display: "Standard — 100K tokens/day"
+  ai:tier:premium         Display: "Premium — 1M tokens/day"
+  ai:tier:unlimited       Display: "Unlimited (AI Engineers)"
+  ai:data:public          Display: "External LLMs: Public data only"
+  ai:data:internal        Display: "External LLMs: Internal data allowed"
+  ai:data:confidential    Display: "Internal models only"
+
+<span class="comment"># 3. Custom Claims (added to Access Token)</span>
+Claims tab > Add Claims:
+  cost_center:            user.costCenter
+  department:             user.department
+  data_classification:    user.dataClassification
+  ai_budget_remaining:    (populated via Token Inline Hook)
+
+<span class="comment"># 4. Access Policies</span>
+Policy: "AI API Access Policy"
+  Assign to: specific registered application clients
+
+Rule 1: "Standard Employee Access"
+  IF:    User in group "employees"
+  THEN:  Grant: ai:model:gpt35, ai:feature:chat,
+                ai:tier:standard, ai:data:public
+  Lifetimes: Access = 1hr | Refresh = 24hr | Rotate on use
+
+Rule 2: "Premium AI Users"
+  IF:    User in group "premium-ai-users"
+  THEN:  Grant: ai:model:gpt4, ai:model:gpt35, ai:model:claude,
+                ai:feature:chat, ai:feature:embeddings,
+                ai:tier:premium, ai:data:internal
+  Lifetimes: Access = 1hr | Refresh = 8hr
+
+Rule 3: "AI Engineers"
+  IF:    User in group "ai-engineers"
+  THEN:  Grant: all ai:* scopes
+  Lifetimes: Access = 15min | Refresh = 4hr  <span class="comment"># shorter — elevated privilege</span>
+
+Rule 4: "Service Accounts" (M2M — no user session)
+  IF:    Grant type = client_credentials, client in ai-service-accounts
+  THEN:  Grant: specific model/feature scopes per service registration
+  Lifetimes: Access = 1hr | No refresh token</pre>
+    </div>
+
+    <!-- 7.2 Token Inline Hook -->
+    <h3>7.2 Token Inline Hook — Dynamic Budget Enforcement</h3>
+    <p>The Token Inline Hook fires at token issuance time, allowing your external service to enrich the token with real-time data (budget status, risk score) or deny issuance entirely before the token reaches the client.</p>
+
+    <div class="arch-diagram">
+<pre>
+User authenticates to Okta
+         |
+         |  Token issuance begins
+         v
+[Okta Token Inline Hook fires]
+         |
+         |  POST /hooks/token-enrichment
+         v
+[Your Budget + Risk Service]
+  - Query remaining budget for user
+  - Query current risk signals
+  - Check AI governance policies
+  - Apply time-of-day rules
+         |
+         |  Return commands: add/modify/remove claims
+         v
+Okta adds enriched claims to Access Token:
+  ai_budget_remaining: 847.23
+  ai_tokens_remaining_today: 342000
+  ai_risk_score: 0.12
+  ai_tier: premium (or "suspended" if budget = 0)
+         |
+         v
+Token returned to client application
+</pre>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Node.js — Token Inline Hook Endpoint for AI Budget Enforcement</span>
+      <pre><span class="comment">// Express.js webhook — receives Okta Token Inline Hook POST</span>
+app.post(<span class="string">'/hooks/token-enrichment'</span>, <span class="keyword">async</span> (req, res) => {
+    <span class="keyword">const</span> { data } = req.body;
+    <span class="keyword">const</span> userId = data.identity.claims.sub;
+
+    <span class="comment">// Fetch real-time data from internal services</span>
+    <span class="keyword">const</span> [userBudget, riskScore] = <span class="keyword">await</span> Promise.all([
+        getBudgetService().getStatus(userId),
+        getRiskEngine().evaluate(userId)
+    ]);
+
+    <span class="comment">// Hard block: high risk score — deny token entirely</span>
+    <span class="keyword">if</span> (riskScore > 0.8) {
+        <span class="keyword">return</span> res.json({
+            error: {
+                errorSummary: <span class="string">"AI access suspended: elevated risk score"</span>,
+                errorCauses: [{ errorSummary: <span class="string">"Account flagged for review"</span> }]
+            }
+        });
+    }
+
+    <span class="comment">// Build enrichment commands</span>
+    <span class="keyword">const</span> patches = [
+        { op: <span class="string">"add"</span>, path: <span class="string">"/claims/ai_budget_remaining"</span>,      value: userBudget.remaining_usd },
+        { op: <span class="string">"add"</span>, path: <span class="string">"/claims/ai_tokens_remaining_today"</span>, value: userBudget.tokens_remaining_today },
+        { op: <span class="string">"add"</span>, path: <span class="string">"/claims/ai_risk_score"</span>,            value: riskScore }
+    ];
+
+    <span class="comment">// Budget exhausted: downgrade tier to "suspended"</span>
+    <span class="keyword">if</span> (userBudget.remaining_usd <= 0) {
+        patches.push({
+            op: <span class="string">"replace"</span>,
+            path: <span class="string">"/claims/ai_tier"</span>,
+            value: <span class="string">"suspended"</span>
+        });
+    }
+
+    <span class="comment">// Time-of-day rule: no premium after business hours for standard users</span>
+    <span class="keyword">const</span> hour = <span class="keyword">new</span> Date().getUTCHours();
+    <span class="keyword">if</span> (hour < 8 || hour > 20) {
+        <span class="keyword">const</span> isPremium = data.access.scopes.includes(<span class="string">'ai:tier:premium'</span>);
+        <span class="keyword">if</span> (isPremium && !data.identity.groups.includes(<span class="string">'ai-engineers'</span>)) {
+            patches.push({
+                op: <span class="string">"replace"</span>,
+                path: <span class="string">"/scopes/ai~1tier~1premium"</span>,   <span class="comment">// RFC6901 escape</span>
+                value: <span class="keyword">false</span>
+            });
+        }
+    }
+
+    res.json({
+        commands: [{ type: <span class="string">"com.okta.access.patch"</span>, value: patches }]
+    });
+});</pre>
+    </div>
+
+    <div class="key-point">
+      <span class="kp-label">Real-World Use Cases for Token Inline Hooks with AI</span>
+      <ul>
+        <li>Check remaining budget — deny token if monthly allocation is exhausted</li>
+        <li>Inject cost center from HR system into token claims for chargeback</li>
+        <li>Apply time-of-day restrictions on premium model access</li>
+        <li>Verify AI governance training certificate before granting fine-tune scope</li>
+        <li>Cross-reference audit system — user under investigation reduces to <code>ai:data:public</code> only</li>
+      </ul>
+    </div>
+
+    <div class="security-note">
+      <span class="sn-label">Inline Hook Performance Constraint</span>
+      Okta enforces a 3-second timeout on inline hooks with one retry. Keep your hook service fast: cache budget data with a short TTL (30–60 seconds) rather than querying databases synchronously. Hook failure causes Okta to continue with the original token — design your fallback behavior accordingly.
+    </div>
+
+    <!-- 7.3 DPoP -->
+    <h3>7.3 DPoP for AI API Tokens — Sender-Constrained Access</h3>
+
+    <div class="concept-card accent">
+      <div class="card-title">Why DPoP Matters for AI APIs</div>
+      <p><strong>Standard bearer token stolen:</strong> Full access to LLM APIs. Attacker can drain your entire token budget, exfiltrate data, or abuse fine-tuning endpoints — all billed to you.</p>
+      <p style="margin-top:8px;"><strong>DPoP token stolen:</strong> Useless. The token is bound to a client-held private key via the <code>cnf.jkt</code> claim. Without that key, the stolen token cannot produce a valid DPoP proof. Okta natively supports DPoP since 2024.</p>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">DPoP Flow for AI API Access (RFC 9449)</span>
+      <pre><span class="comment"># Step 1: Client generates RSA/EC key pair (once per session)</span>
+client_keypair = generate_keypair(alg="ES256")
+
+<span class="comment"># Step 2: Request token with DPoP proof</span>
+POST /oauth2/aigateway/v1/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+DPoP: &lt;signed JWT: {htm, htu, iat, jti, jwk (public key)}  signed with private key&gt;
+
+grant_type=authorization_code&code=...&client_id=ai-app
+
+<span class="comment"># Step 3: Okta binds public key thumbprint into access token</span>
+{
+  <span class="key">"sub"</span>: <span class="string">"jane.doe@company.com"</span>,
+  <span class="key">"scp"</span>: [<span class="string">"ai:model:gpt4"</span>, <span class="string">"ai:tier:premium"</span>],
+  <span class="key">"cnf"</span>: { <span class="key">"jkt"</span>: <span class="string">"SHA-256 thumbprint of client public key"</span> }
+}
+
+<span class="comment"># Step 4: Client calls AI gateway with DPoP proof on every request</span>
+POST /v1/chat/completions HTTP/1.1
+Authorization: DPoP &lt;access_token&gt;
+DPoP: &lt;fresh proof: {htm, htu, iat, jti, ath (access token hash)}  signed with private key&gt;
+
+<span class="comment"># Step 5: AI Gateway validates both</span>
+1. Token signature valid (Okta JWKS)
+2. DPoP proof signature valid (key matches cnf.jkt in token)
+3. DPoP htu matches request URI
+4. DPoP htm matches request method (POST)
+5. DPoP iat within validity window (clock skew &lt; 60s)
+6. DPoP jti not seen before (replay prevention)</pre>
+    </div>
+
+    <div class="info-table" style="margin-top:0;">
+      <table class="info-table">
+        <thead>
+          <tr><th>Endpoint / Use Case</th><th>DPoP Required?</th><th>Rationale</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chat completions (standard tier)</td>
+            <td>Recommended</td>
+            <td>Moderate cost exposure, common target for token theft</td>
+          </tr>
+          <tr>
+            <td>Embeddings</td>
+            <td>Optional</td>
+            <td>Lower cost per call but bulk abuse possible</td>
+          </tr>
+          <tr>
+            <td>Fine-tuning endpoint</td>
+            <td><strong>Required</strong></td>
+            <td>Irreversible, expensive, sensitive data in training set</td>
+          </tr>
+          <tr>
+            <td>Internal / confidential models</td>
+            <td><strong>Required</strong></td>
+            <td>High sensitivity; token theft = IP exposure</td>
+          </tr>
+          <tr>
+            <td>Premium / unlimited tier access</td>
+            <td><strong>Required</strong></td>
+            <td>Stolen token = unbounded cost drain</td>
+          </tr>
+          <tr>
+            <td>Service account M2M (client credentials)</td>
+            <td>Recommended</td>
+            <td>Long-lived tokens most at risk; DPoP limits blast radius</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 7.4 Integration Configs -->
+    <h3>7.4 Integration Configs — Kong + Okta, Apigee + Okta</h3>
+
+    <div class="code-block">
+      <span class="cb-label">Kong — Full OIDC Plugin Config for Okta AI Gateway AS</span>
+      <pre>plugins:
+- name: openid-connect
+  service: ai-gateway-service
+  config:
+    issuer: <span class="string">"https://company.okta.com/oauth2/ai-gateway"</span>
+
+    <span class="comment"># Only accept Bearer tokens — no interactive login at gateway</span>
+    bearer_only: <span class="keyword">true</span>
+    auth_methods:
+    - <span class="string">bearer</span>
+
+    <span class="comment"># Required scope for any AI gateway access</span>
+    scopes_required:
+    - <span class="string">"ai:feature:chat"</span>
+
+    <span class="comment"># Token introspection (use for short-lived tokens + revocation support)</span>
+    introspection_endpoint:
+      <span class="string">"https://company.okta.com/oauth2/ai-gateway/v1/introspect"</span>
+    introspection_endpoint_auth_method: <span class="string">"client_secret_post"</span>
+    introspection_hint: <span class="string">"access_token"</span>
+
+    <span class="comment"># Map Okta sub claim to Kong Consumer (enables per-user rate limiting)</span>
+    consumer_claim: <span class="string">"sub"</span>
+    consumer_by:
+    - <span class="string">"username"</span>
+
+    <span class="comment"># Forward enriched claims to upstream AI gateway service</span>
+    upstream_headers_claims:
+    - <span class="string">"cost_center"</span>
+    - <span class="string">"data_classification"</span>
+    - <span class="string">"ai_tier"</span>
+    - <span class="string">"ai_budget_remaining"</span></pre>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Apigee — OAuthV2 Policy + Custom Attribute Extraction</span>
+      <pre><span class="comment">&lt;!-- Apigee OAuthV2 VerifyAccessToken policy --&gt;</span>
+&lt;<span class="keyword">OAuthV2</span> name=<span class="string">"VerifyOktaToken"</span>&gt;
+  &lt;<span class="keyword">Operation</span>&gt;VerifyAccessToken&lt;/<span class="keyword">Operation</span>&gt;
+  &lt;<span class="keyword">JWTToken</span>&gt;
+    &lt;<span class="keyword">Issuer</span>&gt;https://company.okta.com/oauth2/ai-gateway&lt;/<span class="keyword">Issuer</span>&gt;
+    &lt;<span class="keyword">Audience</span>&gt;https://ai-gateway.company.com&lt;/<span class="keyword">Audience</span>&gt;
+    &lt;<span class="keyword">JWKSURI</span>&gt;https://company.okta.com/oauth2/ai-gateway/v1/keys&lt;/<span class="keyword">JWKSURI</span>&gt;
+  &lt;/<span class="keyword">JWTToken</span>&gt;
+  &lt;<span class="keyword">GenerateResponse</span> enabled=<span class="string">"false"</span>/&gt;
+&lt;/<span class="keyword">OAuthV2</span>&gt;
+
+<span class="comment">&lt;!-- Extract custom claims from verified token for analytics tagging --&gt;</span>
+&lt;<span class="keyword">ExtractVariables</span> name=<span class="string">"ExtractAIClaims"</span>&gt;
+  &lt;<span class="keyword">Source</span>&gt;request.header.authorization&lt;/<span class="keyword">Source</span>&gt;
+  &lt;<span class="keyword">JWTPayloadClaims</span>&gt;
+    &lt;<span class="keyword">JSONPayload</span>&gt;
+      &lt;<span class="keyword">Variable</span> name=<span class="string">"cost_center"</span>&gt;$.cost_center&lt;/<span class="keyword">Variable</span>&gt;
+      &lt;<span class="keyword">Variable</span> name=<span class="string">"ai_tier"</span>&gt;$.ai_tier&lt;/<span class="keyword">Variable</span>&gt;
+      &lt;<span class="keyword">Variable</span> name=<span class="string">"data_class"</span>&gt;$.data_classification&lt;/<span class="keyword">Variable</span>&gt;
+    &lt;/<span class="keyword">JSONPayload</span>&gt;
+  &lt;/<span class="keyword">JWTPayloadClaims</span>&gt;
+&lt;/<span class="keyword">ExtractVariables</span>&gt;
+
+<span class="comment">&lt;!-- Use cost_center variable in Apigee Analytics for chargeback reports --&gt;</span></pre>
+    </div>
+
+  </div><!-- /section 7 -->
+
+
+  <!-- ======================================================
+       SECTION 8 — ZERO TRUST FOR AI
+  ======================================================= -->
+  <div class="section">
+    <span class="section-label">Section 8</span>
+    <h2>Zero Trust for AI</h2>
+
+    <p>Zero Trust applied to AI means: <strong>never trust, always verify</strong> — for every model call, from every identity, on every device, at every stage of the AI pipeline. Standard Zero Trust protects resources; AI Zero Trust also protects the <em>data entering models</em> and the <em>outputs leaving them</em>.</p>
+
+    <!-- 8.1 Four Trust Layers -->
+    <h3>8.1 The Four Trust Layers</h3>
+
+    <div class="trust-layers">
+      <div class="trust-layer-card l1">
+        <span class="layer-num">1</span>
+        <div class="layer-title">Data Trust</div>
+        <div class="layer-body">Classify all data before it enters AI pipelines. Route data to appropriate AI providers based on sensitivity level. Block unclassified data from reaching external LLMs. DLP scan inputs and outputs at the gateway. The data classification claim in the Okta token drives routing decisions automatically.</div>
+      </div>
+      <div class="trust-layer-card l2">
+        <span class="layer-num">2</span>
+        <div class="layer-title">Model Supply Chain Trust</div>
+        <div class="layer-body">Verify model provenance, integrity checksums, and training data lineage before deploying to production. Track which model versions are in use via the AI gateway's model routing logs. Enforce a vetted model allowlist — the gateway blocks calls to unapproved models or external endpoints not in the registry.</div>
+      </div>
+      <div class="trust-layer-card l3">
+        <span class="layer-num">3</span>
+        <div class="layer-title">Pipeline Trust</div>
+        <div class="layer-body">Authenticate every step of AI inference pipelines, including RAG retrieval, tool calls, and agent-to-agent communication. Every service in the pipeline must present a valid token. Istio mTLS between pipeline services. AI agents use scoped tokens, not ambient credentials. Human approval gates for high-risk agentic actions.</div>
+      </div>
+      <div class="trust-layer-card l4">
+        <span class="layer-num">4</span>
+        <div class="layer-title">Identity Trust</div>
+        <div class="layer-body">Verify every human and service identity on every request. No persistent trust — short-lived tokens, continuous verification. OAuth 2.1 + MFA for humans. Client credentials for services. mTLS + JWT for AI agents. Device compliance signals gate scope elevation. Inline hooks check real-time risk at token issuance.</div>
+      </div>
+    </div>
+
+    <!-- 8.2 Access Decision Matrix -->
+    <h3>8.2 Access Decision Matrix by Identity Type</h3>
+
+    <div style="overflow-x:auto;">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Identity Type</th>
+            <th>Auth Method</th>
+            <th>Token Lifetime</th>
+            <th>AI Scope Ceiling</th>
+            <th>DLP Policy</th>
+            <th>Special Conditions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Employee (standard)</td>
+            <td>OAuth 2.1 + MFA + PKCE</td>
+            <td>Access: 1hr<br>Refresh: 24hr</td>
+            <td>GPT-3.5, chat, standard tier, public data</td>
+            <td>Redact PII, block SSN/CC before external LLMs</td>
+            <td>Managed device required for premium tier</td>
+          </tr>
+          <tr>
+            <td>Employee (premium / AI power user)</td>
+            <td>OAuth 2.1 + MFA + PKCE + Device Trust</td>
+            <td>Access: 1hr<br>Refresh: 8hr</td>
+            <td>GPT-4, Claude, embeddings, premium tier, internal data</td>
+            <td>Redact PII; internal data allowed to tenant-isolated providers</td>
+            <td>Budget check via inline hook; DPoP for fine-tune access</td>
+          </tr>
+          <tr>
+            <td>Service Account (M2M)</td>
+            <td>Client Credentials (private_key_jwt preferred)</td>
+            <td>Access: 1hr<br>No refresh</td>
+            <td>Specific models/features per service registration; no fine-tune</td>
+            <td>Full DLP on all outbound requests</td>
+            <td>IP allowlist; no user-linked identity; rotate credentials on schedule</td>
+          </tr>
+          <tr>
+            <td>AI Agent</td>
+            <td>mTLS (mesh layer) + scoped JWT</td>
+            <td>Access: 15–30min<br>Rotate per task</td>
+            <td>Scoped to declared tool list only; model allowlist per agent role</td>
+            <td>Full DLP; output filtered before returning to orchestrator</td>
+            <td>Human approval gate for high-risk actions; budget cap per task</td>
+          </tr>
+          <tr>
+            <td>External Partner</td>
+            <td>OAuth 2.1 + PKCE (federated IdP)</td>
+            <td>Access: 30min<br>Refresh: 4hr</td>
+            <td>Restricted model list; only public data classification</td>
+            <td>All external data classified public; strict output filtering</td>
+            <td>Separate authorization server with partner-specific policies</td>
+          </tr>
+          <tr>
+            <td>CI/CD Pipeline</td>
+            <td>OIDC Workload Identity Federation (WLIF)</td>
+            <td>Access: 15min<br>No refresh</td>
+            <td>Test/sandbox models only; no production models</td>
+            <td>No customer data; synthetic data only</td>
+            <td>Scope granted only during pipeline run; ephemeral credentials</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 8.3 Device Trust + AI Scope Grants -->
+    <h3>8.3 Device Trust and AI Scope Grants</h3>
+
+    <p>Combine Okta Device Trust signals with AI scope elevation. Device compliance is a gate on premium AI access — not just a policy decoration.</p>
+
+    <div class="code-block">
+      <span class="cb-label">Okta Access Policy — Device Trust Gates AI Tier</span>
+      <pre><span class="comment"># Policy: "AI Access — Device Trust Required for Premium"</span>
+
+Rule: <span class="string">"Premium AI — Managed + Compliant Device"</span>
+  IF:
+    User in group <span class="string">"premium-ai-users"</span>
+    AND Device is managed (Okta Device Trust enrolled)
+    AND Device is compliant (MDM: patch level current, disk encrypted, no jailbreak)
+    AND MFA verified within last 4 hours
+  THEN:
+    Grant: ai:model:gpt4, ai:model:claude,
+           ai:feature:chat, ai:feature:embeddings,
+           ai:tier:premium, ai:data:internal
+    Access token lifetime: 1 hour
+    Require DPoP: YES (for fine-tune scope)
+
+Rule: <span class="string">"Premium AI — Managed but Non-Compliant Device"</span>
+  IF:
+    User in group <span class="string">"premium-ai-users"</span>
+    AND Device is managed
+    AND Device is NOT compliant
+  THEN:
+    Grant: ai:model:gpt35, ai:feature:chat,
+           ai:tier:standard, ai:data:public    <span class="comment"># degraded</span>
+    Notify: user that device compliance is required for premium access
+
+Rule: <span class="string">"Deny — Unmanaged Device"</span>
+  IF:
+    User in group <span class="string">"premium-ai-users"</span>
+    AND Device is personal / unmanaged
+  THEN:
+    DENY AI access
+    Response: "AI access requires a managed, compliant corporate device"</pre>
+    </div>
+
+    <div class="key-point">
+      <span class="kp-label">Why Device Trust Matters for AI Specifically</span>
+      An unmanaged device is a higher risk vector for AI token theft than for standard web app tokens — AI tokens carry high-value budget allocations and model access. A stolen token on an unmanaged device could be used from any IP, at any time, to drain AI budget or exfiltrate data via prompt injection on the endpoint. Device trust closes this vector.
+    </div>
+
+    <!-- 8.4 Continuous Verification -->
+    <h3>8.4 Continuous Verification for Long AI Sessions</h3>
+
+    <p>LLM sessions differ from standard API calls: a single request can span minutes of streaming, and multi-turn conversations can persist for hours. Zero Trust cannot rely on session-start verification alone.</p>
+
+    <div class="concept-card">
+      <div class="card-title">Token Lifetime Strategy for AI Workloads</div>
+      <table class="info-table" style="margin:10px 0 0;">
+        <thead>
+          <tr><th>Token Type</th><th>Recommended Lifetime</th><th>Rationale</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access token (standard)</td>
+            <td>1 hour</td>
+            <td>Balances UX and blast radius of token theft</td>
+          </tr>
+          <tr>
+            <td>Access token (AI engineer / unlimited tier)</td>
+            <td>15 minutes</td>
+            <td>Elevated privilege; shorter window limits misuse</td>
+          </tr>
+          <tr>
+            <td>Access token (fine-tuning)</td>
+            <td>15 minutes + DPoP</td>
+            <td>Irreversible operations; maximum constraint</td>
+          </tr>
+          <tr>
+            <td>Refresh token (user)</td>
+            <td>4–24 hours, rotation on use</td>
+            <td>Rotation detects refresh token replay</td>
+          </tr>
+          <tr>
+            <td>Service account access token</td>
+            <td>1 hour, no refresh</td>
+            <td>Services re-authenticate each hour; limits exposure</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">JavaScript — Token Refresh Within Long-Running AI Streaming Tasks</span>
+      <pre><span class="comment">// Proactive refresh: renew token before expiry during streaming AI calls</span>
+<span class="keyword">const</span> refreshIfNeeded = <span class="keyword">async</span> (tokenSet) => {
+    <span class="keyword">const</span> expiresIn = tokenSet.expires_at - (Date.now() / 1000);
+    <span class="keyword">if</span> (expiresIn < 300) {  <span class="comment">// &lt; 5 minutes remaining</span>
+        tokenSet = <span class="keyword">await</span> oktaClient.refreshToken(tokenSet.refresh_token);
+    }
+    <span class="keyword">return</span> tokenSet;
+};
+
+<span class="comment">// Mid-session re-auth triggers</span>
+<span class="keyword">const</span> checkContinuousVerification = <span class="keyword">async</span> (tokenSet, sessionContext) => {
+    <span class="keyword">const</span> sessionAge = (Date.now() - sessionContext.startTime) / 60000;
+
+    <span class="comment">// Trigger silent re-auth after 30 minutes of AI session</span>
+    <span class="keyword">if</span> (sessionAge > 30) {
+        tokenSet = <span class="keyword">await</span> oktaClient.silentRenew();
+    }
+
+    <span class="comment">// Step-up auth if cost threshold exceeded mid-session</span>
+    <span class="keyword">if</span> (sessionContext.costAccrued > sessionContext.stepUpThreshold) {
+        <span class="keyword">await</span> requireStepUp(tokenSet, <span class="string">'mfa'</span>);
+    }
+
+    <span class="keyword">return</span> tokenSet;
+};
+
+<span class="comment">// Use in streaming AI task loop</span>
+<span class="keyword">for await</span> (<span class="keyword">const</span> chunk <span class="keyword">of</span> aiStream) {
+    tokenSet = <span class="keyword">await</span> refreshIfNeeded(tokenSet);
+    tokenSet = <span class="keyword">await</span> checkContinuousVerification(tokenSet, sessionCtx);
+    processChunk(chunk);
+}</pre>
+    </div>
+
+    <div class="security-note">
+      <span class="sn-label">Agentic AI — Token Per Task, Not Per Session</span>
+      For autonomous AI agents, do not use long-lived session tokens. Issue a scoped token per task with a budget cap. When the task completes (or times out), revoke the token immediately via Okta's token revocation endpoint. This limits the blast radius of a compromised or runaway agent to a single task's budget and tool scope.
+    </div>
+
+    <!-- 8.5 Data Classification Routing -->
+    <h3>8.5 Data Classification Routing Table</h3>
+
+    <p>The user's <code>data_classification</code> claim in the Okta access token drives the AI gateway's routing decisions. This is enforced at the gateway layer — application code makes no routing decisions about data sensitivity.</p>
+
+    <div style="overflow-x:auto;">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Data Classification</th>
+            <th>Allowed AI Providers</th>
+            <th>DLP Action</th>
+            <th>Logging Requirement</th>
+            <th>Examples</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Public</strong></td>
+            <td>OpenAI, Anthropic, Google Vertex, Azure OpenAI, AWS Bedrock, any provider</td>
+            <td>Monitor only — log DLP events, allow requests</td>
+            <td>Standard gateway log (30 days)</td>
+            <td>Product documentation, public marketing content, general knowledge queries</td>
+          </tr>
+          <tr>
+            <td><strong>Internal</strong></td>
+            <td>Azure OpenAI (tenant-isolated), AWS Bedrock (VPC endpoint), approved SaaS with DPA</td>
+            <td>Block PII; redact credentials; warn on internal hostnames</td>
+            <td>Extended log (90 days) with user attribution</td>
+            <td>Internal policies, non-sensitive business documents, engineering wikis</td>
+          </tr>
+          <tr>
+            <td><strong>Confidential</strong></td>
+            <td>Internal self-hosted models only — no external providers</td>
+            <td>Full DLP scan; block on any PII, credentials, or financial data</td>
+            <td>Compliance log (7 years) with full prompt retention</td>
+            <td>Financial forecasts, M&amp;A materials, legal strategies, source code (proprietary)</td>
+          </tr>
+          <tr>
+            <td><strong>Restricted</strong></td>
+            <td>Air-gapped models only — no network egress at all</td>
+            <td>Full block on any external call; all data stays on-prem</td>
+            <td>Immutable audit log (7+ years), WORM storage</td>
+            <td>Classified materials, regulated PII/PHI at highest tier, trade secrets</td>
+          </tr>
+          <tr>
+            <td><strong>Regulated (PII/PHI)</strong></td>
+            <td>Internal models with HIPAA BAA only; no external providers without explicit approval</td>
+            <td>Mandatory PII/PHI redaction before any model call; audit every redaction event</td>
+            <td>HIPAA audit log (6 years minimum), access logs by identity</td>
+            <td>Patient records, SSNs, medical diagnoses, financial account numbers</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code-block">
+      <span class="cb-label">Python — Data Classification Routing in AI Gateway</span>
+      <pre><span class="keyword">def</span> route_by_data_classification(claims: dict, request_body: dict) -> dict:
+    <span class="string">"""
+    Rewrite model target based on data_classification claim from Okta token.
+    Application code never needs to know about data sensitivity routing.
+    """</span>
+    data_class = claims.get(<span class="string">'data_classification'</span>, <span class="string">'public'</span>)
+    requested_model = request_body.get(<span class="string">'model'</span>, <span class="string">'gpt-3.5-turbo'</span>)
+
+    <span class="keyword">if</span> data_class <span class="keyword">in</span> (<span class="string">'restricted'</span>,):
+        <span class="comment"># Air-gapped: override to local model, strip all provider keys</span>
+        request_body[<span class="string">'model'</span>] = <span class="string">'local/llama3-airgapped'</span>
+        request_body[<span class="string">'api_base'</span>] = <span class="string">'http://airgapped-llm.internal:11434'</span>
+        log_security_event(<span class="string">'AIRGAP_ROUTING'</span>, claims, requested_model)
+
+    <span class="keyword">elif</span> data_class <span class="keyword">in</span> (<span class="string">'confidential'</span>, <span class="string">'regulated'</span>):
+        <span class="comment"># Internal only: route to self-hosted model</span>
+        request_body[<span class="string">'model'</span>] = <span class="string">'internal/llama3-confidential'</span>
+        request_body[<span class="string">'api_base'</span>] = <span class="string">'http://internal-llm.company.net:11434'</span>
+        <span class="comment"># Enforce DLP before forwarding</span>
+        request_body[<span class="string">'messages'</span>] = apply_dlp(request_body[<span class="string">'messages'</span>], policy=<span class="string">'block'</span>)
+
+    <span class="keyword">elif</span> data_class == <span class="string">'internal'</span>:
+        <span class="comment"># Tenant-isolated providers only</span>
+        ALLOWED = (<span class="string">'azure-openai-tenant'</span>, <span class="string">'bedrock-private-vpc'</span>)
+        provider = get_provider_from_model(requested_model)
+        <span class="keyword">if</span> provider <span class="keyword">not</span> <span class="keyword">in</span> ALLOWED:
+            request_body[<span class="string">'model'</span>] = <span class="string">'azure-openai-tenant/gpt-4'</span>
+
+    <span class="comment"># public: no override needed — use requested model</span>
+    <span class="keyword">return</span> request_body</pre>
+    </div>
+
+    <div class="okta-note">
+      <span class="on-label">Okta Integration: How Data Classification Gets Into Tokens</span>
+      The <code>data_classification</code> claim is configured as a custom claim in the Okta AI Gateway authorization server, mapped to a user profile attribute (<code>user.dataClassification</code>). IT assigns the classification level when provisioning users. The Token Inline Hook can override it dynamically — for example, if an audit system flags a user for review, the hook downgrades their classification to <code>public</code> for the duration of the investigation without changing their directory profile.
+    </div>
+
+  </div><!-- /section 8 -->
+
+</div><!-- /page-wrap -->
+</body>
+</html>
+
+
+</div>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>AI Gateway &amp; API Security &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers identity-aware AI gateways, DLP integration, prompt injection defenses, rate limiting, and LLM observability patterns.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Flow Diagram Step Toggle ─── */
+function toggleStep(el){
+  const diagram=el.closest('.flow-diagram')||el.closest('.flow-steps')?.parentElement;
+  if(!diagram)return;
+  const wasActive=el.classList.contains('active');
+  diagram.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active'));
+  diagram.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+  if(!wasActive){
+    el.classList.add('active');
+    const stepNum=el.dataset.step;
+    const detail=diagram.querySelector('.step-detail[data-for-step="'+stepNum+'"]');
+    if(detail)detail.classList.add('visible');
+  }
+}
+</script>
+
+</body>
+</html>

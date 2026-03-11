@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Okta AI — SE Technical Reference</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Okta AI — SE Technical Reference</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     /* Reset & Root */
@@ -262,6 +263,37 @@
 
     .header-back:hover {
       color: var(--c-text);
+    }
+
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 24px;
+      margin-top: -8px;
+      margin-bottom: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .page-nav::-webkit-scrollbar { display: none; }
+    .page-nav a {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      padding: 4px 12px;
+      border-radius: 99px;
+      text-decoration: none;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      border-bottom: none;
+      transition: all 0.2s;
+    }
+    .page-nav a:hover { filter: brightness(1.2); background: var(--c-surface); border-bottom: none; }
+    .page-nav a.current { background: var(--c-surface-alt); font-weight: 700; border-bottom: none; }
+
+    @media (max-width: 768px) {
+      .page-nav { display: none; }
     }
 
     .search-box {
@@ -882,6 +914,15 @@
       color: var(--c-text-secondary);
     }
 
+    /* Footer */
+    .footer {
+      padding: 40px 24px;
+      text-align: center;
+      border-top: 1px solid var(--c-border);
+      font-size: 13px;
+      color: var(--c-text-secondary);
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .two-col {
@@ -983,7 +1024,6 @@
   <div class="header">
     <div class="header-left">
       <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">☰</button>
-      <a href="index.html" class="header-back">← Back to Enablement Hub</a>
       <div>
         <div class="header-title">Okta AI — SE Technical Reference</div>
         <div class="header-subtitle">Identity for AI Agents Across Enterprise</div>
@@ -1005,6 +1045,19 @@
 
   <!-- Sidebar overlay for mobile -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Page Navigation -->
+  <nav class="page-nav">
+    <a href="index.html" style="color:var(--c-text-secondary)">← Hub</a>
+    <a href="technical.html" class="current" style="color:var(--c-accent-amber);border-color:rgba(212,138,0,0.3)">Technical</a>
+    <a href="concepts.html" style="color:var(--c-accent-green);border-color:rgba(31,170,88,0.3)">Concepts</a>
+    <a href="usecases.html" style="color:var(--c-accent-cyan);border-color:rgba(0,153,187,0.3)">Use Cases</a>
+    <a href="oauth.html" style="color:var(--c-auth0-purple);border-color:rgba(103,66,213,0.3)">OAuth 2.1</a>
+    <a href="agent-identity.html" style="color:var(--c-accent-green);border-color:rgba(31,170,88,0.3)">Agent Identity</a>
+    <a href="fga.html" style="color:var(--c-accent-amber);border-color:rgba(212,138,0,0.3)">FGA</a>
+    <a href="ai-gateway.html" style="color:var(--c-accent-red);border-color:rgba(224,62,77,0.3)">AI Gateway</a>
+    <a href="oidc.html" style="color:var(--c-accent-cyan);border-color:rgba(0,153,187,0.3)">OIDC</a>
+  </nav>
 
   <!-- Sidebar Navigation -->
   <aside class="sidebar">
@@ -1054,6 +1107,11 @@
       <div class="sidebar-label">Learning</div>
       <a class="sidebar-link" href="concepts.html">Concepts Guide &rarr;</a>
       <a class="sidebar-link" href="usecases.html">Use Cases by Industry &rarr;</a>
+      <a class="sidebar-link" href="oauth.html">OAuth 2.1 Deep Dive &rarr;</a>
+      <a class="sidebar-link" href="agent-identity.html">Agent Identity &rarr;</a>
+      <a class="sidebar-link" href="fga.html">Fine-Grained Authorization &rarr;</a>
+      <a class="sidebar-link" href="ai-gateway.html">AI Gateway &rarr;</a>
+      <a class="sidebar-link" href="oidc.html">OIDC for AI &rarr;</a>
     </div>
   </aside>
 
@@ -2661,15 +2719,12 @@
     </section>
 
     <!-- Footer -->
-    <section style="margin-top: var(--spacing-xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--c-border);">
-      <p style="color: var(--c-text-secondary); font-size: 0.9rem;">
-        This documentation is for internal Okta Sales Engineering use only. Last updated: February 2026.
-      </p>
-      <p style="color: var(--c-text-secondary); font-size: 0.9rem; margin-top: var(--spacing-md);">
-        For questions or updates, contact the Sales Engineering team.
-      </p>
-    </section>
   </div>
+
+  <footer class="footer">
+    <p>Okta Secures AI — Enablement Hub &middot; Internal + Customer Reference &middot; Updated March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-secondary)">Contains forward-looking statements. Product roadmap items subject to change.</p>
+  </footer>
 
   <script>
     // Search functionality with safe text content approach

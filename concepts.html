@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Okta AI — Concepts & Fundamentals</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Okta AI — Concepts & Fundamentals</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     /* Reset & Root */
@@ -262,6 +263,37 @@
 
     .header-back:hover {
       color: var(--c-text);
+    }
+
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 24px;
+      margin-top: -8px;
+      margin-bottom: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .page-nav::-webkit-scrollbar { display: none; }
+    .page-nav a {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-body);
+      padding: 4px 12px;
+      border-radius: 99px;
+      text-decoration: none;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      border-bottom: none;
+      transition: all 0.2s;
+    }
+    .page-nav a:hover { filter: brightness(1.2); background: var(--c-surface); border-bottom: none; }
+    .page-nav a.current { background: var(--c-surface-alt); font-weight: 700; border-bottom: none; }
+
+    @media (max-width: 768px) {
+      .page-nav { display: none; }
     }
 
     .search-box {
@@ -663,6 +695,15 @@
       color: var(--c-text-secondary);
     }
 
+    /* Footer */
+    .footer {
+      padding: 40px 24px;
+      text-align: center;
+      border-top: 1px solid var(--c-border);
+      font-size: 13px;
+      color: var(--c-text-secondary);
+    }
+
     /* Responsive */
     @media (max-width: 1024px) {
       .sidebar {
@@ -760,7 +801,6 @@
   <div class="header">
     <div class="header-left">
       <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">☰</button>
-      <a href="index.html" class="header-back">← Back to Enablement Hub</a>
       <div>
         <div class="header-title">Okta AI — Concepts & Fundamentals</div>
         <div class="header-subtitle">Foundational knowledge for SE conversations</div>
@@ -782,6 +822,19 @@
 
   <!-- Sidebar overlay for mobile -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Page Navigation -->
+  <nav class="page-nav">
+    <a href="index.html" style="color:var(--c-text-secondary)">← Hub</a>
+    <a href="technical.html" style="color:var(--c-accent-amber);border-color:rgba(212,138,0,0.3)">Technical</a>
+    <a href="concepts.html" class="current" style="color:var(--c-accent-green);border-color:rgba(31,170,88,0.3)">Concepts</a>
+    <a href="usecases.html" style="color:var(--c-accent-cyan);border-color:rgba(0,153,187,0.3)">Use Cases</a>
+    <a href="oauth.html" style="color:var(--c-auth0-purple);border-color:rgba(103,66,213,0.3)">OAuth 2.1</a>
+    <a href="agent-identity.html" style="color:var(--c-accent-green);border-color:rgba(31,170,88,0.3)">Agent Identity</a>
+    <a href="fga.html" style="color:var(--c-accent-amber);border-color:rgba(212,138,0,0.3)">FGA</a>
+    <a href="ai-gateway.html" style="color:var(--c-accent-red);border-color:rgba(224,62,77,0.3)">AI Gateway</a>
+    <a href="oidc.html" style="color:var(--c-accent-cyan);border-color:rgba(0,153,187,0.3)">OIDC</a>
+  </nav>
 
   <!-- Sidebar Navigation -->
   <aside class="sidebar">
@@ -819,6 +872,11 @@
     </div>
 
     <div class="sidebar-section">
+      <div class="sidebar-label">AI Platforms</div>
+      <a class="sidebar-link" data-section="aws-bedrock">AWS Bedrock & AgentCore</a>
+    </div>
+
+    <div class="sidebar-section">
       <div class="sidebar-label">Compliance</div>
       <a class="sidebar-link" data-section="eu-ai-act">EU AI Act</a>
       <a class="sidebar-link" data-section="compliance-mapping">Framework Mapping</a>
@@ -841,6 +899,12 @@
     <div class="sidebar-section">
       <div class="sidebar-label">Resources</div>
       <a class="sidebar-link" href="usecases.html">Use Cases by Industry &rarr;</a>
+      <a class="sidebar-link" href="oauth.html">OAuth 2.1 Deep Dive &rarr;</a>
+      <a class="sidebar-link" href="technical.html">SE Technical Reference &rarr;</a>
+      <a class="sidebar-link" href="agent-identity.html">Agent Identity &rarr;</a>
+      <a class="sidebar-link" href="fga.html">Fine-Grained Authorization &rarr;</a>
+      <a class="sidebar-link" href="ai-gateway.html">AI Gateway &rarr;</a>
+      <a class="sidebar-link" href="oidc.html">OIDC for AI &rarr;</a>
     </div>
   </aside>
 
@@ -1935,6 +1999,244 @@
       </div>
     </section>
 
+    <!-- AWS Bedrock & AgentCore Section -->
+    <section id="aws-bedrock">
+      <h2>AWS Bedrock & AgentCore</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Amazon Bedrock is the most common AI platform you'll encounter in enterprise AWS accounts. Understanding it — and where Okta fits — is critical for positioning in Bedrock-centric deals.</p>
+
+      <h3 style="margin-top: var(--spacing-lg);">What Is Amazon Bedrock</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Amazon Bedrock is AWS's fully managed platform for building generative AI applications and agents at production scale. Think of it as the "AI layer" of AWS — the place where enterprises access foundation models (FMs) and deploy AI agents without managing GPU infrastructure.</p>
+
+      <div class="cards-grid">
+        <div class="card">
+          <h4>Foundation Models</h4>
+          <p style="color: var(--c-text-secondary);">Access to hundreds of FMs from Anthropic (Claude), Meta (Llama), Amazon (Titan), Mistral, Cohere, and more — all through a single API. Customers choose models based on cost, latency, and accuracy for their use case.</p>
+        </div>
+        <div class="card">
+          <h4>Knowledge Bases</h4>
+          <p style="color: var(--c-text-secondary);">Managed RAG pipelines that connect FMs to enterprise data sources. Bedrock handles chunking, embedding, vector storage, and retrieval — the same RAG pattern covered in our RAG Security section.</p>
+        </div>
+        <div class="card">
+          <h4>Guardrails</h4>
+          <p style="color: var(--c-text-secondary);">Content filtering, hallucination detection, and responsible AI checks built into the platform. Blocks harmful content and validates model responses — but does NOT handle identity or authorization.</p>
+        </div>
+        <div class="card">
+          <h4>AgentCore</h4>
+          <p style="color: var(--c-text-secondary);">The agentic platform within Bedrock for building, deploying, and operating AI agents at scale. Provides runtime, gateway, memory, identity, and monitoring — this is where Okta integrates.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-xl);">How AgentCore Works</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">AgentCore is the deployment and operations layer that takes AI agents from prototype to production. It provides composable services that work together or independently:</p>
+
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-accent-cyan); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">1</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0;">Runtime</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Serverless compute for agents. Developers package agent code in containers, AgentCore handles scaling, deployment, and lifecycle. Supports any framework — Strands, LangChain, LlamaIndex, custom code.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-accent-cyan); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">2</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0;">Gateway</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Managed MCP server that connects agents to external tools — Lambda functions, REST APIs, third-party services. Handles inbound identity validation (this is where Auth0 JWT tokens are checked).</p>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-accent-cyan); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">3</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0;">Identity</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Purpose-built IAM for agents. Manages agent identities, inbound/outbound authentication, and a token vault. Designed to integrate with external IdPs like Okta — not replace them.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-accent-cyan); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">4</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0;">Memory, Observability & More</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Context retention across sessions, monitoring/debugging dashboards, code interpreter, browser tools, and policy controls for fine-grained agent action governance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="border-left-color: var(--c-accent-amber);">
+        <strong>Key Distinction:</strong> Bedrock provides the AI compute and agent orchestration. It does NOT provide enterprise-grade cross-platform identity. AgentCore Identity is designed to validate tokens from external IdPs and store credentials — it explicitly delegates identity governance to providers like Okta. This is why the partnership exists.
+      </div>
+
+      <h3 style="margin-top: var(--spacing-xl);">Where Okta / Auth0 Fits</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Auth0 for AI Agents is a first-class integration with Amazon Bedrock AgentCore. The partnership was <a href="https://www.okta.com/newsroom/articles/okta-on-aws-simplifying-identity-security-to-power-innovation/" style="color: var(--c-okta-blue);">announced by Okta</a> and is documented in the <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-idp-okta.html" style="color: var(--c-okta-blue);">AWS AgentCore docs</a>. Here's how each Okta capability maps to an AgentCore integration point:</p>
+
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span><strong>Inbound Auth — JWT Validation via Auth0</strong></span>
+            <span class="accordion-icon">&#9660;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <p style="color: var(--c-text-secondary); margin-top: 0;">When a user or application invokes a Bedrock agent, the AgentCore Runtime and Gateway validate the incoming JWT against Auth0's OIDC discovery endpoint. This ensures only authenticated users can trigger agent actions.</p>
+              <p style="color: var(--c-text-secondary);"><strong>How it works:</strong> The agent's <code>authorizer_configuration</code> points to Auth0's <code>/.well-known/openid-configuration</code> URL. AgentCore downloads Auth0's public keys and validates the token's signature, expiration, audience, and custom claims (like <code>azp</code>) on every request.</p>
+              <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Okta capability:</strong> Auth0 Universal Login, SSO, MFA — the full authentication stack protects agent invocation.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span><strong>Outbound Auth — Token Vault for Third-Party APIs</strong></span>
+            <span class="accordion-icon">&#9660;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <p style="color: var(--c-text-secondary); margin-top: 0;">When a Bedrock agent needs to access Salesforce, Slack, GitHub, or other SaaS APIs on behalf of a user, Auth0 Token Vault provides secure, per-user OAuth token storage and retrieval.</p>
+              <p style="color: var(--c-text-secondary);"><strong>How it works:</strong> The user connects their external accounts through Auth0's Connected Accounts flow. Auth0 stores access and refresh tokens in the Token Vault. The agent retrieves short-lived tokens at runtime through a secure token exchange — never passing raw credentials to the LLM.</p>
+              <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Why it matters:</strong> AWS's own AgentCore Identity has a token vault, but it only covers AWS-native credential types. Auth0 Token Vault handles the cross-platform SaaS connections that enterprise agents actually need.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span><strong>Fine-Grained Authorization — FGA for RAG Pipelines</strong></span>
+            <span class="accordion-icon">&#9660;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <p style="color: var(--c-text-secondary); margin-top: 0;">Bedrock Knowledge Bases power RAG retrieval, but they don't enforce per-user document permissions. Auth0 FGA fills this gap by checking authorization at retrieval time — before documents reach the LLM.</p>
+              <p style="color: var(--c-text-secondary);"><strong>How it works:</strong> When the agent's RAG pipeline retrieves documents from a vector store, an FGA check runs on each document: "Can this user view this document?" Only authorized documents are injected into the LLM's context window.</p>
+              <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Why it matters:</strong> Without FGA, a Bedrock agent answering "What were Q3 results?" could leak board-confidential data to a junior employee. This is the exact scenario covered in our RAG Security section.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span><strong>Human-in-the-Loop — CIBA for Elevated Operations</strong></span>
+            <span class="accordion-icon">&#9660;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <p style="color: var(--c-text-secondary); margin-top: 0;">When a Bedrock agent needs to perform a high-stakes action — reset a password, approve a transaction, modify a production config — Auth0 CIBA triggers out-of-band human approval.</p>
+              <p style="color: var(--c-text-secondary);"><strong>How it works:</strong> The agent pauses execution and initiates a CIBA flow. The user receives a push notification on their Auth0 Guardian app with transaction details (a binding message). Only after the user approves does the agent proceed.</p>
+              <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Why it matters:</strong> AgentCore has no native human-in-the-loop mechanism. CIBA is the only standards-based way to gate sensitive agent operations behind explicit user consent.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span><strong>MCP Gateway — Auth0 as the OAuth Resource Server</strong></span>
+            <span class="accordion-icon">&#9660;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-body">
+              <p style="color: var(--c-text-secondary); margin-top: 0;">AgentCore Gateway exposes tools (Lambda functions, REST APIs) to agents via MCP. Auth0 protects these tool endpoints by serving as the OAuth resource server for inbound identity validation.</p>
+              <p style="color: var(--c-text-secondary);"><strong>How it works:</strong> The Gateway's inbound auth configuration points to Auth0's OIDC discovery URL and validates custom claims (e.g., <code>azp</code> = the Auth0 application Client ID). Only requests backed by a valid Auth0 token can reach the tools behind the Gateway.</p>
+              <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Why it matters:</strong> Without this, any service that can reach the Gateway endpoint could invoke tools. Auth0 ensures zero-trust: every tool invocation is authenticated and authorized.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-xl);">Architecture Overview</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">End-to-end flow of a user interacting with a Bedrock agent secured by Auth0:</p>
+
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg); font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8; overflow-x: auto; margin-bottom: var(--spacing-lg);">
+        <div style="color: var(--c-text-secondary);">
+          <span style="color: var(--c-okta-blue); font-weight: 700;">User</span> ──login──▶ <span style="color: var(--c-auth0-purple); font-weight: 700;">Auth0</span> ──JWT──▶ <span style="color: var(--c-accent-cyan); font-weight: 700;">AgentCore Runtime</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;validates JWT against Auth0<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+          <span style="color: var(--c-accent-cyan); font-weight: 700;">Agent</span> ──needs tool──▶ <span style="color: var(--c-accent-cyan); font-weight: 700;">AgentCore Gateway</span> ──Auth0 JWT check──▶ <span style="color: var(--c-accent-green); font-weight: 700;">Tool / API</span><br>
+          &nbsp;&nbsp;│<br>
+          &nbsp;&nbsp;├──needs SaaS token──▶ <span style="color: var(--c-auth0-purple); font-weight: 700;">Auth0 Token Vault</span> ──OAuth token──▶ <span style="color: var(--c-accent-green); font-weight: 700;">Salesforce / Slack / etc.</span><br>
+          &nbsp;&nbsp;│<br>
+          &nbsp;&nbsp;├──needs doc access──▶ <span style="color: var(--c-auth0-purple); font-weight: 700;">Auth0 FGA</span> ──permission check──▶ <span style="color: var(--c-accent-green); font-weight: 700;">RAG Pipeline</span><br>
+          &nbsp;&nbsp;│<br>
+          &nbsp;&nbsp;└──sensitive action──▶ <span style="color: var(--c-auth0-purple); font-weight: 700;">Auth0 CIBA</span> ──push notification──▶ <span style="color: var(--c-okta-blue); font-weight: 700;">User Approval</span>
+        </div>
+      </div>
+
+      <div class="callout" style="border-left-color: var(--c-accent-green);">
+        <strong>Key Takeaway:</strong> Bedrock provides the AI compute, model access, and agent runtime. Auth0 provides the identity layer — authentication, authorization, token management, and human-in-the-loop. They are complementary, not competing. When a customer says "We're building on Bedrock," that's an opening for Okta, not a blocker.
+      </div>
+
+      <div class="seller-section" style="margin-top: var(--spacing-lg);">
+        <h3 style="margin-top: 0;">Seller Positioning for Bedrock Deals</h3>
+
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span><strong>Discovery questions for AWS / Bedrock accounts</strong></span>
+              <span class="accordion-icon">&#9660;</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <ul style="color: var(--c-text-secondary); margin-bottom: 0; line-height: 2;">
+                  <li>"Are you building AI agents on Bedrock today, or evaluating it?"</li>
+                  <li>"How are your Bedrock agents authenticating users right now — Cognito, IAM roles, or something else?"</li>
+                  <li>"When your agents access third-party APIs like Salesforce or Slack, how are you managing those OAuth tokens?"</li>
+                  <li>"Do your RAG pipelines enforce per-user document permissions, or does every user see the same retrieval results?"</li>
+                  <li>"Is there a human-approval step for high-stakes agent actions, or do agents execute autonomously?"</li>
+                  <li>"Are you using AgentCore Gateway with MCP? How are you securing inbound requests to those tool endpoints?"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span><strong>When they say "We use Cognito for identity"</strong></span>
+              <span class="accordion-icon">&#9660;</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <div class="callout" style="margin-top: 0; margin-bottom: 0;">
+                  <p style="margin: 0;"><strong>"Cognito handles basic user pools and JWT issuance — and it works fine for that. But ask: Does Cognito give you a Token Vault for managing OAuth connections to Salesforce, ServiceNow, and Slack? Does it do fine-grained, relationship-based authorization for RAG pipelines? Does it support CIBA for human-in-the-loop approval flows? Those are the pieces you need for enterprise AI agents, and that's where Auth0 plugs into AgentCore."</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span><strong>When they say "AgentCore Identity handles this"</strong></span>
+              <span class="accordion-icon">&#9660;</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <div class="callout" style="margin-top: 0; margin-bottom: 0;">
+                  <p style="margin: 0;"><strong>"AgentCore Identity is designed to work WITH an external IdP — that's why it supports OIDC discovery URLs and JWT validation. It handles the agent-side credential storage, but it delegates user authentication and advanced authorization to providers like Okta. In fact, Okta is listed as a supported identity provider in the AgentCore docs. We're not competing with AgentCore Identity — we're the IdP it's built to integrate with."</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header">
+              <span><strong>Technical proof points</strong></span>
+              <span class="accordion-icon">&#9660;</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <ul style="color: var(--c-text-secondary); margin-bottom: 0; line-height: 2;">
+                  <li><strong>Official AWS docs:</strong> <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-idp-okta.html" style="color: var(--c-okta-blue);">Okta as AgentCore Identity Provider</a></li>
+                  <li><strong>Auth0 blog:</strong> <a href="https://auth0.com/blog/securing-amazon-bedrock-agentcore-agents-auth0-for-ai-agents/" style="color: var(--c-okta-blue);">Step-by-step integration guide</a> with full code samples</li>
+                  <li><strong>Okta partnership:</strong> <a href="https://www.okta.com/newsroom/articles/okta-on-aws-simplifying-identity-security-to-power-innovation/" style="color: var(--c-okta-blue);">Okta on AWS announcement</a> (Jan 2026)</li>
+                  <li><strong>Reference repo:</strong> <a href="https://github.com/patilkapil/agentcore-auth0-webapp" style="color: var(--c-okta-blue);">agentcore-auth0-webapp</a> — working Flask app with AgentCore + Auth0</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- EU AI Act Section -->
     <section id="eu-ai-act">
       <h2>EU AI Act — What SEs Need to Know</h2>
@@ -2723,13 +3025,12 @@
       </div>
     </section>
 
-    <!-- Footer -->
-    <section style="margin-top: var(--spacing-xl); padding-top: var(--spacing-xl); border-top: 1px solid var(--c-border);">
-      <p style="color: var(--c-text-secondary); font-size: 0.9rem;">
-        This documentation is for internal Okta Sales Engineering use only. Last updated: February 2026.
-      </p>
-    </section>
   </div>
+
+  <footer class="footer">
+    <p>Okta Secures AI — Enablement Hub &middot; Internal + Customer Reference &middot; Updated March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-secondary)">Contains forward-looking statements. Product roadmap items subject to change.</p>
+  </footer>
 
   <script>
     // Search functionality with safe text content approach

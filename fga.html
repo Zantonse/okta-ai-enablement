@@ -1,0 +1,3207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>Fine-Grained Authorization — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-amber);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-amber);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Content Components ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+/* ─── Flow Diagrams ─── */
+.flow-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.flow-diagram-title{
+  padding:16px 20px;font-weight:600;font-size:15px;
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-parties{
+  display:flex;justify-content:space-around;padding:16px 20px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+}
+.party{
+  padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;
+}
+.party-client{background:var(--c-okta-blue)}
+.party-auth{background:var(--c-auth0-purple)}
+.party-resource{background:var(--c-accent-green)}
+.party-user{background:var(--c-accent-amber)}
+.party-device{background:var(--c-accent-cyan)}
+
+.flow-steps{padding:8px}
+.flow-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;margin:4px 8px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;border:1px solid transparent;
+}
+.flow-step:hover{background:var(--c-surface);border-color:var(--c-border)}
+.flow-step.active{background:var(--c-surface);border-color:var(--c-okta-blue)}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);
+  flex-shrink:0;transition:all 0.2s;
+}
+.flow-step.active .step-num{background:var(--c-okta-blue);color:#fff;border-color:var(--c-okta-blue)}
+.step-arrow{font-size:16px;color:var(--c-text-dim);flex-shrink:0}
+.step-label{font-size:14px;font-weight:500}
+.step-label-sub{font-size:12px;color:var(--c-text-muted);margin-left:auto}
+
+.step-detail{
+  display:none;margin:0 12px 8px;padding:16px 20px;
+  background:var(--c-surface);border-radius:8px;
+  border-left:3px solid var(--c-okta-blue);
+  animation:fadeIn 0.2s ease;
+}
+.step-detail.visible{display:block}
+.step-http{margin-bottom:12px}
+.step-explain{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .flow-parties{flex-wrap:wrap;gap:6px;justify-content:center}
+  .comparison-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" class="current">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">OIDC &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html" style="font-weight:600;color:var(--c-accent-amber)">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      Auth0 FGA &middot; OpenFGA &middot; Zanzibar
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">Fine-Grained Authorization</h1>
+    <p class="section-subtitle">Per-tool, per-document access control for AI agents using relationship-based authorization.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fine-Grained Authorization for AI and MCP Systems</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f7fa;
+    color: #1a1a2e;
+    line-height: 1.7;
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #0d1b4b 0%, #1a3a8f 60%, #1466c4 100%);
+    color: white;
+    padding: 60px 48px 48px;
+    border-bottom: 4px solid #00a8e8;
+  }
+
+  .page-header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .page-header .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    max-width: 720px;
+  }
+
+  .page-header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .toc {
+    background: white;
+    border-left: 4px solid #1466c4;
+    border-radius: 0 8px 8px 0;
+    padding: 24px 28px;
+    margin: 32px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .toc-title {
+    grid-column: 1 / -1;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1466c4;
+    margin-bottom: 8px;
+  }
+
+  .toc a {
+    color: #1a1a2e;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 3px 0;
+    display: block;
+    border-bottom: 1px dashed #e0e0e0;
+  }
+
+  .toc a:hover { color: #1466c4; }
+
+  .section {
+    padding: 48px 48px 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e8ecf4;
+  }
+
+  .section-number {
+    background: #1466c4;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .section-title-block h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #0d1b4b;
+    line-height: 1.3;
+  }
+
+  .section-title-block p {
+    color: #5a6a8a;
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  .subsection {
+    margin-bottom: 40px;
+  }
+
+  .subsection h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0d1b4b;
+    margin-bottom: 14px;
+    padding-left: 12px;
+    border-left: 3px solid #00a8e8;
+  }
+
+  .subsection h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1466c4;
+    margin: 16px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  p {
+    margin-bottom: 14px;
+    color: #2d3748;
+  }
+
+  /* Concept Card */
+  .concept-card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    border: 1px solid #e8ecf4;
+    position: relative;
+  }
+
+  .concept-card .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d1b4b;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .concept-card .card-title .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #eef4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .concept-card p { margin-bottom: 8px; }
+
+  /* Flow Diagram */
+  .flow-diagram {
+    background: #0d1b4b;
+    border-radius: 10px;
+    padding: 28px;
+    margin: 20px 0;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.82rem;
+    color: #c8d6f0;
+    overflow-x: auto;
+  }
+
+  .flow-diagram .diagram-title {
+    color: #00a8e8;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    font-family: -apple-system, sans-serif;
+  }
+
+  /* Flow Steps */
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .flow-step .step-num {
+    background: #1466c4;
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-detail {
+    flex: 1;
+  }
+
+  .step-detail strong {
+    display: block;
+    color: #0d1b4b;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .step-detail p {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: #4a5568;
+  }
+
+  /* Info Table */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    font-size: 0.88rem;
+  }
+
+  .info-table thead {
+    background: #0d1b4b;
+    color: white;
+  }
+
+  .info-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.3px;
+  }
+
+  .info-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f2f8;
+    vertical-align: top;
+    color: #2d3748;
+  }
+
+  .info-table tr:last-child td { border-bottom: none; }
+  .info-table tr:nth-child(even) td { background: #fafbff; }
+
+  .info-table td .yes { color: #16a34a; font-weight: 600; }
+  .info-table td .no  { color: #dc2626; font-weight: 600; }
+  .info-table td .med { color: #d97706; font-weight: 600; }
+
+  /* Security Note */
+  .security-note {
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-left: 4px solid #f97316;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.9rem;
+    color: #7c2d12;
+  }
+
+  .security-note strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #ea580c;
+  }
+
+  /* Key Point */
+  .key-point {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #1466c4;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.92rem;
+    color: #1e3a8a;
+  }
+
+  .key-point strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #1466c4;
+  }
+
+  /* Okta Note */
+  .okta-note {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-left: 4px solid #16a34a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.9rem;
+    color: #14532d;
+  }
+
+  .okta-note strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #16a34a;
+  }
+
+  /* Code Block */
+  .code-block {
+    background: #1e2a3a;
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin: 14px 0;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-block .code-lang {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.7rem;
+    color: #64748b;
+    font-family: -apple-system, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .code-block pre {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+    white-space: pre;
+    margin: 0;
+  }
+
+  .code-block .cm { color: #6b9e6b; }
+  .code-block .kw { color: #7bb8f5; }
+  .code-block .st { color: #f0a67a; }
+  .code-block .hl { background: rgba(255,255,100,0.1); display: block; margin: 0 -22px; padding: 0 22px; }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e8ecf4;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1466c4;
+    line-height: 1.1;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.78rem;
+    color: #5a6a8a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Tuple example */
+  .tuple-example {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+    align-items: center;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 0.9rem;
+  }
+
+  .tuple-example .tuple {
+    background: #0d1b4b;
+    color: #7bb8f5;
+    padding: 8px 14px;
+    border-radius: 6px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  .tuple-example .tuple .obj  { color: #f0a67a; }
+  .tuple-example .tuple .sep  { color: #4a7ab8; }
+  .tuple-example .tuple .rel  { color: #7ee8a2; }
+  .tuple-example .tuple .at   { color: #c084fc; }
+  .tuple-example .tuple .user { color: #60c8f0; }
+
+  /* API comparison */
+  .api-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .api-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e8ecf4;
+    overflow: hidden;
+  }
+
+  .api-card .api-header {
+    background: #0d1b4b;
+    color: white;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .api-card .api-header .api-method {
+    display: inline-block;
+    background: #00a8e8;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  .api-card .api-body {
+    padding: 14px 16px;
+    font-size: 0.87rem;
+    color: #2d3748;
+  }
+
+  .api-card .api-body .question {
+    font-style: italic;
+    color: #5a6a8a;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+
+  /* SDK grid */
+  .sdk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .sdk-badge {
+    background: white;
+    border: 1px solid #e8ecf4;
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #0d1b4b;
+  }
+
+  .sdk-badge .sdk-lang {
+    font-size: 0.7rem;
+    color: #5a6a8a;
+    display: block;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  /* Divider between sections */
+  .section-divider {
+    border: none;
+    border-top: 2px solid #e8ecf4;
+    margin: 32px 48px;
+  }
+
+  /* Quote block */
+  .quote-block {
+    border-left: 4px solid #c084fc;
+    background: #faf5ff;
+    padding: 14px 20px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #4a1d96;
+    font-size: 0.92rem;
+  }
+
+  .quote-block cite {
+    display: block;
+    font-style: normal;
+    font-size: 0.78rem;
+    color: #7c3aed;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  /* Scenario blocks for section 1 */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  @media (max-width: 768px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+    .toc { grid-template-columns: 1fr; margin: 24px; }
+    .section { padding: 32px 24px 16px; }
+    .section-divider { margin: 24px; }
+  }
+
+  .scenario-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e8ecf4;
+    overflow: hidden;
+  }
+
+  .scenario-card .sc-header {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .scenario-card .sc-header.bad  { background: #dc2626; }
+  .scenario-card .sc-header.good { background: #16a34a; }
+
+  .scenario-card .sc-body {
+    padding: 12px 14px;
+    font-size: 0.87rem;
+    color: #374151;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="badge">Okta Solutions Engineering — Deep Dive</div>
+  <h1>Fine-Grained Authorization for AI and MCP Systems</h1>
+  <p class="subtitle">From OAuth scopes to Zanzibar relationships: how FGA solves the authorization gap that leaves enterprise AI systems exposed. Sections 1–4 of 9.</p>
+</div>
+
+<div class="toc">
+  <div class="toc-title">Contents — Part 1</div>
+  <a href="#section1">1. The Problem with Coarse Authorization</a>
+  <a href="#section2">2. The Zanzibar Model</a>
+  <a href="#section3">3. Auth0 FGA / OpenFGA</a>
+  <a href="#section4">4. FGA for MCP Tool Authorization</a>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- SECTION 1: THE PROBLEM WITH COARSE AUTHORIZATION             -->
+<!-- ============================================================ -->
+
+<div class="section" id="section1">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <div class="section-title-block">
+      <h2>The Problem with Coarse Authorization</h2>
+      <p>Why OAuth scopes are insufficient for AI agents, the scenarios where they break down, and the confused deputy problem.</p>
+    </div>
+  </div>
+
+  <!-- 1.1 -->
+  <div class="subsection">
+    <h3>OAuth Scopes Are Flat Strings</h3>
+    <p>OAuth scopes are designed as coarse-grained permission signals. They are human-authored strings that an authorization server validates at the API boundary:</p>
+
+    <div class="code-block">
+      <span class="code-lang">OAuth</span>
+      <pre>scope: "read:files write:files calendar:read"</pre>
+    </div>
+
+    <p>These scope strings tell an API <em>"this client is allowed to read files."</em> They do not express:</p>
+
+    <div class="concept-card">
+      <div class="card-title"><span class="icon">&#8987;</span>What OAuth Scopes Cannot Express</div>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Required Constraint</th>
+            <th>OAuth Scope Can Express?</th>
+            <th>FGA Can Express?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Which specific files</td>
+            <td><span class="no">No</span></td>
+            <td><span class="yes">Yes — per object</span></td>
+          </tr>
+          <tr>
+            <td>Which rows in a database</td>
+            <td><span class="no">No</span></td>
+            <td><span class="yes">Yes — per resource instance</span></td>
+          </tr>
+          <tr>
+            <td>Which tools an AI agent may invoke</td>
+            <td><span class="no">No</span></td>
+            <td><span class="yes">Yes — per tool per user</span></td>
+          </tr>
+          <tr>
+            <td>Which document a RAG pipeline may retrieve</td>
+            <td><span class="no">No</span></td>
+            <td><span class="yes">Yes — pre-retrieval filtering</span></td>
+          </tr>
+          <tr>
+            <td>Only /Marketing/Q1 Plans/ folder in Google Drive</td>
+            <td><span class="no">No — Drive scope is all-or-nothing</span></td>
+            <td><span class="yes">Yes — folder-level tuple</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="key-point">
+      <strong>The Core Problem</strong>
+      For human-driven applications with predictable, deterministic behavior, coarse scopes are often sufficient. The human sees the consent screen and implicitly understands they are granting access to their own files. For AI agents, none of those implicit constraints hold. Agents act autonomously, at machine speed, across data the user may not have consciously inventoried.
+    </div>
+  </div>
+
+  <!-- 1.2 The AI Authorization Gap -->
+  <div class="subsection">
+    <h3>What Specifically Goes Wrong Without FGA</h3>
+    <p>Without fine-grained authorization at the resource layer, AI agents operating on broad OAuth tokens create predictable failure modes:</p>
+
+    <div class="scenario-grid">
+      <div class="scenario-card">
+        <div class="sc-header bad">Without FGA</div>
+        <div class="sc-body">
+          <strong>Sales AI queries company docs</strong><br>
+          Returns confidential M&amp;A memos and unreleased forecast data if vector search similarity matches the query — regardless of the user's clearance level.
+        </div>
+      </div>
+      <div class="scenario-card">
+        <div class="sc-header good">With FGA</div>
+        <div class="sc-body">
+          <strong>Sales AI queries company docs</strong><br>
+          Only returns documents where the user's role has an explicit <code>viewer</code> or <code>editor</code> relationship tuple. M&amp;A docs are invisible to the retrieval pipeline.
+        </div>
+      </div>
+      <div class="scenario-card">
+        <div class="sc-header bad">Without FGA</div>
+        <div class="sc-body">
+          <strong>Code review bot</strong><br>
+          Has access to the entire organization's repositories via the developer's inherited GitHub token. A prompt injection attack on the bot has blast radius of all repos.
+        </div>
+      </div>
+      <div class="scenario-card">
+        <div class="sc-header good">With FGA</div>
+        <div class="sc-body">
+          <strong>Code review bot</strong><br>
+          Scoped to <code>repo:billing-service</code>, read-only. FGA check at every tool invocation enforces this ceiling regardless of what credentials are in the environment.
+        </div>
+      </div>
+      <div class="scenario-card">
+        <div class="sc-header bad">Without FGA</div>
+        <div class="sc-body">
+          <strong>Healthcare AI reads patient records</strong><br>
+          Can access all records indexed in the vector database. Any user interacting with the AI could surface records they have no clinical relationship to.
+        </div>
+      </div>
+      <div class="scenario-card">
+        <div class="sc-header good">With FGA</div>
+        <div class="sc-body">
+          <strong>Healthcare AI reads patient records</strong><br>
+          Filtered to only records where the <code>doctor#attending_physician</code> relationship tuple exists for the requesting clinician.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1.3 Confused Deputy -->
+  <div class="subsection">
+    <h3>The Confused Deputy Problem in AI Agent Chains</h3>
+    <p>The <strong>confused deputy</strong> is a class of privilege escalation where a less-privileged caller tricks a more-privileged service into using its authority on the caller's behalf. In AI agent systems, this is not theoretical — it is a structural property of how agents inherit ambient authority.</p>
+
+    <div class="flow-diagram">
+      <div class="diagram-title">Confused Deputy in an AI Agent Chain</div>
+      <pre>
+Developer (broad GitHub token — all repos)
+    |
+    v
+AI Coding Assistant  ←── [inherits developer token]
+    |
+    v
+Sub-agent: Security Scanner  ←── [inherits assistant ambient authority]
+    |
+    v
+Sub-agent now has full repo access it was never intended to have
+    |
+    v
+Prompt injection attack on security scanner = blast radius of ALL repos</pre>
+    </div>
+
+    <div class="security-note">
+      <strong>Attack Vector</strong>
+      Any sub-agent in a chain — including specialized agents the user never directly interacts with — inherits the ambient authority of its parent. A prompt injection into any node in the chain can escalate to the full credential scope. This is not a bug in the agent; it is a structural property of ambient authority without per-resource enforcement.
+    </div>
+
+    <div class="quote-block">
+      "The paper identifies key limitations of OAuth in this context, including coarse permission scopes, lack of dynamic policy enforcement, and architectural mismatch between OAuth's delegation model and the chained, autonomous nature of AI agent systems."
+      <cite>TechRxiv Research Paper, 2026 — AI Agent Authorization</cite>
+    </div>
+  </div>
+
+  <!-- 1.4 Role Explosion -->
+  <div class="subsection">
+    <h3>Why Roles Are Not Enough Either: Role Explosion</h3>
+    <p>RBAC faces "role explosion" as AI use cases multiply. Organizations that start with <code>admin</code>, <code>editor</code>, <code>viewer</code> inevitably accumulate:</p>
+
+    <div class="code-block">
+      <span class="code-lang">Role Explosion</span>
+      <pre>regional-sales-manager-with-competitor-intel-access
+ai-agent-readonly-except-calendar
+temp-auditor-q4-2025
+contractor-no-production
+eu-gdpr-restricted-viewer
+healthcare-ai-attending-only</pre>
+    </div>
+
+    <div class="quote-block">
+      "Role-based access control often leads to 'role explosion' when managing millions of users with unique, shifting relationships. FGA is designed to handle billions of these relationships with minimal latency."
+      <cite>Auth0 Product Blog, March 2026</cite>
+    </div>
+
+    <p>The solution is to model the underlying <em>relationships</em> directly — not to create a new role for every combination of resource, context, and permission level. This is the foundational insight of the Zanzibar model.</p>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- SECTION 2: THE ZANZIBAR MODEL                                -->
+<!-- ============================================================ -->
+
+<div class="section" id="section2">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <div class="section-title-block">
+      <h2>The Zanzibar Model</h2>
+      <p>Google's 2019 foundational paper on consistent, global authorization — and the design patterns it introduced that underpin every modern FGA system.</p>
+    </div>
+  </div>
+
+  <!-- 2.1 Background -->
+  <div class="subsection">
+    <h3>The 2019 Google Paper</h3>
+    <p>In 2019, Google published <strong>"Zanzibar: Google's Consistent, Global Authorization System"</strong> at USENIX ATC. This was significant because Google rarely shares core infrastructure internals — but recognized that authorization at scale is a universal problem the industry was solving badly.</p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value">10M+</span>
+        <span class="stat-label">Permission checks per second</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">2T</span>
+        <span class="stat-label">Access control lists managed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">&lt;10ms</span>
+        <span class="stat-label">p95 check latency</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">99.999%</span>
+        <span class="stat-label">Uptime over 3 years</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">1,500+</span>
+        <span class="stat-label">Namespaces across Google services</span>
+      </div>
+    </div>
+
+    <div class="okta-note">
+      <strong>Google Services Using Zanzibar</strong>
+      Gmail, Google Drive, Google Calendar, YouTube, Google Cloud, Maps, Google Photos — all authorization decisions across all of these flow through Zanzibar. The system is not a prototype; it is production infrastructure at the largest scale any authorization system has ever operated at.
+    </div>
+  </div>
+
+  <!-- 2.2 Relationship Tuples -->
+  <div class="subsection">
+    <h3>Relationship Tuples: The Core Data Unit</h3>
+    <p>The fundamental data unit in Zanzibar is the <strong>relationship tuple</strong> — a triple of (object, relation, user) written in the format:</p>
+
+    <div class="code-block">
+      <span class="code-lang">Tuple Format</span>
+      <pre>object#relation@user</pre>
+    </div>
+
+    <p>Reading each component: <strong>object</strong> is the resource being protected, <strong>relation</strong> is the access type, <strong>user</strong> is who holds the relationship. Real examples:</p>
+
+    <div class="tuple-example">
+      <div class="tuple"><span class="obj">document:readme</span><span class="sep">#</span><span class="rel">owner</span><span class="at">@</span><span class="user">alice</span></div>
+      <div class="tuple"><span class="obj">folder:projects</span><span class="sep">#</span><span class="rel">viewer</span><span class="at">@</span><span class="user">bob</span></div>
+      <div class="tuple"><span class="obj">group:engineers</span><span class="sep">#</span><span class="rel">member</span><span class="at">@</span><span class="user">charlie</span></div>
+    </div>
+
+    <p>The most powerful feature is <strong>usersets</strong> — instead of a specific user, the subject can be a set of users defined by a relation on another object:</p>
+
+    <div class="tuple-example">
+      <div class="tuple"><span class="obj">document:readme</span><span class="sep">#</span><span class="rel">viewer</span><span class="at">@</span><span class="user">group:engineers#member</span></div>
+    </div>
+
+    <p>This single tuple grants viewer access to every current and future member of the <code>engineers</code> group — no per-user enumeration required, no stale list to maintain.</p>
+
+    <div class="key-point">
+      <strong>Why Usersets Matter for AI</strong>
+      When an AI agent runs as a service account on behalf of users, usersets let you write one tuple — "the agent can view documents that the user can view" — rather than enumerating every document the user has access to. The relationship graph handles the transitive resolution.
+    </div>
+  </div>
+
+  <!-- 2.3 Namespace Configurations -->
+  <div class="subsection">
+    <h3>Namespace Configurations and Set Operations</h3>
+    <p>While tuples store raw relationship data, <strong>namespace configurations</strong> define how relationships combine to produce permissions. These use set operations:</p>
+
+    <div class="code-block">
+      <span class="code-lang">Zanzibar Namespace Config</span>
+      <pre>document namespace:
+  "viewer" = direct_viewers
+             UNION editors
+             UNION (viewers of parent_folder)
+
+  "editor" = direct_editors
+             UNION owner</pre>
+    </div>
+
+    <p>The available set operations are:</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Operation</th>
+          <th>Meaning</th>
+          <th>Example Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Union</strong></td>
+          <td>User has permission if they satisfy <em>any</em> of the component sets</td>
+          <td>viewer = direct viewers OR editors OR folder viewers</td>
+        </tr>
+        <tr>
+          <td><strong>Intersection</strong></td>
+          <td>User has permission only if they satisfy <em>all</em> of the component sets</td>
+          <td>can_export = has_export_role AND is_account_owner</td>
+        </tr>
+        <tr>
+          <td><strong>Exclusion</strong></td>
+          <td>User has permission from set A but NOT from set B</td>
+          <td>can_view = all_employees EXCEPT blocked_users</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The consequence: when Bob becomes an editor, he automatically gains viewer rights through the union. When the parent folder grants viewer access to the Marketing group, every Marketing member gets document viewer access — without any additional tuples being written per document.</p>
+  </div>
+
+  <!-- 2.4 New Enemy Problem -->
+  <div class="subsection">
+    <h3>The "New Enemy Problem" and Zookies</h3>
+    <p>One of Zanzibar's key innovations solves the <strong>new enemy problem</strong> — a timing-based security vulnerability that naively-cached authorization systems are susceptible to:</p>
+
+    <div class="flow-diagram">
+      <div class="diagram-title">New Enemy Problem Timeline</div>
+      <pre>
+t=0  Alice removes Bob from a shared document
+t=1  Alice immediately adds highly sensitive content to that document
+t=2  Authorization system serves a cached/stale check result
+t=2  Bob reads the newly added sensitive content  ← SECURITY BREACH
+
+ZANZIBAR SOLUTION: Zookies (consistency tokens)
+t=0  Alice removes Bob → write operation returns a zookie
+t=1  Alice adds content with the zookie as a consistency requirement
+t=2  Check request: "use data no older than this zookie"
+t=2  Stale cache results are rejected → Bob correctly denied</pre>
+    </div>
+
+    <p><strong>Zookies</strong> are opaque timestamps that ensure authorization checks use data fresh enough relative to the content being authorized. Applications specify consistency requirements per-request, trading latency for freshness based on the sensitivity of the operation.</p>
+  </div>
+
+  <!-- 2.5 Three Core APIs -->
+  <div class="subsection">
+    <h3>The Three Core APIs</h3>
+
+    <div class="api-grid">
+      <div class="api-card">
+        <div class="api-header"><span class="api-method">POST</span>Check API</div>
+        <div class="api-body">
+          <p class="question">"Does user X have permission Y on object Z?"</p>
+          <strong>Input:</strong> (user, relation, object)<br>
+          <strong>Output:</strong> <code>{ "allowed": true | false }</code><br><br>
+          Primary enforcement point. Called at every access decision. Sub-10ms at p95. The most performance-critical API in the system.
+        </div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><span class="api-method">POST</span>Expand API</div>
+        <div class="api-body">
+          <p class="question">"Who are all the entities with permission Y on object Z?"</p>
+          <strong>Input:</strong> (relation, object)<br>
+          <strong>Output:</strong> Full permission tree / userset expansion<br><br>
+          Used for auditing and debugging — shows exactly which relationship paths grant access, including all transitive paths through groups and hierarchies.
+        </div>
+      </div>
+      <div class="api-card">
+        <div class="api-header"><span class="api-method">POST</span>ListObjects API</div>
+        <div class="api-body">
+          <p class="question">"What objects of type T does user X have permission Y on?"</p>
+          <strong>Input:</strong> (user, relation, type)<br>
+          <strong>Output:</strong> [list of authorized objects]<br><br>
+          Critical for RAG pipelines: returns all document IDs the user can view before querying the vector database. Prevents unauthorized content from entering the LLM context window.
+        </div>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <strong>ListObjects Is the RAG Enabler</strong>
+      ListObjects is the API that makes FGA practical for AI document retrieval. Instead of querying the vector DB and then checking each result, you first call ListObjects to get the authorized document set, then restrict your vector search to that set. Unauthorized documents are never retrieved.
+    </div>
+  </div>
+
+  <!-- 2.6 ReBAC vs RBAC vs ABAC -->
+  <div class="subsection">
+    <h3>ReBAC vs RBAC vs ABAC: Comparison</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>RBAC</th>
+          <th>ABAC</th>
+          <th>ReBAC (Zanzibar)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Permission basis</strong></td>
+          <td>Role assignments</td>
+          <td>Attribute policies</td>
+          <td>Relationship graph</td>
+        </tr>
+        <tr>
+          <td><strong>Granularity</strong></td>
+          <td>Per role</td>
+          <td>Per policy condition</td>
+          <td>Per resource instance</td>
+        </tr>
+        <tr>
+          <td><strong>Dynamic sharing</strong></td>
+          <td><span class="no">Hard — requires new roles</span></td>
+          <td><span class="med">Moderate — rule changes</span></td>
+          <td><span class="yes">Natural — write a tuple</span></td>
+        </tr>
+        <tr>
+          <td><strong>Hierarchy</strong></td>
+          <td>Manual parent roles</td>
+          <td>Manual policy rules</td>
+          <td>Automatic via tuple propagation</td>
+        </tr>
+        <tr>
+          <td><strong>Scale</strong></td>
+          <td>Role explosion at enterprise scale</td>
+          <td>Policy explosion</td>
+          <td>Graph traversal — scales naturally</td>
+        </tr>
+        <tr>
+          <td><strong>Performance</strong></td>
+          <td>Fast (simple lookup)</td>
+          <td>Variable (policy eval cost)</td>
+          <td>Fast (index-based graph traversal)</td>
+        </tr>
+        <tr>
+          <td><strong>Auditability</strong></td>
+          <td>Who has role</td>
+          <td>Complex policy traces</td>
+          <td>Direct tuple trail + path expansion</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- SECTION 3: AUTH0 FGA / OPENFGA                               -->
+<!-- ============================================================ -->
+
+<div class="section" id="section3">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <div class="section-title-block">
+      <h2>Auth0 FGA / OpenFGA</h2>
+      <p>The open-source Zanzibar implementation as a CNCF project, the managed enterprise service, and the APIs that drive authorization decisions.</p>
+    </div>
+  </div>
+
+  <!-- 3.1 OpenFGA as CNCF Project -->
+  <div class="subsection">
+    <h3>OpenFGA: CNCF Incubation Project</h3>
+    <p><strong>OpenFGA</strong> is the open-source implementation of the Zanzibar model. Originally created by Okta/Auth0, it was donated to the <strong>Cloud Native Computing Foundation (CNCF)</strong> as an Incubation project — the same governance tier as Argo, Flux, and Backstage.</p>
+
+    <div class="concept-card">
+      <div class="card-title"><span class="icon">&#9729;</span>OpenFGA vs Auth0 FGA</div>
+      <table class="info-table">
+        <thead>
+          <tr><th>Dimension</th><th>OpenFGA (OSS)</th><th>Auth0 FGA (Managed)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Governance</strong></td>
+            <td>CNCF Incubation — open standard</td>
+            <td>Okta-managed, built on OpenFGA</td>
+          </tr>
+          <tr>
+            <td><strong>Deployment</strong></td>
+            <td>Self-hosted — your infrastructure</td>
+            <td>Fully managed SaaS</td>
+          </tr>
+          <tr>
+            <td><strong>SLA</strong></td>
+            <td>You own uptime</td>
+            <td>99.99% SLA (Tier-Zero Reliability)</td>
+          </tr>
+          <tr>
+            <td><strong>Audit trail</strong></td>
+            <td>You build logging</td>
+            <td>Immutable logging API built in</td>
+          </tr>
+          <tr>
+            <td><strong>Data model</strong></td>
+            <td>100% portable — no lock-in</td>
+            <td>Same model — exportable at any time</td>
+          </tr>
+          <tr>
+            <td><strong>Tooling</strong></td>
+            <td>CLI, playground, VS Code ext</td>
+            <td>Dashboard + CLI + VS Code ext + IDE</td>
+          </tr>
+          <tr>
+            <td><strong>Compliance</strong></td>
+            <td>Self-managed</td>
+            <td>GDPR / HIPAA audit trail native</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="okta-note">
+      <strong>Okta Positioning</strong>
+      Auth0 FGA is the only managed Zanzibar-model authorization service from a major identity vendor. The CNCF donation ensures there is no proprietary lock-in on the data model — customers who self-host OpenFGA use the identical authorization model DSL as those on Auth0 FGA managed. This is a key differentiator vs. custom authorization implementations competitors would propose.
+    </div>
+  </div>
+
+  <!-- 3.2 Authorization Model DSL -->
+  <div class="subsection">
+    <h3>The Authorization Model DSL</h3>
+    <p>OpenFGA provides a human-readable DSL (Domain-Specific Language) compiled to JSON for the API. The DSL defines types, relations, and permissions — the schema of your authorization model.</p>
+
+    <h4>Basic Document Model</h4>
+    <div class="code-block">
+      <span class="code-lang">OpenFGA DSL</span>
+      <pre>model
+  schema 1.1
+
+type user
+
+type document
+  relations
+    define owner: [user]
+    define editor: [user]
+    define viewer: [user, user:*]
+
+  permissions
+    define can_view   = viewer or editor or owner
+    define can_edit   = editor or owner
+    define can_delete = owner</pre>
+    </div>
+
+    <h4>Full Model with Teams, Folders, and Conditions</h4>
+    <div class="code-block">
+      <span class="code-lang">OpenFGA DSL — Full Example</span>
+      <pre>model
+  schema 1.1
+
+type user
+
+type team
+  relations
+    define member: [user]
+
+type folder
+  relations
+    define owner:  [user]
+    define editor: [user, team#member]
+    define viewer: [user, team#member, user:*]
+
+  permissions
+    define can_view = viewer or editor or owner
+    define can_edit = editor or owner
+
+type document
+  relations
+    define owner:  [user]
+    define editor: [user, team#member]
+    define viewer: [user, team#member, user:*]
+    define parent: [folder]
+
+  permissions
+    define can_view   = viewer or editor or owner
+                        or viewer from parent    <span class="cm"># folder hierarchy</span>
+    define can_edit   = editor or owner
+    define can_delete = owner
+    define can_share  = owner</pre>
+    </div>
+
+    <h4>Model with Conditions (Time-Based Access)</h4>
+    <div class="code-block">
+      <span class="code-lang">OpenFGA DSL — Conditions</span>
+      <pre>model
+  schema 1.1
+
+type user
+
+type mcp_tool
+  relations
+    define executor: [user] with within_business_hours
+    define owner:    [user]
+
+condition within_business_hours(current_hour: int, day_of_week: string) {
+  day_of_week in ["Monday","Tuesday","Wednesday","Thursday","Friday"]
+  && current_hour >= 9
+  && current_hour &lt; 17
+}</pre>
+    </div>
+  </div>
+
+  <!-- 3.3 Key APIs -->
+  <div class="subsection">
+    <h3>Key APIs with Code Examples</h3>
+
+    <h4>Write Tuples</h4>
+    <div class="code-block">
+      <span class="code-lang">HTTP</span>
+      <pre>POST /stores/{store_id}/write
+Content-Type: application/json
+
+{
+  "writes": {
+    "tuple_keys": [
+      {
+        "user": "user:alice",
+        "relation": "editor",
+        "object": "document:roadmap-2026"
+      },
+      {
+        "user": "team:marketing#member",
+        "relation": "viewer",
+        "object": "document:roadmap-2026"
+      }
+    ]
+  }
+}</pre>
+    </div>
+
+    <h4>Check API</h4>
+    <div class="code-block">
+      <span class="code-lang">HTTP</span>
+      <pre>POST /stores/{store_id}/check
+Content-Type: application/json
+
+{
+  "authorization_model_id": "01HVMMBCMGZNT3SED4Z17ECXCA",
+  "tuple_key": {
+    "user": "user:alice",
+    "relation": "can_view",
+    "object": "document:roadmap-2026"
+  }
+}
+
+<span class="cm">// Response:</span>
+{ "allowed": true }</pre>
+    </div>
+
+    <div class="code-block">
+      <span class="code-lang">JavaScript SDK</span>
+      <pre>const { allowed } = await fgaClient.check({
+  user: 'user:alice',
+  relation: 'can_view',
+  object: 'document:roadmap-2026',
+}, {
+  authorizationModelId: '01HVMMBCMGZNT3SED4Z17ECXCA',
+});
+<span class="cm">// allowed = true</span></pre>
+    </div>
+
+    <div class="code-block">
+      <span class="code-lang">Python SDK</span>
+      <pre>response = await fga_client.check(
+  ClientCheckRequest(
+    user="user:alice",
+    relation="can_view",
+    object="document:roadmap-2026",
+  ),
+  options={"authorization_model_id": "01HVMMBCMGZNT3SED4Z17ECXCA"}
+)
+<span class="cm"># response.allowed = True</span></pre>
+    </div>
+
+    <h4>ListObjects API</h4>
+    <div class="code-block">
+      <span class="code-lang">HTTP</span>
+      <pre>POST /stores/{store_id}/list-objects
+
+{
+  "authorization_model_id": "01HVMMBCMGZNT3SED4Z17ECXCA",
+  "type": "document",
+  "relation": "can_view",
+  "user": "user:alice"
+}
+
+<span class="cm">// Response:</span>
+{
+  "objects": [
+    "document:roadmap-2026",
+    "document:q1-okrs",
+    "document:marketing-brief"
+  ]
+}</pre>
+    </div>
+
+    <h4>ListUsers API</h4>
+    <div class="code-block">
+      <span class="code-lang">HTTP</span>
+      <pre>POST /stores/{store_id}/list-users
+
+{
+  "authorization_model_id": "01HVMMBCMGZNT3SED4Z17ECXCA",
+  "object": { "type": "document", "id": "roadmap-2026" },
+  "relation": "can_view",
+  "user_filters": [{ "type": "user" }]
+}
+
+<span class="cm">// Response:</span>
+{
+  "users": [
+    { "object": { "type": "user", "id": "alice" } },
+    { "object": { "type": "user", "id": "beth" } }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <!-- 3.4 Contextual Tuples -->
+  <div class="subsection">
+    <h3>Contextual Tuples (Per-Request Context)</h3>
+    <p>Contextual tuples are relationship data passed in the check request itself — they exist only for the duration of that single request and are never stored. This enables authorization decisions based on runtime context:</p>
+
+    <div class="concept-card">
+      <div class="card-title"><span class="icon">&#128336;</span>Contextual Tuple Use Cases</div>
+      <ul style="padding-left:20px; color:#2d3748; font-size:0.9rem; line-height:2;">
+        <li>Time-based access: "it is currently 14:00 on a Tuesday — within business hours"</li>
+        <li>Network context: "request originated from IP 10.0.0.1 — inside the corporate network"</li>
+        <li>Session-level MFA: "user completed MFA step-up in this session"</li>
+        <li>Geographic restrictions: "user is accessing from the EU region"</li>
+      </ul>
+    </div>
+
+    <div class="code-block">
+      <span class="code-lang">HTTP — Contextual Tuple in Check Request</span>
+      <pre>{
+  "tuple_key": {
+    "user": "user:alice",
+    "relation": "can_execute",
+    "object": "mcp_tool:send_email"
+  },
+  "contextual_tuples": {
+    "tuple_keys": [
+      {
+        "user": "user:alice",
+        "relation": "has_mfa_active",
+        "object": "session:current"
+      }
+    ]
+  }
+}</pre>
+    </div>
+
+    <p>The contextual tuple asserts "alice has an active MFA session" for the duration of this check only. The authorization model can require this as a condition for sensitive operations without storing session state in FGA permanently.</p>
+  </div>
+
+  <!-- 3.5 SDK Coverage -->
+  <div class="subsection">
+    <h3>SDK Coverage</h3>
+    <p>Auth0 FGA and OpenFGA provide official SDKs across all major languages and AI frameworks:</p>
+
+    <h4>Language SDKs</h4>
+    <div class="sdk-grid">
+      <div class="sdk-badge">@openfga/sdk<span class="sdk-lang">JavaScript / TypeScript</span></div>
+      <div class="sdk-badge">openfga-sdk<span class="sdk-lang">Python</span></div>
+      <div class="sdk-badge">go-sdk<span class="sdk-lang">Go</span></div>
+      <div class="sdk-badge">OpenFga.Sdk<span class="sdk-lang">.NET / C#</span></div>
+      <div class="sdk-badge">dev.openfga.sdk<span class="sdk-lang">Java</span></div>
+    </div>
+
+    <h4>AI Framework Integrations</h4>
+    <div class="sdk-grid">
+      <div class="sdk-badge">@auth0/ai-langchain<span class="sdk-lang">LangChain (JS)</span></div>
+      <div class="sdk-badge">auth0-ai-langchain<span class="sdk-lang">LangChain (Python)</span></div>
+      <div class="sdk-badge">@auth0/ai-llamaindex<span class="sdk-lang">LlamaIndex</span></div>
+      <div class="sdk-badge">@auth0/ai-vercel<span class="sdk-lang">Vercel AI SDK</span></div>
+      <div class="sdk-badge">FGARetriever<span class="sdk-lang">RAG drop-in filter</span></div>
+    </div>
+  </div>
+
+  <!-- 3.6 Performance -->
+  <div class="subsection">
+    <h3>Performance Characteristics</h3>
+    <table class="info-table">
+      <thead>
+        <tr><th>Metric</th><th>Value</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>SLA</strong></td>
+          <td>99.99% (12-month rolling)</td>
+          <td>trust.okta.com</td>
+        </tr>
+        <tr>
+          <td><strong>Reliability tier</strong></td>
+          <td>Tier-Zero — same tier as core Okta auth</td>
+          <td>Okta internal classification</td>
+        </tr>
+        <tr>
+          <td><strong>Check API latency</strong></td>
+          <td>p95 &lt; 10ms (follows Zanzibar target)</td>
+          <td>OpenFGA design spec</td>
+        </tr>
+        <tr>
+          <td><strong>Relationship scale</strong></td>
+          <td>Billions (not millions) — designed for enterprise</td>
+          <td>Auth0 product blog, Mar 2026</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="quote-block">
+      "Relationship-based access control across multiple workspaces was simply not feasible before. With Auth0 FGA, we can instantly set up new workspaces with complex, fine-grained authorization structures."
+      <cite>Cribl — Auth0 FGA customer</cite>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- SECTION 4: FGA FOR MCP TOOL AUTHORIZATION                    -->
+<!-- ============================================================ -->
+
+<div class="section" id="section4">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <div class="section-title-block">
+      <h2>FGA for MCP Tool Authorization</h2>
+      <p>Applying the Zanzibar model to MCP server tool access — per-user per-tool grants, middleware patterns, and the AuthZen standard for standardized authorization decisions.</p>
+    </div>
+  </div>
+
+  <!-- 4.1 The Problem -->
+  <div class="subsection">
+    <h3>The Problem: MCP Tools Are Overpowered by Default</h3>
+    <p>MCP (Model Context Protocol) servers expose tools that AI agents invoke. Without authorization enforcement at the tool layer, any connected agent — or any user of that agent — can call any tool. This violates the principle of least privilege at the most critical point in an AI system: the interface between the language model and real-world actions.</p>
+
+    <div class="security-note">
+      <strong>Threat Model</strong>
+      A single MCP server may expose tools that read files, send email, execute code, query databases, make API calls, and modify calendar entries. Without per-tool per-user authorization checks, the entire tool surface is accessible to any session that connects to the server — including sessions compromised by prompt injection.
+    </div>
+  </div>
+
+  <!-- 4.2 Authorization Model for MCP Tools -->
+  <div class="subsection">
+    <h3>Authorization Model for MCP Tools</h3>
+
+    <div class="code-block">
+      <span class="code-lang">OpenFGA DSL — MCP Tool Model</span>
+      <pre>model
+  schema 1.1
+
+type user
+
+type organization
+  relations
+    define member: [user]
+    define admin:  [user]
+
+type mcp_tool
+  relations
+    define executor:    [user, role#assignee]
+    define owner:       [user]
+    define belongs_to:  [organization]
+
+  permissions
+    define can_execute = executor
+                         or owner
+                         or member from belongs_to
+
+type role
+  relations
+    define assignee: [user]
+
+type conversation
+  relations
+    define owner:  [user]
+    define viewer: [user]
+    define editor: [user]
+
+  permissions
+    define can_view = viewer or owner
+    define can_edit = editor or owner</pre>
+    </div>
+
+    <p>This model enables three authorization paths for a tool:</p>
+    <ul style="padding-left:20px; color:#2d3748; font-size:0.9rem; line-height:2.2; margin-bottom:16px;">
+      <li><strong>Direct grant:</strong> user is directly assigned <code>executor</code> on a specific tool</li>
+      <li><strong>Role-based:</strong> user is an assignee of a role that has executor rights</li>
+      <li><strong>Organization-based:</strong> user is a member of an org that owns the tool</li>
+    </ul>
+  </div>
+
+  <!-- 4.3 Per-User Per-Tool Grants -->
+  <div class="subsection">
+    <h3>Per-User Per-Tool Grants</h3>
+    <p>Write tuples to grant specific users access to specific tools. The check runs at every tool invocation — not at connection time.</p>
+
+    <div class="code-block">
+      <span class="code-lang">Python</span>
+      <pre><span class="cm"># Grant alice access to the search_code tool</span>
+await fga_client.write({
+  "writes": {
+    "tuple_keys": [
+      {
+        "user": "user:alice",
+        "relation": "executor",
+        "object": "mcp_tool:search_code"
+      }
+    ]
+  }
+})
+
+<span class="cm"># Check at tool invocation time:</span>
+result = await fga_client.check({
+  "user": "user:alice",
+  "relation": "can_execute",
+  "object": "mcp_tool:search_code"
+})
+<span class="cm"># { "allowed": true }</span>
+
+result = await fga_client.check({
+  "user": "user:bob",
+  "relation": "can_execute",
+  "object": "mcp_tool:search_code"
+})
+<span class="cm"># { "allowed": false }</span></pre>
+    </div>
+
+    <h4>Organization-Based Tool Access (Group Inheritance)</h4>
+    <div class="code-block">
+      <span class="code-lang">Python</span>
+      <pre><span class="cm"># All members of Engineering org can use code tools</span>
+await fga_client.write({
+  "writes": {
+    "tuple_keys": [
+      <span class="cm"># Add alice to Engineering org</span>
+      {
+        "user": "user:alice",
+        "relation": "member",
+        "object": "organization:engineering"
+      },
+      <span class="cm"># Associate code_review tool with Engineering org</span>
+      {
+        "user": "organization:engineering",
+        "relation": "belongs_to",
+        "object": "mcp_tool:code_review"
+      }
+    ]
+  }
+})
+
+<span class="cm"># Alice inherits can_execute on code_review via:</span>
+<span class="cm"># alice → member of engineering → belongs_to code_review → can_execute</span></pre>
+    </div>
+  </div>
+
+  <!-- 4.4 MCP Server Middleware Pattern -->
+  <div class="subsection">
+    <h3>MCP Server Middleware Pattern</h3>
+    <p>The FGA check runs as middleware before every tool handler executes. The user identity is extracted from the JWT (issued by Okta), and the check is performed against Auth0 FGA. The tool handler only executes on <code>allowed: true</code>.</p>
+
+    <div class="code-block">
+      <span class="code-lang">Python — MCP Middleware</span>
+      <pre>from openfga_sdk.client import OpenFgaClient, ClientConfiguration
+from openfga_sdk.client.models import ClientCheckRequest
+
+fga_client = OpenFgaClient(ClientConfiguration(
+    api_url=os.environ.get("FGA_API_URL"),
+    store_id=os.environ.get("FGA_STORE_ID"),
+    authorization_model_id=os.environ.get("FGA_MODEL_ID")
+))
+
+async def authorize_tool_call(user_id: str, tool_name: str) -> bool:
+    <span class="cm">"""FGA middleware check — runs before every MCP tool invocation."""</span>
+    response = await fga_client.check(
+        ClientCheckRequest(
+            user=f"user:{user_id}",
+            relation="can_execute",
+            object=f"mcp_tool:{tool_name}",
+        )
+    )
+    return response.allowed
+
+<span class="cm"># In MCP tool handler:</span>
+@mcp_server.tool("search_code")
+async def search_code_tool(query: str, ctx: MCPContext):
+    user_id = ctx.get_user_id()  <span class="cm"># From JWT sub claim</span>
+
+    if not await authorize_tool_call(user_id, "search_code"):
+        raise PermissionError(
+            f"User {user_id} is not authorized to use search_code"
+        )
+
+    <span class="cm"># ... execute tool logic</span></pre>
+    </div>
+
+    <div class="flow-diagram">
+      <div class="diagram-title">MCP + FGA Request Flow</div>
+      <pre>
+User Request
+    |
+    v
+MCP Client (Claude Desktop, custom client, etc.)
+    |
+    v
+MCP Server (your application)
+    |
+    +---> JWT Validation (Okta / Auth0)
+    |              |
+    |         [user_id extracted from sub claim]
+    |
+    +---> FGA Check: can user execute THIS tool?
+    |         POST /stores/{id}/check
+    |         { user, relation: "can_execute", object: "mcp_tool:X" }
+    |              |
+    |         [allowed: true/false]
+    |
+    +---> If allowed:  execute tool logic
+    |
+    +---> If denied:   return 403 with reason
+    |
+    +---> FGA Check: can user access THIS specific data resource?
+              (for tools that return data: RAG, database queries, etc.)</pre>
+    </div>
+  </div>
+
+  <!-- 4.5 AuthZen Pattern -->
+  <div class="subsection">
+    <h3>The AuthZen Pattern for Standardized Authorization Decisions</h3>
+    <p>The <strong>AuthZen</strong> standard provides a standardized REST API for making authorization decisions — decoupling the enforcement point (the MCP server) from the policy decision point (Auth0 FGA or any compliant engine). This is the pattern recommended for enterprise MCP deployments where the authorization engine may need to be swapped or audited independently.</p>
+
+    <div class="code-block">
+      <span class="code-lang">AuthZen — HTTP</span>
+      <pre>POST /access/v1/evaluation
+
+{
+  "subject": {
+    "type": "user",
+    "id": "alice"
+  },
+  "action": {
+    "name": "execute"
+  },
+  "resource": {
+    "type": "mcp_tool",
+    "id": "send_email"
+  },
+  "context": {
+    "current_hour": 14,
+    "day_of_week": "Tuesday",
+    "user_mfa_verified": true
+  }
+}
+
+<span class="cm">// Response:</span>
+{
+  "decision": true,
+  "decision_id": "abc-123-audit-trail"
+}</pre>
+    </div>
+
+    <div class="key-point">
+      <strong>The decision_id Is Your Audit Trail</strong>
+      Every AuthZen response includes a <code>decision_id</code> — an immutable identifier for this specific authorization decision at this moment in time. Every AI agent action can be traced back to the authorization decision that permitted it. This is the mechanism that satisfies GDPR's right-of-access documentation and HIPAA's audit log requirements for AI agent actions.
+    </div>
+
+    <div class="quote-block">
+      "Authentication answers who a client is, but it doesn't answer what they are allowed to do. For MCP servers and AI-driven systems, that gap becomes dangerous fast."
+      <cite>Gravitee Blog, January 2026 — MCP Authorization with OpenFGA and AuthZen</cite>
+    </div>
+
+    <div class="okta-note">
+      <strong>Okta Positioning for MCP Authorization</strong>
+      Auth for MCP (Early Access, announced January 2026) integrates Auth0 directly into the MCP server authentication and authorization flow. This means Okta customers can connect MCP clients and servers using OAuth 2.0 with FGA enforcement — no custom middleware required. The Token Vault manages third-party API credentials (GitHub, Slack, Google Drive) so the AI agent never holds raw credentials.
+    </div>
+  </div>
+</div>
+
+<div style="height: 64px;"></div>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FGA for AI and MCP Systems — Sections 5–7</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #1a1a2e;
+      background: #f8f9fb;
+      padding: 40px 24px 80px;
+    }
+    a { color: #0052cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .page-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ── Section Headers ── */
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0a0a23;
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0a0a23;
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e0e4ef;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin: 28px 0 10px;
+    }
+    h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #444;
+      margin: 20px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    p { margin-bottom: 12px; }
+
+    /* ── Section divider ── */
+    .section-block {
+      background: #fff;
+      border: 1px solid #dde2f0;
+      border-radius: 12px;
+      padding: 36px 40px;
+      margin-bottom: 36px;
+    }
+    .section-number {
+      display: inline-block;
+      background: #0052cc;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    /* ── .concept-card ── */
+    .concept-card {
+      background: #f0f4ff;
+      border: 1px solid #c3d0f0;
+      border-left: 4px solid #0052cc;
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 18px 0;
+    }
+    .concept-card .card-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0052cc;
+      margin-bottom: 8px;
+    }
+    .concept-card p:last-child { margin-bottom: 0; }
+
+    /* ── .info-table ── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.88rem;
+    }
+    .info-table th {
+      background: #0052cc;
+      color: #fff;
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+    }
+    .info-table th:first-child { border-radius: 6px 0 0 0; }
+    .info-table th:last-child  { border-radius: 0 6px 0 0; }
+    .info-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e8eaf2;
+      vertical-align: top;
+    }
+    .info-table tr:nth-child(even) td { background: #f5f7ff; }
+    .info-table tr:last-child td { border-bottom: none; }
+    .info-table .tag {
+      display: inline-block;
+      background: #e3eafc;
+      color: #0052cc;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 12px;
+      margin: 1px 2px 1px 0;
+    }
+    .info-table .tag.red   { background: #fce3e3; color: #c0392b; }
+    .info-table .tag.green { background: #e3fcec; color: #1a7340; }
+    .info-table .tag.amber { background: #fdf3e3; color: #a05c00; }
+
+    /* ── .security-note ── */
+    .security-note {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin: 18px 0;
+      font-size: 0.9rem;
+    }
+    .security-note .note-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #b45309;
+      margin-bottom: 6px;
+    }
+    .security-note p:last-child { margin-bottom: 0; }
+
+    /* ── .key-point ── */
+    .key-point {
+      background: #eafaf1;
+      border: 1px solid #a8e6c1;
+      border-left: 4px solid #16a34a;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin: 18px 0;
+      font-size: 0.9rem;
+    }
+    .key-point .kp-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #166534;
+      margin-bottom: 6px;
+    }
+    .key-point p:last-child { margin-bottom: 0; }
+
+    /* ── .okta-note ── */
+    .okta-note {
+      background: #f5f0ff;
+      border: 1px solid #c4b5fd;
+      border-left: 4px solid #7c3aed;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin: 18px 0;
+      font-size: 0.9rem;
+    }
+    .okta-note .on-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #5b21b6;
+      margin-bottom: 6px;
+    }
+    .okta-note p:last-child { margin-bottom: 0; }
+
+    /* ── .code-block ── */
+    .code-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 20px 22px;
+      margin: 16px 0;
+      overflow-x: auto;
+      font-family: "SFMono-Regular", "Fira Code", "Cascadia Code", Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      position: relative;
+    }
+    .code-block .lang-badge {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: rgba(255,255,255,0.1);
+      color: #a6adc8;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .code-block .kw  { color: #cba6f7; }  /* keywords */
+    .code-block .str { color: #a6e3a1; }  /* strings */
+    .code-block .cmt { color: #6c7086; font-style: italic; }  /* comments */
+    .code-block .fn  { color: #89b4fa; }  /* function names */
+    .code-block .num { color: #fab387; }  /* numbers */
+    .code-block .cls { color: #f38ba8; }  /* class names */
+    .code-block pre {
+      margin: 0;
+      white-space: pre;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+    }
+
+    /* ── .comparison-grid ── */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .comparison-grid .grid-cell {
+      background: #f8f9fb;
+      border: 1px solid #dde2f0;
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .comparison-grid .grid-cell .cell-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0052cc;
+      margin-bottom: 8px;
+    }
+    .comparison-grid .grid-cell .cell-engine {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0a0a23;
+      margin-bottom: 8px;
+    }
+    .comparison-grid .grid-cell p { font-size: 0.85rem; margin-bottom: 6px; }
+    .comparison-grid .grid-cell p:last-child { margin-bottom: 0; }
+
+    /* ── Architecture diagram ── */
+    .arch-diagram {
+      background: #0a0a23;
+      color: #e0e4f0;
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin: 20px 0;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .arch-diagram .layer-label {
+      color: #7dd3fc;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .arch-diagram .layer-okta  { color: #a78bfa; font-weight: 700; }
+    .arch-diagram .layer-fga   { color: #6ee7b7; font-weight: 700; }
+    .arch-diagram .layer-arrow { color: #94a3b8; }
+
+    /* ── Flow list ── */
+    .flow-list {
+      list-style: none;
+      counter-reset: flow-counter;
+      margin: 16px 0;
+    }
+    .flow-list li {
+      counter-increment: flow-counter;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #eef0f8;
+    }
+    .flow-list li:last-child { border-bottom: none; }
+    .flow-list li::before {
+      content: counter(flow-counter);
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      background: #0052cc;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* ── Capability bundle ── */
+    .capability-bundle {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .capability-bundle .cap {
+      background: #fff;
+      border: 1px solid #c3d0f0;
+      border-top: 3px solid #0052cc;
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .capability-bundle .cap .cap-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #0052cc;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .capability-bundle .cap .cap-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0a0a23;
+      margin-bottom: 6px;
+    }
+    .capability-bundle .cap p { font-size: 0.84rem; margin-bottom: 0; color: #444; }
+
+    /* ── Talking point list ── */
+    .tp-list {
+      list-style: none;
+      margin: 16px 0;
+    }
+    .tp-list li {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eef0f8;
+    }
+    .tp-list li:last-child { border-bottom: none; }
+    .tp-bullet {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #0052cc, #7c3aed);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    .tp-content .tp-title { font-weight: 700; color: #0a0a23; margin-bottom: 3px; }
+    .tp-content p { font-size: 0.88rem; margin-bottom: 0; color: #444; }
+
+    /* ── Inline code ── */
+    code {
+      background: #eef0f8;
+      color: #0052cc;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.83em;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .code-block code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* ── Quote ── */
+    blockquote {
+      border-left: 3px solid #0052cc;
+      padding: 10px 18px;
+      margin: 16px 0;
+      background: #f0f4ff;
+      border-radius: 0 6px 6px 0;
+      font-style: italic;
+      color: #333;
+      font-size: 0.93rem;
+    }
+    blockquote cite {
+      display: block;
+      margin-top: 6px;
+      font-style: normal;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #0052cc;
+    }
+
+    /* ── decision-tree ── */
+    .decision-tree {
+      background: #f8f9fb;
+      border: 1px solid #dde2f0;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 20px 0;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.83rem;
+      line-height: 1.8;
+    }
+    .decision-tree .q { color: #0052cc; font-weight: 700; }
+    .decision-tree .a { color: #16a34a; font-weight: 600; }
+
+    /* ── Pill badges ── */
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-blue   { background: #e3eafc; color: #0052cc; }
+    .badge-purple { background: #ede9fe; color: #5b21b6; }
+    .badge-green  { background: #dcfce7; color: #166534; }
+    .badge-amber  { background: #fef3c7; color: #92400e; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+
+    /* ── Page header ── */
+    .page-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid #dde2f0;
+    }
+    .page-header .subtitle {
+      color: #555;
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>FGA for AI and MCP Systems</h1>
+    <p class="subtitle">Sections 5 – 7 &nbsp;·&nbsp; RAG Document Security &nbsp;·&nbsp; Policy Engine Comparison &nbsp;·&nbsp; Okta Integration</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  SECTION 5 — FGA for RAG / Document Security              -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="section-5">
+    <span class="section-number">Section 5</span>
+    <h2>FGA for RAG / Document Security</h2>
+
+    <!-- 5.1 The Core Risk -->
+    <h3>5.1 The Core Risk: OWASP GenAI LLM02 — Sensitive Information Disclosure</h3>
+
+    <div class="security-note">
+      <div class="note-label">OWASP GenAI Top 10 — LLM02 Risk</div>
+      <p><strong>Sensitive Information Disclosure</strong> is listed as a critical vulnerability in the OWASP GenAI Top 10 2025. Without authorization enforcement at the retrieval layer, an AI assistant can surface confidential data to any user whose query vector happens to be semantically similar to a restricted document.</p>
+    </div>
+
+    <p>Concrete examples of unauthorized disclosure in production RAG systems:</p>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>User Query</th>
+          <th>Without FGA (RAG returns)</th>
+          <th>With FGA (RAG returns)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"What is the Q4 forecast for ZEKO?"</td>
+          <td><span class="tag red">EXPOSED</span> Financial forecast (unauthorized employee)</td>
+          <td><span class="tag green">FILTERED</span> Only docs the user's FGA tuples permit</td>
+        </tr>
+        <tr>
+          <td>"Show me recent patient labs for John"</td>
+          <td><span class="tag red">EXPOSED</span> Patient record (non-treating physician)</td>
+          <td><span class="tag green">FILTERED</span> Only records where attending_physician relationship exists</td>
+        </tr>
+        <tr>
+          <td>"What are our competitor pricing notes?"</td>
+          <td><span class="tag red">EXPOSED</span> Competitive intel to wrong sales team</td>
+          <td><span class="tag green">FILTERED</span> Only shown to SE / permitted role via group tuple</td>
+        </tr>
+        <tr>
+          <td>"Summarize the M&A due diligence"</td>
+          <td><span class="tag red">EXPOSED</span> Legal docs outside attorney-client privilege</td>
+          <td><span class="tag green">FILTERED</span> Legal docs visible only to privileged#member users</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <blockquote>
+      "There has been a 1,025% increase in AI-related vulnerabilities (CVEs) in a single year — and 77.4% of those are directly tied to API security issues."
+      <cite>— Forrester, 2025</cite>
+    </blockquote>
+
+    <!-- 5.2 Two Filtering Approaches -->
+    <h3>5.2 Two Filtering Approaches</h3>
+
+    <div class="comparison-grid">
+      <div class="grid-cell">
+        <div class="cell-label">Approach 1 (Recommended)</div>
+        <div class="cell-engine">Pre-Retrieval Filtering</div>
+        <p><strong>Call <code>ListObjects</code> first</strong> to get the set of document IDs the user is authorized to see. Then pass that allowlist as a filter constraint to the vector DB query.</p>
+        <p style="margin-top:8px;"><span class="badge badge-green">Strongest security</span></p>
+        <p>Unauthorized documents <em>never enter</em> the embedding search. One additional FGA call before retrieval.</p>
+      </div>
+      <div class="grid-cell">
+        <div class="cell-label">Approach 2 (Acceptable)</div>
+        <div class="cell-engine">Post-Retrieval Filtering</div>
+        <p>Query the vector DB normally — get top-K results. Then run <strong><code>BatchCheck</code></strong> against FGA for each result in parallel. Strip unauthorized documents before sending context to the LLM.</p>
+        <p style="margin-top:8px;"><span class="badge badge-amber">Good coverage</span></p>
+        <p>This is the pattern <code>FGARetriever</code> uses. The LLM never sees unauthorized content, but the vector DB did process the full corpus.</p>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="kp-label">Key Point</div>
+      <p>In both approaches the LLM context window is clean — no unauthorized content is ever passed as prompt context. The difference is whether unauthorized document vectors are even evaluated during search.</p>
+    </div>
+
+    <!-- 5.3 FGARetriever -->
+    <h3>5.3 FGARetriever — Drop-in Authorization for LangChain / LlamaIndex</h3>
+
+    <p>Auth0 provides the <code>FGARetriever</code> class via the <code>@auth0/ai-langchain</code> package. It wraps any LangChain-compatible retriever and transparently applies FGA post-retrieval filtering.</p>
+
+    <h4>JavaScript / LangChain — FGARetriever</h4>
+    <div class="code-block">
+      <span class="lang-badge">JavaScript</span>
+      <pre>
+<span class="kw">import</span> { FGARetriever } <span class="kw">from</span> <span class="str">'@auth0/ai-langchain'</span>;
+<span class="kw">import</span> { ClientBatchCheckItem } <span class="kw">from</span> <span class="str">'@openfga/sdk'</span>;
+
+<span class="cmt">// user is the authenticated principal from the JWT (e.g. decoded from Okta token)</span>
+<span class="kw">const</span> retriever = <span class="fn">FGARetriever</span>.create({
+  retriever: vectorStore.<span class="fn">asRetriever</span>(),
+  <span class="fn">buildQuery</span>: (doc) =&gt; ({
+    user:     <span class="str">`user:<span class="kw">${</span>user.email<span class="kw">}</span>`</span>,
+    object:   <span class="str">`doc:<span class="kw">${</span>doc.metadata.documentId<span class="kw">}</span>`</span>,
+    relation: <span class="str">'can_view'</span>,
+  }),
+});
+
+<span class="cmt">// FGARetriever workflow:
+//  1. Calls vectorStore.asRetriever() → semantically relevant docs (top-K)
+//  2. Calls FGA BatchCheck for each doc in parallel
+//  3. Returns only docs where allowed === true
+//  4. Unauthorized docs are silently stripped — never reach the LLM</span>
+<span class="kw">const</span> documents = <span class="kw">await</span> retriever.<span class="fn">invoke</span>(query);
+</pre>
+    </div>
+
+    <h4>Python / LangChain — FGARetriever</h4>
+    <div class="code-block">
+      <span class="lang-badge">Python</span>
+      <pre>
+<span class="kw">from</span> auth0_ai_langchain <span class="kw">import</span> FGARetriever
+<span class="kw">from</span> openfga_sdk.client.models <span class="kw">import</span> ClientBatchCheckItem
+
+<span class="kw">@tool</span>
+<span class="kw">def</span> <span class="fn">get_context_documents_tool</span>(query: str):
+    <span class="str">"""Retrieve documents the current user is authorized to view."""</span>
+    retriever = <span class="cls">FGARetriever</span>(
+        retriever=vector_store.<span class="fn">as_retriever</span>(),
+        build_query=<span class="kw">lambda</span> doc: <span class="cls">ClientBatchCheckItem</span>(
+            user=<span class="str">f"user:{user_email}"</span>,
+            object=<span class="str">f"doc:{doc.metadata.get('documentId')}"</span>,
+            relation=<span class="str">"can_view"</span>,
+        ),
+    )
+    documents = retriever.<span class="fn">invoke</span>(query)
+    <span class="kw">return</span> <span class="str">"\n\n"</span>.<span class="fn">join</span>([document.page_content <span class="kw">for</span> document <span class="kw">in</span> documents])
+</pre>
+    </div>
+
+    <div class="concept-card">
+      <div class="card-title">Full RAG + FGA Post-Retrieval Flow</div>
+      <ol class="flow-list">
+        <li>User query is embedded into a vector and sent to the vector database</li>
+        <li>Vector DB returns top-K semantically similar documents (e.g. <code>doc:public-overview</code>, <code>doc:q4-forecast</code>, <code>doc:competitor-analysis</code>)</li>
+        <li>FGA <code>BatchCheck</code> runs in parallel for all results — <code>user:alice can_view doc:q4-forecast</code> returns <code>false</code> (alice not in finance group)</li>
+        <li>Only authorized documents (<code>doc:public-overview</code>, <code>doc:competitor-analysis</code>) are included in the LLM context window</li>
+        <li>LLM generates a response from filtered context — <code>doc:q4-forecast</code> content is never seen</li>
+      </ol>
+    </div>
+
+    <!-- 5.4 Enterprise document mapping -->
+    <h3>5.4 Enterprise Document System Mapping</h3>
+
+    <p>FGA is an <strong>authorization layer above</strong> existing document stores. You sync ACLs from SharePoint, Google Drive, and Box into FGA tuples, then enforce them uniformly at query time — regardless of which storage system the document lives in.</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Source System</th>
+          <th>Native Permission</th>
+          <th>FGA Tuple Mapping</th>
+          <th>Inheritance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>SharePoint</strong></td>
+          <td>Marketing group has "Read" on <code>/Marketing/</code> site</td>
+          <td><code>group:marketing#member → viewer → folder:sharepoint-marketing-site</code></td>
+          <td>All child docs inherit viewer access via <code>can_view from parent</code></td>
+        </tr>
+        <tr>
+          <td><strong>Google Drive</strong></td>
+          <td>alice@company.com shared doc with Bob as editor</td>
+          <td><code>user:bob@company.com → editor → doc:gdrive-1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs</code></td>
+          <td>Editor implies viewer — no separate viewer tuple needed</td>
+        </tr>
+        <tr>
+          <td><strong>Box</strong></td>
+          <td>Collaborators on folder have "Co-Owner" rights</td>
+          <td><code>user:contractor@external.com → editor → folder:box-project-alpha</code></td>
+          <td>Folder editor propagates to all child documents</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <div class="kp-label">Architectural Insight</div>
+      <p>Once all document ACLs are synced into FGA tuples, the RAG pipeline does not need to know which storage system a document came from. A single <code>BatchCheck</code> call enforces authorization uniformly across SharePoint, Google Drive, Box, Confluence, or any other indexed source.</p>
+    </div>
+
+  </div>
+  <!-- /section-5 -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  SECTION 6 — Comparison: Policy Engines                   -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="section-6">
+    <span class="section-number">Section 6</span>
+    <h2>Comparison: Policy Engines</h2>
+
+    <!-- Full comparison table -->
+    <h3>6.1 OPA vs OpenFGA vs Cedar vs OAuth RAR</h3>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Engine</th>
+          <th>Best For</th>
+          <th>Not For</th>
+          <th>State Model</th>
+          <th>Performance Characteristic</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OPA</strong><br><span class="badge badge-blue">Rego DSL</span></td>
+          <td>Kubernetes admission control, CI/CD policy, infrastructure compliance, heterogeneous environments needing a single policy language</td>
+          <td>Per-document, per-user authorization at scale. "What documents can alice view?" is awkward — OPA stores no relationship data natively</td>
+          <td><strong>Stateless</strong> — data flows in per request via bundles or policy inputs. No persistent relationship store</td>
+          <td>Fast for policy eval; degrades if data payloads are large. Rego can be ~30–40 hour learning curve for complex rules</td>
+        </tr>
+        <tr>
+          <td><strong>OpenFGA / Auth0 FGA</strong><br><span class="badge badge-purple">FGA DSL</span></td>
+          <td>Application authorization, per-resource per-user checks, document sharing, AI agent tool gating, RAG filtering, multi-tenant SaaS isolation</td>
+          <td>Kubernetes admission, infrastructure policy, general Rego-style rules that don't map to relationship tuples</td>
+          <td><strong>Stateful</strong> — relationship tuples stored persistently. Changes are immediate; ListObjects / ListUsers queries are native</td>
+          <td>Sub-10ms Check API (p95). Built on Zanzibar graph-traversal model, scales to billions of tuples. 99.99% SLA on Auth0 managed service</td>
+        </tr>
+        <tr>
+          <td><strong>AWS Cedar</strong><br><span class="badge badge-amber">Cedar DSL</span></td>
+          <td>AWS-native environments, platforms where policy readability and formal verifiability matter, applications needing deterministic policy proofs</td>
+          <td>Relationship graph traversal (no native userset propagation). Google Drive-style sharing hierarchies require manual policy duplication</td>
+          <td><strong>Stateless</strong> — entities and attributes passed in per request. No persistent relationship database</td>
+          <td>Fast deterministic evaluation. Formally verifiable (can prove policy correctness). Best-in-class readability among the three</td>
+        </tr>
+        <tr>
+          <td><strong>OAuth RAR</strong><br><span class="badge badge-green">RFC 9396</span></td>
+          <td>Expressing transaction-specific consent at authorization time (e.g. "this payment for $100 to merchant X"). Communicating rich scope intent in OAuth flows</td>
+          <td>Not an enforcement engine — RAR communicates intent to the resource server but cannot enforce it. Cannot answer "can user X view document Y?"</td>
+          <td><strong>Stateless</strong> — structured permission object embedded in OAuth authorization request. No persistence</td>
+          <td>Handled by the authorization server and token issuance pipeline. Enforcement is the resource server's responsibility</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 6.2 When to use which -->
+    <h3>6.2 When to Use Which</h3>
+
+    <div class="decision-tree">
+      <p><span class="q">Is your use case Kubernetes admission, CI/CD, or infrastructure policy?</span></p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;<span class="a">→ OPA (Rego)</span> — general purpose, sidecar-friendly, already integrated into K8s ecosystem</p>
+      <br />
+      <p><span class="q">Are your permissions based on relationships between users and resources?</span><br />
+      (document sharing, folder hierarchies, multi-tenant isolation, AI agent tool gating)</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;<span class="a">→ OpenFGA / Auth0 FGA</span> — purpose-built, native ListObjects API, FGARetriever for RAG</p>
+      <br />
+      <p><span class="q">Are you in an AWS-native environment and need formally verifiable, human-readable policies?</span></p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;<span class="a">→ Cedar</span> — readable DSL, mathematical proofs, AWS Verified Permissions integration</p>
+      <br />
+      <p><span class="q">Do you need relationship-based checks AND attribute/context conditions?</span></p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;<span class="a">→ OpenFGA with Conditions</span> (CEL expressions) — e.g. "within business hours," "MFA is active," "amount &lt; $1000"</p>
+      <br />
+      <p><span class="q">Do you need to express specific transaction consent in an OAuth flow?</span></p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;<span class="a">→ OAuth RAR (RFC 9396)</span> — use as complement to FGA, not a replacement</p>
+    </div>
+
+    <div class="concept-card">
+      <div class="card-title">OPA vs OpenFGA Decision Matrix</div>
+      <table class="info-table" style="margin:0;">
+        <thead>
+          <tr>
+            <th>Authorization Question</th>
+            <th>OPA</th>
+            <th>OpenFGA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>"Can user X edit document Y?"</td>
+            <td>Requires feeding full relationship data per request, then evaluating Rego rule</td>
+            <td>One <code>Check</code> API call — FGA traverses stored graph automatically</td>
+          </tr>
+          <tr>
+            <td>"What documents can user X view?"</td>
+            <td>Complex — OPA has no persistent data store; requires custom data layer</td>
+            <td><code>ListObjects</code> API — native, built for this exact query</td>
+          </tr>
+          <tr>
+            <td>"Who has access to document Y?"</td>
+            <td>Complex query with no native answer</td>
+            <td><code>ListUsers</code> API — built for compliance audit</td>
+          </tr>
+          <tr>
+            <td>Real-time permission change</td>
+            <td>Must push data update to OPA bundle (latency)</td>
+            <td>Write tuple → immediately consistent</td>
+          </tr>
+          <tr>
+            <td>AI agent context window filtering</td>
+            <td>Possible but requires custom data layer around OPA</td>
+            <td>Native via <code>FGARetriever</code> / <code>BatchCheck</code></td>
+          </tr>
+          <tr>
+            <td>Kubernetes admission control</td>
+            <td><span class="tag green">Native use case</span></td>
+            <td>Not designed for this</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 6.3 RAR vs FGA -->
+    <h3>6.3 OAuth RAR (RFC 9396): Communicates Intent — FGA: Enforces It</h3>
+
+    <p><strong>Rich Authorization Requests (RFC 9396)</strong> extends OAuth to include rich, structured permission objects in the authorization request. Example: a payment consent screen specifying a specific amount and merchant.</p>
+
+    <div class="code-block">
+      <span class="lang-badge">JSON — RFC 9396 RAR Object</span>
+      <pre>
+{
+  <span class="str">"type"</span>:      <span class="str">"payment"</span>,
+  <span class="str">"locations"</span>: [<span class="str">"https://merchant.example.com"</span>],
+  <span class="str">"actions"</span>:   [<span class="str">"initiate"</span>],
+  <span class="str">"datatypes"</span>: [<span class="str">"account_information"</span>],
+  <span class="str">"identifier"</span>: <span class="str">"order-12345"</span>,
+  <span class="str">"amount"</span>:     { <span class="str">"amount"</span>: <span class="num">100</span>, <span class="str">"currency"</span>: <span class="str">"USD"</span> }
+}
+</pre>
+    </div>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Mechanism</th>
+          <th>Role</th>
+          <th>Use When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OAuth RAR (RFC 9396)</strong></td>
+          <td>Communicates specific transaction scope <em>intent</em> to the resource server at consent time. It does not enforce — the receiving API must validate and act on the RAR object</td>
+          <td>Consent screen for a specific transaction (payment, data export). Expressing rich context about what the client wants to do</td>
+        </tr>
+        <tr>
+          <td><strong>OpenFGA / Auth0 FGA</strong></td>
+          <td>Enforcement engine at the resource layer. Answers "can this specific user access this specific object?" via graph traversal over stored relationship tuples</td>
+          <td>Enforcing per-resource, per-user authorization at scale. AI agent tool gating. RAG document filtering. Multi-tenant isolation</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-point">
+      <div class="kp-label">The Relationship</div>
+      <p>RAR and FGA are complementary, not competing. RAR captures consent intent in the token; FGA enforces fine-grained access to the actual resource. For AI agents calling multiple APIs with complex shared-resource semantics, use both: RAR for the OAuth consent flow, FGA for the authorization check at every resource access.</p>
+    </div>
+
+  </div>
+  <!-- /section-6 -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  SECTION 7 — Okta Integration                             -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="section-7">
+    <span class="section-number">Section 7</span>
+    <h2>Okta Integration</h2>
+
+    <!-- 7.1 Two-layer architecture -->
+    <h3>7.1 Two-Layer Authorization Architecture</h3>
+
+    <div class="arch-diagram">
+      <p><span class="layer-label">─────────────────────────────────────────────────────────────────</span></p>
+      <p><span class="layer-label">LAYER 1: Okta Workforce Identity Cloud</span></p>
+      <p><span class="layer-okta">  · Who is this person?  (Authentication)</span></p>
+      <p><span class="layer-okta">  · What org do they belong to?</span></p>
+      <p><span class="layer-okta">  · What high-level roles / groups do they have?  (Coarse RBAC)</span></p>
+      <p><span class="layer-okta">  · Issues JWT with claims:  sub, email, groups[], roles[]</span></p>
+      <p><span class="layer-okta">  · MFA, device trust, session policies enforced here</span></p>
+      <br />
+      <p><span class="layer-arrow">          │  JWT (sub, email, groups)</span></p>
+      <p><span class="layer-arrow">          ▼</span></p>
+      <br />
+      <p><span class="layer-label">LAYER 2: Auth0 FGA  (Fine-Grained Authorization)</span></p>
+      <p><span class="layer-fga">  · Can user:alice view doc:budget-2026?  (Per-resource Check)</span></p>
+      <p><span class="layer-fga">  · Can user:alice execute mcp_tool:send_email?</span></p>
+      <p><span class="layer-fga">  · What documents is alice allowed to see?  (ListObjects → RAG)</span></p>
+      <p><span class="layer-fga">  · Has the user delegated access to this agent?  (XAA / delegation)</span></p>
+      <p><span class="layer-fga">  · Immutable audit log of every authorization decision</span></p>
+      <p><span class="layer-label">─────────────────────────────────────────────────────────────────</span></p>
+    </div>
+
+    <div class="concept-card">
+      <div class="card-title">Why Two Layers?</div>
+      <p><strong>Okta JWT</strong> — Coarse-grained, cached, fast. Answers "this person is authenticated and belongs to Engineering."</p>
+      <p><strong>Auth0 FGA Check</strong> — Fine-grained, authoritative. Answers "this person can view this specific document, and here is the relationship path that proves it."</p>
+      <p>Neither layer alone is sufficient for enterprise AI. The JWT tells you <em>who</em>; FGA tells you <em>what they can access</em>.</p>
+    </div>
+
+    <!-- 7.2 Seeding FGA from Okta Groups -->
+    <h3>7.2 Seeding FGA from Okta Groups via Event Hooks</h3>
+
+    <p>Okta groups can be synchronized into FGA relationship tuples via <strong>Okta Event Hooks</strong>. When a user joins or leaves a group in Okta Workforce, an event fires and the corresponding tuple is written or deleted in Auth0 FGA.</p>
+
+    <div class="code-block">
+      <span class="lang-badge">Python</span>
+      <pre>
+<span class="cmt"># Okta Event Hook handler — fires on group membership changes</span>
+<span class="kw">async def</span> <span class="fn">handle_okta_group_event</span>(event: dict):
+    user_id  = event[<span class="str">"data"</span>][<span class="str">"userId"</span>]    <span class="cmt"># e.g. "00u1234"</span>
+    group_id = event[<span class="str">"data"</span>][<span class="str">"groupId"</span>]   <span class="cmt"># e.g. "00g5678"</span>
+    action   = event[<span class="str">"eventType"</span>]         <span class="cmt"># "group.user_membership.add" | "...remove"</span>
+
+    fga_group = <span class="str">f"group:{group_id}"</span>
+    fga_user  = <span class="str">f"user:{user_id}"</span>
+    tuple_key = {
+        <span class="str">"user"</span>:     fga_user,
+        <span class="str">"relation"</span>: <span class="str">"member"</span>,
+        <span class="str">"object"</span>:   fga_group,
+    }
+
+    <span class="kw">if</span> action == <span class="str">"group.user_membership.add"</span>:
+        <span class="cmt"># Write tuple to Auth0 FGA</span>
+        <span class="kw">await</span> fga_client.<span class="fn">write</span>({
+            <span class="str">"writes"</span>: { <span class="str">"tuple_keys"</span>: [tuple_key] }
+        })
+
+    <span class="kw">elif</span> action == <span class="str">"group.user_membership.remove"</span>:
+        <span class="cmt"># Delete tuple from Auth0 FGA — access revoked immediately</span>
+        <span class="kw">await</span> fga_client.<span class="fn">write</span>({
+            <span class="str">"deletes"</span>: { <span class="str">"tuple_keys"</span>: [tuple_key] }
+        })
+</pre>
+    </div>
+
+    <div class="okta-note">
+      <div class="on-label">Roadmap Note</div>
+      <p>Auth0 product blog (March 2026): <em>"Coming soon: Stream organization and role data from Auth0 directly to Auth0 FGA."</em> Native automated synchronization between Okta Workforce groups and FGA tuples is on the product roadmap — the above Event Hook pattern will be superseded by a built-in sync mechanism.</p>
+    </div>
+
+    <!-- 7.3 Token + FGA two-step pattern -->
+    <h3>7.3 Token + FGA Two-Step Authorization Pattern</h3>
+
+    <div class="code-block">
+      <span class="lang-badge">Python</span>
+      <pre>
+<span class="kw">import</span> jwt
+<span class="kw">from</span> openfga_sdk.client.models <span class="kw">import</span> ClientCheckRequest
+
+<span class="cmt"># ── STEP 1: Validate Okta-issued JWT ────────────────────────────────────────</span>
+decoded = jwt.<span class="fn">decode</span>(
+    token,
+    jwks_client.<span class="fn">get_signing_key_from_jwt</span>(token).key,
+    algorithms=[<span class="str">"RS256"</span>],
+    audience=<span class="str">"https://api.yourapp.com"</span>
+)
+
+user_id     = decoded[<span class="str">"sub"</span>]        <span class="cmt"># "auth0|00u1234" — canonical identity</span>
+user_groups = decoded[<span class="str">"groups"</span>]    <span class="cmt"># ["Engineering", "US-West"] — coarse RBAC</span>
+user_email  = decoded[<span class="str">"email"</span>]     <span class="cmt"># "alice@company.com" — FGA user key</span>
+
+<span class="cmt"># ── STEP 2: Query FGA for per-resource authorization ────────────────────────</span>
+<span class="cmt"># Token tells us WHO the user is.  FGA tells us WHAT they can access.</span>
+result = <span class="kw">await</span> fga_client.<span class="fn">check</span>(
+    <span class="cls">ClientCheckRequest</span>(
+        user=<span class="str">f"user:{user_email}"</span>,
+        relation=<span class="str">"can_view"</span>,
+        object=<span class="str">f"doc:{document_id}"</span>,
+    ),
+    options={ <span class="str">"authorization_model_id"</span>: <span class="cls">FGA_MODEL_ID</span> }
+)
+
+<span class="kw">if not</span> result.allowed:
+    <span class="kw">raise</span> <span class="cls">HTTPException</span>(status_code=<span class="num">403</span>, detail=<span class="str">"Access denied"</span>)
+
+<span class="cmt"># Authorized — proceed with operation</span>
+</pre>
+    </div>
+
+    <!-- 7.4 Auth0 for AI Agents -->
+    <h3>7.4 Auth0 for AI Agents — GA November 2025</h3>
+
+    <div class="okta-note">
+      <div class="on-label">Product Release</div>
+      <p><strong>Auth0 for AI Agents</strong> became Generally Available in November 2025. It is a four-capability bundle that gives AI agent systems enterprise-grade identity and authorization infrastructure out of the box.</p>
+    </div>
+
+    <div class="capability-bundle">
+      <div class="cap">
+        <div class="cap-num">Capability 1</div>
+        <div class="cap-title">User Authentication for AI</div>
+        <p>Secure user authentication before interacting with AI agents. Auth0 / Okta handles login, MFA, and device trust. The AI agent receives a verified identity before doing anything.</p>
+      </div>
+      <div class="cap">
+        <div class="cap-num">Capability 2</div>
+        <div class="cap-title">Token Vault</div>
+        <p>AI agents call third-party APIs (Slack, GitHub, Google Drive, Jira, Salesforce) on behalf of users using stored, managed OAuth tokens — never hardcoded credentials. Tokens are refreshed automatically and scoped per user.</p>
+      </div>
+      <div class="cap">
+        <div class="cap-num">Capability 3</div>
+        <div class="cap-title">Async Authorization (CIBA)</div>
+        <p>Human-in-the-loop: AI agents pause and request explicit user approval before critical actions (purchases, data exports, calendar changes, emails). The CIBA flow sends a push notification or SMS — the human approves or rejects asynchronously.</p>
+      </div>
+      <div class="cap">
+        <div class="cap-num">Capability 4</div>
+        <div class="cap-title">FGA for RAG</div>
+        <p>AI agents retrieve only documents the current user is permitted to see. FGA <code>BatchCheck</code> filters the RAG context window — prevents sensitive information disclosure at the retrieval layer.</p>
+      </div>
+    </div>
+
+    <!-- 7.5 XAA Protocol -->
+    <h3>7.5 XAA — Cross-App Access Protocol for Agent Delegation</h3>
+
+    <p>Auth0 is implementing the <strong>XAA (Cross-App Access)</strong> open protocol, which extends OAuth 2.0 to support secure agent-to-app and app-to-app communication. This solves the confused deputy problem at the protocol layer.</p>
+
+    <div class="concept-card">
+      <div class="card-title">XAA Delegation Flow</div>
+      <ol class="flow-list">
+        <li>User interacts with <strong>App A</strong> (the requesting app / AI agent frontend)</li>
+        <li>App A needs to call <strong>App B</strong> (a resource app — e.g. a document API, calendar service) on the user's behalf</li>
+        <li>XAA exchanges an <strong>ID-JAG</strong> (identity assertion) token for a scoped access token with only the permissions App B requires</li>
+        <li>The <strong>Identity Provider (Okta)</strong> is the consent authority — the user sees and approves the delegation in one place</li>
+        <li>User gets <strong>centralized visibility</strong> into all agent connections from the Okta portal — one location to review and revoke</li>
+      </ol>
+    </div>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Description</th>
+          <th>Benefit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Centralized Consent</strong></td>
+          <td>Okta manages all agent delegation consents in one portal</td>
+          <td>Users see every agent they've authorized — no shadow approvals</td>
+        </tr>
+        <tr>
+          <td><strong>Scoped Tokens</strong></td>
+          <td>Each agent-to-app leg gets a minimum-privilege token</td>
+          <td>Eliminates the confused deputy problem — sub-agents can't inherit excessive permissions</td>
+        </tr>
+        <tr>
+          <td><strong>Revocation</strong></td>
+          <td>Governance team or user can revoke any agent's access from one place</td>
+          <td>Instant blast-radius containment if an agent is compromised</td>
+        </tr>
+        <tr>
+          <td><strong>Audit Trail</strong></td>
+          <td>Every delegation event is logged in Okta's immutable audit log</td>
+          <td>GDPR / SOC 2 / HIPAA compliance for agentic AI access</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 7.6 SE Talking Points -->
+    <h3>7.6 SE Talking Points — 6 Key Points</h3>
+
+    <ul class="tp-list">
+      <li>
+        <div class="tp-bullet">1</div>
+        <div class="tp-content">
+          <div class="tp-title">The Authorization Gap Is the AI Security Problem</div>
+          <p>Every AI agent needs authentication (who is this?) and authorization (what can they do?). The industry has mostly solved authn for AI agents. Authorization is where enterprises are failing — and Auth0 FGA is Okta's purpose-built answer. Forrester 2025: 1,025% increase in AI-related CVEs in a single year, 77.4% tied to API security.</p>
+        </div>
+      </li>
+      <li>
+        <div class="tp-bullet">2</div>
+        <div class="tp-content">
+          <div class="tp-title">Auth0 FGA Is Built on an Open Standard — Not a Black Box</div>
+          <p>Auth0 FGA is built on OpenFGA, a CNCF Incubation project that Okta/Auth0 created and donated to the cloud native community. It is the only managed Zanzibar-model authorization service from a major identity vendor. The authorization model and tuple data are portable — no proprietary lock-in.</p>
+        </div>
+      </li>
+      <li>
+        <div class="tp-bullet">3</div>
+        <div class="tp-content">
+          <div class="tp-title">RAG Without FGA Is a Data Leak Waiting to Happen</div>
+          <p>Vector similarity search is authorization-blind. Without FGA filtering, any user whose query semantically matches a confidential document will receive its contents in the LLM response. Demo the FGARetriever before/after: same query, different users, different results — because authorization is enforced at the retrieval layer.</p>
+        </div>
+      </li>
+      <li>
+        <div class="tp-bullet">4</div>
+        <div class="tp-content">
+          <div class="tp-title">OPA is Great for Infrastructure — FGA Is for Per-Resource Application Auth</div>
+          <p>A prospect running OPA for Kubernetes admission control is using the right tool. But OPA is stateless — it cannot natively answer "what documents can alice view?" without a custom data layer. Auth0 FGA is that data layer, specialized for relationship-based authorization. Position them as complementary, not competing.</p>
+        </div>
+      </li>
+      <li>
+        <div class="tp-bullet">5</div>
+        <div class="tp-content">
+          <div class="tp-title">Okta + Auth0 FGA Is the Only Full-Stack Identity + Fine-Grained Authorization Play</div>
+          <p>Okta Workforce handles authentication and coarse RBAC — JWT issued with sub, email, groups. Auth0 FGA handles the per-resource authorization checks — Check, ListObjects, BatchCheck. Together they form the two-layer architecture that enterprise AI requires. No competitor offers both under one SLA.</p>
+        </div>
+      </li>
+      <li>
+        <div class="tp-bullet">6</div>
+        <div class="tp-content">
+          <div class="tp-title">Build vs Buy: The Authorization Tax</div>
+          <p>Average enterprise spends 10,000+ engineer-hours building RBAC/permission systems that still have security gaps. Auth0 FGA replaces custom permission tables with a declarative model, scales to billions of relationships without architecture changes, and ships a built-in audit trail that compliance teams require. Authorization is Tier-Zero infrastructure — it should carry a 99.99% SLA, not live in application code.</p>
+        </div>
+      </li>
+    </ul>
+
+    <div class="security-note">
+      <div class="note-label">Competitive Displacement Triggers</div>
+      <p><strong>When you see these at a prospect, bring up FGA:</strong></p>
+      <p>Custom RBAC tables in the application database &nbsp;·&nbsp; "We're worried about our RAG pipeline exposing secrets" &nbsp;·&nbsp; "Our AI agents have too much access but we don't know how to scope it" &nbsp;·&nbsp; "We need an audit trail for AI actions for compliance" &nbsp;·&nbsp; OPA users who need per-document, per-user authorization at scale &nbsp;·&nbsp; Multi-tenant SaaS where tenant isolation is a security requirement</p>
+    </div>
+
+  </div>
+  <!-- /section-7 -->
+
+</div><!-- /page-wrapper -->
+</body>
+</html>
+
+
+</div>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>Fine-Grained Authorization &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers Auth0 FGA, OpenFGA, Google Zanzibar relationship-based authorization, and Okta's FGA implementation.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Flow Diagram Step Toggle ─── */
+function toggleStep(el){
+  const diagram=el.closest('.flow-diagram')||el.closest('.flow-steps')?.parentElement;
+  if(!diagram)return;
+  const wasActive=el.classList.contains('active');
+  diagram.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active'));
+  diagram.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+  if(!wasActive){
+    el.classList.add('active');
+    const stepNum=el.dataset.step;
+    const detail=diagram.querySelector('.step-detail[data-for-step="'+stepNum+'"]');
+    if(detail)detail.classList.add('visible');
+  }
+}
+</script>
+
+</body>
+</html>

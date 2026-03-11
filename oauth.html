@@ -1,0 +1,3018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>OAuth 2.1 Deep Dive — Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+  --tab-colors-1:#0052a3;
+  --tab-colors-2:#6742d5;
+  --tab-colors-3:#1faa58;
+  --tab-colors-4:#d48a00;
+  --tab-colors-5:#e03e4d;
+  --tab-colors-6:#0099bb;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-okta-blue);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 40px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-green);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Progress Bar ─── */
+.progress-bar{
+  display:flex;align-items:center;gap:8px;justify-content:center;
+  margin-top:24px;padding:12px 20px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;max-width:500px;margin-left:auto;margin-right:auto;
+}
+.progress-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--c-border);transition:all 0.3s;cursor:pointer;
+}
+.progress-dot.active{transform:scale(1.3)}
+.progress-dot.completed{background:var(--c-accent-green)}
+.progress-label{font-size:12px;color:var(--c-text-dim);font-family:var(--font-mono)}
+
+/* ─── Tab Bar ─── */
+.tab-bar{
+  position:sticky;top:var(--nav-h);z-index:100;
+  background:var(--c-nav-bg);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--c-border);
+  padding:0;
+}
+.tab-bar-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;
+  display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.tab-bar-inner::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:0 0 auto;padding:14px 18px;font-size:13px;font-weight:500;
+  color:var(--c-text-muted);background:none;border:none;
+  border-bottom:2px solid transparent;cursor:pointer;
+  transition:all 0.2s;white-space:nowrap;font-family:var(--font-body);
+  display:flex;align-items:center;gap:8px;
+}
+.tab-btn:hover{color:var(--c-text);background:rgba(0,0,0,0.03)}
+.tab-btn.active{color:var(--c-text);border-bottom-color:var(--c-okta-blue)}
+.tab-btn .tab-num{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:#fff;
+  transition:all 0.3s;
+}
+.tab-btn .tab-check{display:none;font-size:14px}
+.tab-btn.visited .tab-check{display:inline}
+.tab-btn.visited .tab-num{display:none}
+
+/* ─── Tab Content ─── */
+.tab-content{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+  min-height:60vh;
+}
+.tab-section{display:none;animation:fadeIn 0.3s ease}
+.tab-section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Content Components ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+/* ─── Flow Diagrams ─── */
+.flow-diagram{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.flow-diagram-title{
+  padding:16px 20px;font-weight:600;font-size:15px;
+  border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-parties{
+  display:flex;justify-content:space-around;padding:16px 20px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+}
+.party{
+  padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;
+}
+.party-client{background:var(--c-okta-blue)}
+.party-auth{background:var(--c-auth0-purple)}
+.party-resource{background:var(--c-accent-green)}
+.party-user{background:var(--c-accent-amber)}
+.party-device{background:var(--c-accent-cyan)}
+
+.flow-steps{padding:8px}
+.flow-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;margin:4px 8px;border-radius:8px;
+  cursor:pointer;transition:all 0.2s;border:1px solid transparent;
+}
+.flow-step:hover{background:var(--c-surface);border-color:var(--c-border)}
+.flow-step.active{background:var(--c-surface);border-color:var(--c-okta-blue)}
+.step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;font-family:var(--font-mono);
+  flex-shrink:0;transition:all 0.2s;
+}
+.flow-step.active .step-num{background:var(--c-okta-blue);color:#fff;border-color:var(--c-okta-blue)}
+.step-arrow{font-size:16px;color:var(--c-text-dim);flex-shrink:0}
+.step-label{font-size:14px;font-weight:500}
+.step-label-sub{font-size:12px;color:var(--c-text-muted);margin-left:auto}
+
+.step-detail{
+  display:none;margin:0 12px 8px;padding:16px 20px;
+  background:var(--c-surface);border-radius:8px;
+  border-left:3px solid var(--c-okta-blue);
+  animation:fadeIn 0.2s ease;
+}
+.step-detail.visible{display:block}
+.step-http{margin-bottom:12px}
+.step-explain{font-size:14px;color:var(--c-text-muted);line-height:1.7;margin-bottom:8px}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Comparison Grid ─── */
+.comparison-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0}
+
+/* ─── Spec Status Badges ─── */
+.spec-status{
+  display:inline-flex;padding:3px 10px;border-radius:12px;
+  font-size:11px;font-weight:600;font-family:var(--font-mono);
+}
+.spec-status[data-status="stable"]{background:rgba(31,170,88,0.12);color:var(--c-accent-green)}
+.spec-status[data-status="draft"]{background:rgba(212,138,0,0.12);color:var(--c-accent-amber)}
+.spec-status[data-status="proposed"]{background:rgba(103,66,213,0.12);color:var(--c-auth0-purple)}
+.spec-status[data-status="removed"]{background:rgba(224,62,77,0.12);color:var(--c-accent-red)}
+
+/* ─── Timeline ─── */
+.timeline{border-left:2px solid var(--c-border);margin:20px 0;padding-left:0}
+.timeline-item{
+  position:relative;padding:16px 0 16px 28px;
+}
+.timeline-item::before{
+  content:'';position:absolute;left:-6px;top:20px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--c-border);border:2px solid var(--c-bg);
+}
+.timeline-item.current::before{background:var(--c-accent-green)}
+.timeline-date{font-family:var(--font-mono);font-size:12px;color:var(--c-text-dim);margin-bottom:4px}
+.timeline-title{font-weight:600;font-size:15px;margin-bottom:4px}
+.timeline-desc{font-size:13px;color:var(--c-text-muted);line-height:1.6}
+
+/* ─── Tab Nav Arrows ─── */
+.tab-nav-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:40px 0 20px;margin-top:40px;border-top:1px solid var(--c-border);
+}
+.tab-nav-btn{
+  display:flex;align-items:center;gap:8px;padding:10px 20px;
+  border-radius:8px;font-size:14px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;text-decoration:none;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);color:var(--c-text);
+}
+.tab-nav-btn:hover{border-color:var(--c-okta-blue);color:var(--c-okta-blue)}
+.tab-nav-btn.hidden{visibility:hidden}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .flow-parties{flex-wrap:wrap;gap:6px;justify-content:center}
+  .tab-btn{padding:12px 12px;font-size:12px}
+  .tab-btn span.tab-text{display:none}
+  .comparison-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" class="current">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">OIDC &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html" style="font-weight:600;color:var(--c-auth0-purple)">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway</a></li>
+      <li><a href="oidc.html">OIDC for AI</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      draft-ietf-oauth-v2-1-15 &middot; March 2026
+    </div>
+    <div class="section-label">Learning Reference</div>
+    <h1 class="section-title">Understanding OAuth 2.1</h1>
+    <p class="section-subtitle">A ground-up guide to modern authorization &mdash; from core concepts through MCP server authentication and Okta&rsquo;s implementation.</p>
+    <div class="progress-bar" id="progressBar">
+      <span class="progress-label">Progress</span>
+      <div class="progress-dot" data-tab="0" onclick="switchTab(0)" title="Foundations"></div>
+      <div class="progress-dot" data-tab="1" onclick="switchTab(1)" title="Grant Flows"></div>
+      <div class="progress-dot" data-tab="2" onclick="switchTab(2)" title="DCR"></div>
+      <div class="progress-dot" data-tab="3" onclick="switchTab(3)" title="Extensions"></div>
+      <div class="progress-dot" data-tab="4" onclick="switchTab(4)" title="MCP + OAuth"></div>
+      <div class="progress-dot" data-tab="5" onclick="switchTab(5)" title="Okta"></div>
+      <span class="progress-label" id="progressCount">0/6</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Tab Bar ─── -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" data-tab="0" onclick="switchTab(0)">
+      <span class="tab-num" style="background:var(--tab-colors-1)">1</span>
+      <span class="tab-check">&#10003;</span>
+      <span class="tab-text">Foundations</span>
+    </button>
+    <button class="tab-btn" data-tab="1" onclick="switchTab(1)">
+      <span class="tab-num" style="background:var(--tab-colors-2)">2</span>
+      <span class="tab-check">&#10003;</span>
+      <span class="tab-text">Grant Flows</span>
+    </button>
+    <button class="tab-btn" data-tab="2" onclick="switchTab(2)">
+      <span class="tab-num" style="background:var(--tab-colors-3)">3</span>
+      <span class="tab-check">&#10003;</span>
+      <span class="tab-text">DCR &amp; Registration</span>
+    </button>
+    <button class="tab-btn" data-tab="3" onclick="switchTab(3)">
+      <span class="tab-num" style="background:var(--tab-colors-4)">4</span>
+      <span class="tab-check">&#10003;</span>
+      <span class="tab-text">Extensions</span>
+    </button>
+    <button class="tab-btn" data-tab="4" onclick="switchTab(4)">
+      <span class="tab-num" style="background:var(--tab-colors-5)">5</span>
+      <span class="tab-check">&#10003;</span>
+      <span class="tab-text">MCP + OAuth</span>
+    </button>
+    <button class="tab-btn" data-tab="5" onclick="switchTab(5)">
+      <span class="tab-num" style="background:var(--tab-colors-6)">6</span>
+      <span class="tab-check">&#10003;</span>
+      <span class="tab-text">Okta Implementation</span>
+    </button>
+  </div>
+</div>
+
+<!-- ─── Tab Content ─── -->
+<div class="tab-content">
+
+<!-- TAB 1: FOUNDATIONS -->
+<div class="tab-section active" id="tab-0">
+
+  <h2>What is OAuth 2.1?</h2>
+  <p>OAuth 2.1 (<code>draft-ietf-oauth-v2-1-15</code>, March 2026) is a security framework that lets users grant third-party applications limited access to their resources — without sharing their password. It consolidates RFC 6749 (OAuth 2.0) and RFC 6750 (Bearer Token Usage) into a single, modernized specification, removing flows that have proven insecure in practice and mandating best-practice extensions that were previously optional.</p>
+
+  <div class="key-point">
+    <strong>The core promise:</strong> OAuth solves delegated authorization — "I want App A to be able to read my data from Service B, but I don't want to give App A my Service B password." The user approves the delegation; the authorization server issues a token; the app uses that token. The user's credential never leaves Service B.
+  </div>
+
+  <h2>The Four Parties</h2>
+  <p>Every OAuth 2.1 interaction involves four roles. Understanding who each party is — and what they trust — is the foundation for understanding every grant flow.</p>
+
+  <div class="concept-card">
+    <h3>Resource Owner</h3>
+    <p>The entity that owns the data being accessed — almost always the end user. The resource owner grants (or denies) permission when they click "Allow" on the consent screen. They are authorizing the client to act on their behalf within the defined scope.</p>
+  </div>
+
+  <div class="concept-card">
+    <h3>Client</h3>
+    <p>The application requesting access to protected resources. OAuth 2.1 draws a hard distinction between two client types, because they have fundamentally different security properties:</p>
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Client Type</th>
+          <th>Can it keep a secret?</th>
+          <th>Examples</th>
+          <th>Key requirement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Confidential</strong></td>
+          <td>Yes — code runs on a server the user cannot inspect</td>
+          <td>Traditional web app (Node/Rails/Django backend), server-to-server daemon</td>
+          <td>Authenticates to the AS with a client secret or private key JWT</td>
+        </tr>
+        <tr>
+          <td><strong>Public</strong></td>
+          <td>No — code runs where the user can read it</td>
+          <td>Single-page app (React/Vue), native mobile app, CLI tool</td>
+          <td>Must use PKCE; never issued a static client secret</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="concept-card">
+    <h3>Authorization Server (AS)</h3>
+    <p>The trusted authority that authenticates the resource owner and issues tokens. In Okta, this is your org's authorization server (e.g., <code>https://acme.okta.com/oauth2/default</code>). The AS owns the consent screen, validates redirect URIs, and signs tokens. It exposes a set of standardized endpoints discoverable via the <code>/.well-known/openid-configuration</code> metadata document.</p>
+  </div>
+
+  <div class="concept-card">
+    <h3>Resource Server (RS)</h3>
+    <p>The API or backend service that holds the protected data. The RS receives Bearer tokens on each API request and validates them — either by calling the AS's introspection endpoint or by verifying the JWT signature locally using the AS's published JWKS (JSON Web Key Set). The RS never sees the user's credential; it only evaluates the token.</p>
+  </div>
+
+  <h2>Tokens</h2>
+  <p>OAuth 2.1 defines three token types that each serve a distinct purpose.</p>
+
+  <div class="concept-card">
+    <h3>Access Token</h3>
+    <p>The credential presented to the Resource Server. Access tokens are <strong>intentionally short-lived</strong> (typically 1–60 minutes). If an access token leaks, it expires quickly on its own, limiting the blast radius. OAuth 2.1 recommends sender-constraining access tokens (e.g., DPoP) so a stolen token cannot be replayed from a different client.</p>
+    <div class="security-note">
+      <strong>Security principle:</strong> An access token is a bearer credential — anyone who holds it can use it. Keep them short-lived and scope them narrowly. OAuth 2.1 section 7.1 recommends access tokens be valid for no more than the time needed to complete the operation.
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <h3>Refresh Token</h3>
+    <p>A long-lived credential issued alongside the access token that allows the client to obtain a new access token after the current one expires — without requiring the user to re-authenticate. Refresh tokens are issued only when the <code>offline_access</code> scope is requested and approved.</p>
+    <p><strong>Rotation (mandatory for public clients in OAuth 2.1):</strong> Every time a public client uses a refresh token, the AS issues a brand-new refresh token and invalidates the old one. This is called refresh token rotation. If a leaked refresh token is ever used by an attacker, the legitimate client's next use of the old (now-invalidated) token will signal a theft — the AS should revoke the entire token family.</p>
+    <div class="security-note">
+      <strong>Refresh token reuse detection:</strong> If the AS receives a refresh token that has already been rotated (i.e., used and superseded), this is evidence of token theft. RFC 6749 left this optional; OAuth 2.1 makes rotation and reuse detection required for public clients.
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <h3>ID Token (OIDC)</h3>
+    <p>Not part of OAuth 2.1 itself, but issued by OpenID Connect — a thin identity layer built on top of OAuth 2.0/2.1. ID tokens are JWTs that assert who the user is (authentication), while access tokens assert what the client is allowed to do (authorization). An ID token must never be sent to an API as a Bearer token; it is only for the client application to consume locally.</p>
+  </div>
+
+  <h2>JWT Anatomy</h2>
+  <p>Access tokens and ID tokens are commonly issued as JSON Web Tokens (JWTs, pronounced "jot"). A JWT is three base64url-encoded JSON objects concatenated with dots:</p>
+
+  <div class="code-block">eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0
+.
+eyJzdWIiOiIwMHUxYWJjMjM0IiwibmFtZSI6IkphbmUgRG9lIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSIsImlhdCI6MTczODAwMDAwMCwiZXhwIjoxNzM4MDAzNjAwLCJpc3MiOiJodHRwczovL2FjbWUub2t0YS5jb20vb2F1dGgyL2RlZmF1bHQiLCJhdWQiOiJhcGk6Ly9kZWZhdWx0In0
+.
+&lt;RS256 signature bytes&gt;</div>
+
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Part</th>
+        <th>Content</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Header</strong></td>
+        <td><code>{"alg":"RS256","typ":"JWT","kid":"v1"}</code></td>
+        <td>Declares the signing algorithm and identifies which key to verify with (via <code>kid</code>)</td>
+      </tr>
+      <tr>
+        <td><strong>Payload</strong></td>
+        <td>JSON object with claims</td>
+        <td>The actual assertions — who the user is, what they can do, when the token expires</td>
+      </tr>
+      <tr>
+        <td><strong>Signature</strong></td>
+        <td>Cryptographic signature over header + payload</td>
+        <td>Proves the token was issued by the AS and has not been tampered with. Verified using the AS's public key from its JWKS endpoint.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="key-point">
+    <strong>Base64url is encoding, not encryption.</strong> Anyone can decode the header and payload of a JWT without a key. Never put sensitive data (PII, secrets) in a JWT payload unless the token is also encrypted (JWE). The signature only guarantees integrity and origin — not confidentiality.
+  </div>
+
+  <h3>Standard JWT Claims</h3>
+  <table class="info-table">
+    <thead>
+      <tr><th>Claim</th><th>Full Name</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>iss</code></td><td>Issuer</td><td>The Authorization Server that issued the token (e.g., <code>https://acme.okta.com/oauth2/default</code>)</td></tr>
+      <tr><td><code>sub</code></td><td>Subject</td><td>Unique identifier of the resource owner (user ID or service account ID)</td></tr>
+      <tr><td><code>aud</code></td><td>Audience</td><td>The intended recipient — the Resource Server must verify it is listed here</td></tr>
+      <tr><td><code>exp</code></td><td>Expiration</td><td>Unix timestamp after which the token must be rejected</td></tr>
+      <tr><td><code>iat</code></td><td>Issued At</td><td>Unix timestamp when the token was created</td></tr>
+      <tr><td><code>jti</code></td><td>JWT ID</td><td>Unique identifier for this specific token instance; enables replay prevention</td></tr>
+      <tr><td><code>scp</code> / <code>scope</code></td><td>Scope</td><td>Space-separated list of approved permissions (Okta uses <code>scp</code>)</td></tr>
+      <tr><td><code>cid</code> / <code>client_id</code></td><td>Client ID</td><td>The OAuth client that obtained this token</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Scopes and Claims</h2>
+
+  <div class="concept-card">
+    <h3>Scopes</h3>
+    <p>Scopes are strings that represent a bundle of permissions the client is requesting. The user sees scopes on the consent screen. They travel in the authorization request (<code>scope=openid profile email</code>) and appear in the issued token so the Resource Server can enforce them.</p>
+    <p>Standard OIDC scopes: <code>openid</code> (required for OIDC; triggers ID token issuance), <code>profile</code> (name, locale, etc.), <code>email</code>, <code>address</code>, <code>phone</code>, <code>offline_access</code> (triggers refresh token issuance).</p>
+    <p>Custom API scopes are defined on the Authorization Server and represent specific API permissions, e.g., <code>read:transactions</code>, <code>write:orders</code>.</p>
+  </div>
+
+  <div class="concept-card">
+    <h3>Claims</h3>
+    <p>Claims are the key-value pairs inside the JWT payload that assert facts about the subject. A scope is the request; claims are the response. Requesting the <code>profile</code> scope causes the AS to include claims like <code>name</code>, <code>given_name</code>, <code>family_name</code>, and <code>picture</code> in the ID token.</p>
+    <p>Claims can be standard (defined in OIDC Core) or custom (added by your organization). Custom claims can encode roles, department, license tiers, or any attribute needed for authorization decisions at the Resource Server.</p>
+  </div>
+
+  <h2>OAuth 2.0 to 2.1 — What Changed and Why</h2>
+  <p>OAuth 2.1 is not a new protocol — it is a curated subset of OAuth 2.0 plus mandatory adoption of security extensions that were already widely deployed. The changes fall into two categories: removal of insecure flows, and promotion of optional best practices to requirements.</p>
+
+  <div class="removed-feature">
+    <h3>Removed: Implicit Grant (response_type=token)</h3>
+    <p>The Implicit flow was designed in 2012 for single-page apps that couldn't make server-side token requests. Instead of an authorization code, it delivered the access token directly in the URL fragment after redirect.</p>
+    <p><strong>Why it was removed:</strong></p>
+    <ul>
+      <li><strong>URL fragment leakage:</strong> The fragment is visible in browser history, Referer headers, server logs, and to JavaScript on the page — including third-party analytics scripts.</li>
+      <li><strong>No refresh tokens:</strong> SPAs had to re-run the implicit flow silently via hidden iframes — a pattern that breaks with ITP/ETP browser cookie restrictions.</li>
+      <li><strong>Token injection attacks:</strong> Without PKCE, there is no way to bind the token to the specific client that initiated the flow.</li>
+      <li><strong>Better alternative:</strong> Auth Code + PKCE works perfectly in SPAs and is now universal.</li>
+    </ul>
+  </div>
+
+  <div class="removed-feature">
+    <h3>Removed: Resource Owner Password Credentials (ROPC)</h3>
+    <p>ROPC allowed a client to collect the user's username and password directly and exchange them for tokens by POSTing to <code>/token</code>. It was designed as a "migration" flow for legacy apps.</p>
+    <p><strong>Why it was removed:</strong></p>
+    <ul>
+      <li><strong>Credential phishing:</strong> The user's password is exposed to the client — violating the core OAuth delegation model. A malicious or compromised client can harvest credentials.</li>
+      <li><strong>MFA bypass:</strong> The flow happens entirely in a back-channel POST. There is no browser redirect, so there is no way to intercept the flow to challenge the user with MFA, step-up auth, or bot detection.</li>
+      <li><strong>No consent screen:</strong> Users cannot see what they are approving. There is no way to express granular scope consent.</li>
+      <li><strong>Better alternative:</strong> Auth Code + PKCE with a login widget provides a secure, MFA-capable, consent-driven flow even for first-party apps.</li>
+    </ul>
+  </div>
+
+  <div class="concept-card">
+    <h3>Mandated: PKCE for All Authorization Code Flows</h3>
+    <p>PKCE (Proof Key for Code Exchange, RFC 7636) was originally designed to protect native apps from authorization code interception — a malicious app on the same device registering the same redirect URI. OAuth 2.1 requires PKCE for all clients, including confidential web apps, because it also provides protection against CSRF and code injection attacks even when the client secret is in play.</p>
+    <div class="key-point">
+      How PKCE works: Before the authorization request, the client generates a random <code>code_verifier</code> (43–128 chars). It derives a <code>code_challenge</code> by hashing the verifier with SHA-256 and base64url-encoding the result. The challenge goes into the authorization request. When exchanging the code for tokens, the client sends the original verifier. The AS hashes it and compares — if they match, the token request came from the same client that started the flow.
+    </div>
+  </div>
+
+  <div class="concept-card">
+    <h3>Mandated: Exact Redirect URI Matching</h3>
+    <p>OAuth 2.0 allowed partial/pattern matching of redirect URIs. OAuth 2.1 requires the redirect URI in the token request to exactly match the one registered for the client — character for character, including trailing slashes. This eliminates open redirect vulnerabilities where an attacker registers <code>https://evil.com</code> as a path component and tricks the AS into redirecting the code there.</p>
+  </div>
+
+  <div class="concept-card">
+    <h3>Prohibited: Tokens in Query Strings</h3>
+    <p>OAuth 2.0 allowed access tokens to be passed as <code>?access_token=...</code> query parameters. OAuth 2.1 prohibits this. Query parameters appear in server access logs, browser history, and HTTP Referer headers to third-party origins. Tokens must be transmitted in the <code>Authorization: Bearer ...</code> request header only.</p>
+  </div>
+
+  <h3>OAuth 2.0 vs 2.1 — Quick Reference</h3>
+  <table class="info-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>OAuth 2.0</th>
+        <th>OAuth 2.1</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Authorization Code flow</td>
+        <td>Supported</td>
+        <td>Supported (PKCE now required)</td>
+      </tr>
+      <tr>
+        <td>Implicit flow (<code>response_type=token</code>)</td>
+        <td>Supported</td>
+        <td><strong>Removed</strong></td>
+      </tr>
+      <tr>
+        <td>ROPC flow</td>
+        <td>Supported</td>
+        <td><strong>Removed</strong></td>
+      </tr>
+      <tr>
+        <td>Client Credentials flow</td>
+        <td>Supported</td>
+        <td>Supported (no changes)</td>
+      </tr>
+      <tr>
+        <td>Device Authorization flow</td>
+        <td>Separate RFC 8628</td>
+        <td>Referenced / incorporated</td>
+      </tr>
+      <tr>
+        <td>PKCE</td>
+        <td>Optional (RFC 7636)</td>
+        <td><strong>Required for all auth code flows</strong></td>
+      </tr>
+      <tr>
+        <td>Redirect URI matching</td>
+        <td>Partial match allowed</td>
+        <td><strong>Exact match required</strong></td>
+      </tr>
+      <tr>
+        <td>Tokens in query strings</td>
+        <td>Allowed (discouraged)</td>
+        <td><strong>Prohibited</strong></td>
+      </tr>
+      <tr>
+        <td>Refresh token rotation (public clients)</td>
+        <td>Optional</td>
+        <td><strong>Required</strong></td>
+      </tr>
+      <tr>
+        <td>Bearer token usage</td>
+        <td>Separate RFC 6750</td>
+        <td>Consolidated into spec</td>
+      </tr>
+      <tr>
+        <td>Specification documents</td>
+        <td>RFC 6749 + RFC 6750 + many BCP RFCs</td>
+        <td>Single consolidated draft</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+<div class="tab-nav-footer">
+<button class="tab-nav-btn tab-prev hidden">&larr;</button>
+<button class="tab-nav-btn tab-next" onclick="switchTab(1)">Grant Flows &rarr;</button>
+</div>
+</div><!-- end tab-0 -->
+
+
+<!-- TAB 2: GRANT FLOWS -->
+<div class="tab-section" id="tab-1">
+
+  <h2>Grant Flows</h2>
+  <p>A grant flow (also called a grant type) is the specific sequence of requests and redirects by which a client obtains tokens. The right flow depends on what kind of client you are building and whether there is an interactive user present. Use this guide as a click-through reference — click any step to expand the HTTP details.</p>
+
+  <div class="key-point">
+    <strong>Choosing a flow:</strong> Is there a user? Yes — use Authorization Code + PKCE. No user, server-to-server only? Use Client Credentials. Device with no browser (TV, CLI, IoT)? Use Device Authorization. Need to refresh silently? Use the Refresh Token flow.
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════
+       FLOW 1: AUTHORIZATION CODE + PKCE
+  ═══════════════════════════════════════════ -->
+  <h2>Authorization Code + PKCE</h2>
+  <p>The primary flow for any application where a user is present. Works for web apps, SPAs, and native mobile apps. PKCE is mandatory in OAuth 2.1 regardless of whether the client is public or confidential.</p>
+
+  <div class="flow-diagram" data-flow="auth-code">
+    <div class="flow-parties">
+      <span class="party party-client">Client App</span>
+      <span class="party party-auth">Authorization Server</span>
+      <span class="party party-resource">Resource Server</span>
+    </div>
+
+    <div class="flow-steps">
+
+      <!-- Step 1 -->
+      <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+        <span class="step-num">1</span>
+        <span class="step-arrow arrow-internal"></span>
+        <span class="step-label">Generate PKCE code_verifier and code_challenge</span>
+      </div>
+      <div class="step-detail" data-for-step="1">
+        <div class="step-http">
+          <div class="code-block">// Client-side — never sent to server until step 5
+// Step A: generate cryptographically random verifier
+code_verifier = base64url(random_bytes(32))
+// e.g.: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+
+// Step B: derive challenge
+code_challenge = base64url(sha256(ascii(code_verifier)))
+// e.g.: "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+
+// method used (always S256 in OAuth 2.1)
+code_challenge_method = "S256"</div>
+        </div>
+        <div class="step-explain">
+          <p>This step happens entirely on the client before any network request. The client generates a random <code>code_verifier</code> — a high-entropy random string between 43 and 128 characters (URL-safe base64 alphabet). It then SHA-256 hashes the verifier and base64url-encodes the result to produce the <code>code_challenge</code>.</p>
+          <p>The verifier is kept secret in memory. Only the challenge is sent to the AS in the next step. When the client proves knowledge of the verifier in step 5, the AS can verify it matches the challenge it stored — binding the token exchange to this specific flow initiation.</p>
+        </div>
+        <div class="security-note">
+          <strong>Plain method is prohibited in OAuth 2.1.</strong> <code>code_challenge_method=plain</code> (where the challenge equals the verifier verbatim) provides no protection and must not be used. Always use <code>S256</code>.
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+        <span class="step-num">2</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">Redirect browser to /authorize with code_challenge</span>
+      </div>
+      <div class="step-detail" data-for-step="2">
+        <div class="step-http">
+          <div class="code-block">GET /oauth2/default/v1/authorize
+  ?response_type=code
+  &amp;client_id=0oa1abc234DEF
+  &amp;redirect_uri=https%3A%2F%2Fapp.acme.com%2Fcallback
+  &amp;scope=openid%20profile%20email%20offline_access
+  &amp;state=xyzABCrandomCSRF123
+  &amp;nonce=n-0S6_WzA2Mj
+  &amp;code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+  &amp;code_challenge_method=S256
+  HTTP/1.1
+Host: acme.okta.com</div>
+        </div>
+        <div class="step-explain">
+          <p>The client instructs the browser to navigate to the AS's authorization endpoint. Key parameters:</p>
+          <ul>
+            <li><code>response_type=code</code> — requests an authorization code (not a token directly)</li>
+            <li><code>client_id</code> — identifies the registered OAuth application</li>
+            <li><code>redirect_uri</code> — where the AS will send the code back; must exactly match a registered URI</li>
+            <li><code>scope</code> — space-separated requested permissions; <code>offline_access</code> requests a refresh token</li>
+            <li><code>state</code> — random value the client generates to prevent CSRF; it will be echoed back in the redirect and the client must verify it matches</li>
+            <li><code>nonce</code> — random value included in the ID token to prevent replay attacks (OIDC)</li>
+            <li><code>code_challenge</code> + <code>code_challenge_method</code> — PKCE parameters</li>
+          </ul>
+        </div>
+        <div class="key-point">
+          <strong>What OAuth handles vs. what it doesn't:</strong> The <code>/authorize</code> redirect is where authentication happens — the AS presents its login UI. OAuth itself doesn't define how users authenticate; that's OIDC and the AS's responsibility. OAuth only defines what happens after the user is authenticated.
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="flow-step" data-step="3" onclick="toggleStep(this)">
+        <span class="step-num">3</span>
+        <span class="step-arrow arrow-internal"></span>
+        <span class="step-label">User authenticates and grants consent</span>
+      </div>
+      <div class="step-detail" data-for-step="3">
+        <div class="step-http">
+          <div class="code-block">// User interaction at the Authorization Server:
+// 1. AS presents login page
+// 2. User enters credentials (password, MFA, passkey, etc.)
+// 3. AS presents consent screen listing requested scopes
+// 4. User clicks "Allow"
+//
+// The AS records:
+//   - which user authenticated (sub)
+//   - which client requested access (client_id)
+//   - which scopes were approved
+//   - the code_challenge received
+//   - the redirect_uri received
+//
+// The AS generates a short-lived authorization code
+// (typically valid for 60–120 seconds, single use)</div>
+        </div>
+        <div class="step-explain">
+          <p>This step is entirely within the Authorization Server. The client application does not participate — the browser has navigated away to the AS's domain. This is a critical security property: the user's credential never touches the client application.</p>
+          <p>After successful authentication and consent, the AS creates an authorization code and associates it with the user, client, scopes, and PKCE challenge. The code is one-time-use and expires quickly to limit the window for interception.</p>
+        </div>
+        <div class="security-note">
+          <strong>First-party apps and consent:</strong> If your app is a first-party application (built by the same organization that owns the AS), the consent screen is often suppressed. OAuth 2.1 still runs the full flow — the consent is just pre-approved at the policy level. Do not skip PKCE because consent is suppressed.
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="flow-step" data-step="4" onclick="toggleStep(this)">
+        <span class="step-num">4</span>
+        <span class="step-arrow arrow-left"></span>
+        <span class="step-label">AS redirects browser back with authorization code</span>
+      </div>
+      <div class="step-detail" data-for-step="4">
+        <div class="step-http">
+          <div class="code-block">HTTP/1.1 302 Found
+Location: https://app.acme.com/callback
+  ?code=SplxlOBeZQQYbYS6WxSbIA
+  &amp;state=xyzABCrandomCSRF123</div>
+        </div>
+        <div class="step-explain">
+          <p>The AS instructs the browser to redirect back to the client's registered <code>redirect_uri</code>, appending the authorization <code>code</code> and the original <code>state</code> value as query parameters.</p>
+          <p>When the client's callback endpoint receives this request, it must:</p>
+          <ol>
+            <li>Verify that <code>state</code> matches the value it stored in step 2 — this prevents CSRF attacks</li>
+            <li>Extract the <code>code</code> parameter</li>
+            <li>Immediately exchange the code for tokens (step 5) before it expires</li>
+          </ol>
+        </div>
+        <div class="key-point">
+          <strong>The code is not a token.</strong> The authorization code is a short-lived, single-use credential that can only be exchanged for tokens by a client that also holds the code_verifier. It is not useful to an attacker by itself (without the verifier, thanks to PKCE).
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="flow-step" data-step="5" onclick="toggleStep(this)">
+        <span class="step-num">5</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">POST /token with code + code_verifier</span>
+      </div>
+      <div class="step-detail" data-for-step="5">
+        <div class="step-http">
+          <div class="code-block">POST /oauth2/default/v1/token HTTP/1.1
+Host: acme.okta.com
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic BASE64(client_id:client_secret)
+  // ^ for confidential clients only; omit for public clients
+
+grant_type=authorization_code
+&amp;code=SplxlOBeZQQYbYS6WxSbIA
+&amp;redirect_uri=https%3A%2F%2Fapp.acme.com%2Fcallback
+&amp;code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
+&amp;client_id=0oa1abc234DEF
+  // ^ include client_id for public clients (no secret)</div>
+        </div>
+        <div class="step-explain">
+          <p>This is a direct back-channel (server-to-server) POST from the client to the AS's token endpoint — the browser is not involved. The client proves possession of the authorization code and demonstrates it initiated this flow by providing the <code>code_verifier</code>.</p>
+          <p>The AS performs these validations before issuing tokens:</p>
+          <ol>
+            <li>Verify the code is valid, not expired, and not previously used</li>
+            <li>Verify <code>redirect_uri</code> exactly matches what was in the authorization request</li>
+            <li>Compute <code>SHA-256(code_verifier)</code> and compare to the stored <code>code_challenge</code></li>
+            <li>Authenticate the client (via Basic auth secret or client assertion JWT)</li>
+          </ol>
+        </div>
+        <div class="security-note">
+          <strong>PKCE verification is the key step.</strong> Even if an attacker intercepted the authorization code from the redirect URL, they cannot exchange it without the <code>code_verifier</code> that only the legitimate client holds. This is why PKCE replaced the Implicit flow for SPAs.
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="flow-step" data-step="6" onclick="toggleStep(this)">
+        <span class="step-num">6</span>
+        <span class="step-arrow arrow-left"></span>
+        <span class="step-label">Receive access_token, id_token, and refresh_token</span>
+      </div>
+      <div class="step-detail" data-for-step="6">
+        <div class="step-http">
+          <div class="code-block">HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "expires_in": 3600,
+  "scope": "openid profile email offline_access",
+  "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "refresh_token": "hGzdzs8Rv9NTrTNEwnbJUvLwTbC8vMWWKBX7PLJJ"
+}</div>
+        </div>
+        <div class="step-explain">
+          <p>On successful validation, the AS returns the token response. The client should:</p>
+          <ul>
+            <li>Store the <code>access_token</code> in memory (not localStorage, not sessionStorage for SPAs) — it is used to call APIs</li>
+            <li>Store the <code>refresh_token</code> securely — for SPAs, this means a secure, HttpOnly cookie; for native apps, the platform keychain</li>
+            <li>Validate the <code>id_token</code> JWT signature and claims (iss, aud, exp, nonce) before trusting it</li>
+            <li>Note the <code>expires_in</code> value to know when to use the refresh token</li>
+          </ul>
+        </div>
+        <div class="security-note">
+          <strong>Token storage for SPAs:</strong> Storing tokens in localStorage exposes them to XSS. The recommended pattern is to keep the access token in memory (JavaScript variable), use a secure HttpOnly cookie for the refresh token (managed by your backend or BFF), and re-acquire the access token via the refresh flow on page load.
+        </div>
+      </div>
+
+      <!-- Step 7 -->
+      <div class="flow-step" data-step="7" onclick="toggleStep(this)">
+        <span class="step-num">7</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">Call API with Bearer access token</span>
+      </div>
+      <div class="step-detail" data-for-step="7">
+        <div class="step-http">
+          <div class="code-block">GET /api/v1/transactions HTTP/1.1
+Host: api.acme.com
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...
+
+---
+
+// Resource Server validates the token:
+// 1. Decode JWT header to get kid (key ID)
+// 2. Fetch AS JWKS: GET https://acme.okta.com/oauth2/default/v1/keys
+// 3. Verify RS256 signature using matching public key
+// 4. Check exp (not expired), iss (matches AS), aud (matches this API)
+// 5. Check scp claim includes required scope for this endpoint
+// 6. Return response if all checks pass
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{ "transactions": [...] }</div>
+        </div>
+        <div class="step-explain">
+          <p>The client attaches the access token to every API request in the <code>Authorization</code> header using the <code>Bearer</code> scheme. The Resource Server independently validates the JWT — it does not need to call the AS for each request if it can verify the signature locally.</p>
+          <p>Local JWT validation (preferred for performance): cache the AS's JWKS public keys and verify the signature, expiry, issuer, and audience on every request. Re-fetch JWKS only when a new <code>kid</code> appears that is not in the cache.</p>
+        </div>
+        <div class="key-point">
+          <strong>Audience validation is critical.</strong> The RS must verify that its own identifier appears in the <code>aud</code> claim. Without this check, a token issued for API A could be replayed against API B at the same organization — a confused deputy attack.
+        </div>
+      </div>
+
+    </div><!-- end flow-steps -->
+  </div><!-- end flow-diagram auth-code -->
+
+
+  <!-- ═══════════════════════════════════════════
+       FLOW 2: CLIENT CREDENTIALS
+  ═══════════════════════════════════════════ -->
+  <h2>Client Credentials</h2>
+  <p>For machine-to-machine (M2M) communication where there is no user. A backend service, cron job, or microservice obtains tokens using its own identity — no browser redirect, no consent screen. There is no resource owner in this flow; the client and resource owner are the same entity.</p>
+
+  <div class="security-note">
+    <strong>No PKCE in Client Credentials.</strong> PKCE protects the authorization code exchange in user-facing flows. Client Credentials has no authorization code and no redirect — the entire flow is a single back-channel POST. Security comes from keeping the client secret or private key confidential.
+  </div>
+
+  <div class="flow-diagram" data-flow="client-credentials">
+    <div class="flow-parties">
+      <span class="party party-client">Client (Server)</span>
+      <span class="party party-auth">Authorization Server</span>
+      <span class="party party-resource">Resource Server</span>
+    </div>
+
+    <div class="flow-steps">
+
+      <!-- Step 1 -->
+      <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+        <span class="step-num">1</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">POST /token with client credentials</span>
+      </div>
+      <div class="step-detail" data-for-step="1">
+        <div class="step-http">
+          <div class="code-block">POST /oauth2/default/v1/token HTTP/1.1
+Host: acme.okta.com
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic BASE64(client_id:client_secret)
+
+grant_type=client_credentials
+&amp;scope=read%3Areports%20write%3Alogs
+
+// Alternative: private_key_jwt authentication (more secure)
+// grant_type=client_credentials
+// &amp;client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+// &amp;client_assertion=eyJ... (signed JWT assertion)
+// &amp;scope=read:reports</div>
+        </div>
+        <div class="step-explain">
+          <p>The service POSTs directly to the token endpoint. It authenticates itself using one of:</p>
+          <ul>
+            <li><strong>HTTP Basic Auth</strong> (<code>Authorization: Basic BASE64(id:secret)</code>) — simple but requires protecting the secret at rest</li>
+            <li><strong>client_secret_post</strong> — secret in the POST body (allowed but not preferred)</li>
+            <li><strong>private_key_jwt</strong> (RFC 7523) — the client signs a JWT with its private key; the AS verifies with the registered public key. This is the most secure option because the secret never leaves the service.</li>
+          </ul>
+        </div>
+        <div class="key-point">
+          <strong>Prefer private_key_jwt over client_secret.</strong> A client secret is a shared secret that can be exfiltrated from config or secret storage. A private key (stored in HSM or platform keystore) is computationally unfeasible to extract. Many enterprise AS implementations support <code>private_key_jwt</code> via JWKS URI registration.
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+        <span class="step-num">2</span>
+        <span class="step-arrow arrow-left"></span>
+        <span class="step-label">Receive access_token</span>
+      </div>
+      <div class="step-detail" data-for-step="2">
+        <div class="step-http">
+          <div class="code-block">HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "expires_in": 3600,
+  "scope": "read:reports write:logs"
+}
+// Note: no id_token (no user) and no refresh_token (by design)</div>
+        </div>
+        <div class="step-explain">
+          <p>Client Credentials responses do not include an ID token (no user was authenticated) and typically do not include a refresh token. Refresh tokens are not needed here — if the access token expires, the service just runs the two-step flow again. Refresh tokens for M2M add attack surface without meaningful benefit.</p>
+          <p>Services should cache the access token and re-use it until it expires, then obtain a new one. Making a token request per API call is wasteful and will trigger rate limits on the AS.</p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="flow-step" data-step="3" onclick="toggleStep(this)">
+        <span class="step-num">3</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">Call API with Bearer token</span>
+      </div>
+      <div class="step-detail" data-for-step="3">
+        <div class="step-http">
+          <div class="code-block">GET /api/v1/reports/monthly HTTP/1.1
+Host: api.acme.com
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{ "report": { ... } }</div>
+        </div>
+        <div class="step-explain">
+          <p>Identical to step 7 of the Authorization Code flow. The Resource Server validates the token without knowing which grant type was used to obtain it — the JWT is the same structure either way. The <code>sub</code> claim in a Client Credentials token is the <code>client_id</code>, not a user ID.</p>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end flow-diagram client-credentials -->
+
+
+  <!-- ═══════════════════════════════════════════
+       FLOW 3: DEVICE AUTHORIZATION (RFC 8628)
+  ═══════════════════════════════════════════ -->
+  <h2>Device Authorization (RFC 8628)</h2>
+  <p>For devices that cannot open a browser or have constrained input (smart TVs, game consoles, CLI tools, IoT devices). The device displays a short code and URL; the user visits that URL on their phone or computer to approve access. The device polls the AS until authorization completes.</p>
+
+  <div class="flow-diagram" data-flow="device-auth">
+    <div class="flow-parties">
+      <span class="party party-client">Device / CLI</span>
+      <span class="party party-auth">Authorization Server</span>
+      <span class="party party-resource">User's Phone / Browser</span>
+    </div>
+
+    <div class="flow-steps">
+
+      <!-- Step 1 -->
+      <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+        <span class="step-num">1</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">Device POSTs to /device_authorization</span>
+      </div>
+      <div class="step-detail" data-for-step="1">
+        <div class="step-http">
+          <div class="code-block">POST /oauth2/default/v1/device/authorize HTTP/1.1
+Host: acme.okta.com
+Content-Type: application/x-www-form-urlencoded
+
+client_id=0oa1abc234DEF
+&amp;scope=openid%20profile%20offline_access
+
+---
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "device_code": "GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS",
+  "user_code": "WDJB-MJHT",
+  "verification_uri": "https://acme.okta.com/activate",
+  "verification_uri_complete": "https://acme.okta.com/activate?user_code=WDJB-MJHT",
+  "expires_in": 900,
+  "interval": 5
+}</div>
+        </div>
+        <div class="step-explain">
+          <p>The device makes a single POST to the device authorization endpoint. The AS responds with:</p>
+          <ul>
+            <li><code>device_code</code> — a long opaque code the device uses when polling; never shown to the user</li>
+            <li><code>user_code</code> — a short, human-readable code (typically 8 chars) the user types at the verification URI</li>
+            <li><code>verification_uri</code> — the URL the user visits (designed to be short enough to type)</li>
+            <li><code>verification_uri_complete</code> — a URL with the code pre-filled (for QR codes)</li>
+            <li><code>interval</code> — minimum seconds between polling attempts (the device must honor this)</li>
+            <li><code>expires_in</code> — how long the user has to complete authorization</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+        <span class="step-num">2</span>
+        <span class="step-arrow arrow-internal"></span>
+        <span class="step-label">Device displays user_code and verification_uri</span>
+      </div>
+      <div class="step-detail" data-for-step="2">
+        <div class="step-http">
+          <div class="code-block">// Device output (terminal / screen):
+//
+//   To sign in, visit: https://acme.okta.com/activate
+//   Enter code: WDJB-MJHT
+//
+//   Or scan QR code: [QR CODE IMAGE]
+//
+//   Code expires in 15 minutes.
+//   Waiting for authorization...</div>
+        </div>
+        <div class="step-explain">
+          <p>The device displays the <code>user_code</code> and <code>verification_uri</code> in a way the user can read. For TV apps this is on screen. For CLI tools this is printed to stdout. Some devices also display a QR code encoding the <code>verification_uri_complete</code> for convenience.</p>
+          <p>Meanwhile, the device begins polling the token endpoint (step 4) at the specified <code>interval</code>, waiting for the user to complete authorization on their phone.</p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="flow-step" data-step="3" onclick="toggleStep(this)">
+        <span class="step-num">3</span>
+        <span class="step-arrow arrow-internal"></span>
+        <span class="step-label">User visits URI on their phone and authenticates</span>
+      </div>
+      <div class="step-detail" data-for-step="3">
+        <div class="step-http">
+          <div class="code-block">// User action on their phone/computer:
+// 1. Navigate to https://acme.okta.com/activate
+// 2. Enter "WDJB-MJHT" when prompted
+// 3. AS authenticates the user (login + MFA)
+// 4. AS shows consent screen for requested scopes
+// 5. User clicks "Allow"
+// 6. AS marks the device_code as authorized
+//
+// AS response to user's browser:
+// "Authorization granted. You may return to your device."</div>
+        </div>
+        <div class="step-explain">
+          <p>The user follows a completely normal authentication flow on their secondary device (phone, laptop). They may need to sign in, complete MFA, and approve the consent screen. The AS links their approval to the <code>device_code</code> so the polling device knows when to proceed.</p>
+          <p>This is a key security advantage: full MFA and consent even for headless devices.</p>
+        </div>
+        <div class="key-point">
+          <strong>The user_code is designed to be user-friendly.</strong> RFC 8628 specifies it should use characters that are unambiguous when read aloud or typed (no 0/O, 1/I/L confusion). The dash separator is visual grouping only and may be case-insensitive. WDJB-MJHT is an example of the recommended format.
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="flow-step" data-step="4" onclick="toggleStep(this)">
+        <span class="step-num">4</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">Device polls /token with device_code</span>
+      </div>
+      <div class="step-detail" data-for-step="4">
+        <div class="step-http">
+          <div class="code-block">// Sent repeatedly at `interval` seconds until success or expiry:
+POST /oauth2/default/v1/token HTTP/1.1
+Host: acme.okta.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code
+&amp;device_code=GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS
+&amp;client_id=0oa1abc234DEF
+
+---
+
+// While user hasn't acted yet:
+HTTP/1.1 400 Bad Request
+{ "error": "authorization_pending", "error_description": "..." }
+
+// If polling too fast:
+HTTP/1.1 400 Bad Request
+{ "error": "slow_down", "error_description": "..." }
+// Device must increase interval by 5 seconds when slow_down received
+
+// If user denied:
+HTTP/1.1 400 Bad Request
+{ "error": "access_denied", "error_description": "..." }
+
+// If code expired:
+HTTP/1.1 400 Bad Request
+{ "error": "expired_token", "error_description": "..." }</div>
+        </div>
+        <div class="step-explain">
+          <p>The device polls the token endpoint repeatedly. The AS returns <code>authorization_pending</code> until the user completes the flow. The device must respect the <code>interval</code> and back off when it receives <code>slow_down</code>. Polling too aggressively can result in the AS revoking the device code.</p>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="flow-step" data-step="5" onclick="toggleStep(this)">
+        <span class="step-num">5</span>
+        <span class="step-arrow arrow-left"></span>
+        <span class="step-label">Receive access_token once user approves</span>
+      </div>
+      <div class="step-detail" data-for-step="5">
+        <div class="step-http">
+          <div class="code-block">// After user approves on their phone:
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "expires_in": 3600,
+  "scope": "openid profile offline_access",
+  "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "refresh_token": "hGzdzs8Rv9NTrTNEwnbJUvLwTbC8vMWWKBX7PLJJ"
+}</div>
+        </div>
+        <div class="step-explain">
+          <p>Once the user approves, the next polling request returns a successful token response identical to the Authorization Code flow. The device can now use the access token for API calls and store the refresh token to maintain the session without requiring the user to re-authorize.</p>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end flow-diagram device-auth -->
+
+
+  <!-- ═══════════════════════════════════════════
+       FLOW 4: REFRESH TOKEN
+  ═══════════════════════════════════════════ -->
+  <h2>Refresh Token</h2>
+  <p>Used to obtain a new access token after the current one expires — without requiring the user to re-authenticate. This is not a standalone grant flow; it is used in conjunction with Authorization Code + PKCE or Device Authorization after the initial tokens have been issued.</p>
+
+  <div class="flow-diagram" data-flow="refresh">
+    <div class="flow-parties">
+      <span class="party party-client">Client App</span>
+      <span class="party party-auth">Authorization Server</span>
+      <span class="party party-resource">Resource Server</span>
+    </div>
+
+    <div class="flow-steps">
+
+      <!-- Step 1 -->
+      <div class="flow-step" data-step="1" onclick="toggleStep(this)">
+        <span class="step-num">1</span>
+        <span class="step-arrow arrow-right"></span>
+        <span class="step-label">POST /token with refresh_token</span>
+      </div>
+      <div class="step-detail" data-for-step="1">
+        <div class="step-http">
+          <div class="code-block">POST /oauth2/default/v1/token HTTP/1.1
+Host: acme.okta.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token
+&amp;refresh_token=hGzdzs8Rv9NTrTNEwnbJUvLwTbC8vMWWKBX7PLJJ
+&amp;client_id=0oa1abc234DEF
+&amp;scope=openid%20profile%20offline_access
+// scope is optional; if omitted, AS issues same scopes as original grant
+// scope cannot be broader than the original grant</div>
+        </div>
+        <div class="step-explain">
+          <p>The client sends the refresh token to the AS's token endpoint. No browser redirect is required — this is a direct back-channel request. The client authenticates if it is a confidential client (Basic Auth or JWT assertion). Public clients include only their <code>client_id</code>.</p>
+          <p>The client can optionally request a narrower scope than the original grant. It cannot request broader scopes — attempting to do so results in an error.</p>
+        </div>
+        <div class="security-note">
+          <strong>Refresh token rotation (required for public clients in OAuth 2.1):</strong> The AS must issue a new refresh token on every use and invalidate the old one. If the AS receives a refresh token that it has already rotated (i.e., an old superseded token), this indicates the token was stolen. The AS should revoke the entire token family associated with this grant.
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-step" data-step="2" onclick="toggleStep(this)">
+        <span class="step-num">2</span>
+        <span class="step-arrow arrow-left"></span>
+        <span class="step-label">Receive new access_token + rotated refresh_token</span>
+      </div>
+      <div class="step-detail" data-for-step="2">
+        <div class="step-http">
+          <div class="code-block">HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+  "token_type": "Bearer",
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "expires_in": 3600,
+  "scope": "openid profile offline_access",
+  "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InYxIn0...",
+  "refresh_token": "NEW_ROTATED_TOKEN_8Rv9NTrTNEwnbJUvLwTbC8vMWWKBX7"
+  // ^ entirely new value — old refresh_token is now invalid
+}</div>
+        </div>
+        <div class="step-explain">
+          <p>The response contains a fresh access token, a new ID token, and — critically — a brand-new refresh token. The client must replace its stored refresh token with this new value immediately. Holding on to the old one is not useful; it is now permanently invalid.</p>
+          <p>If the AS does not return a new refresh token (allowed for confidential clients that use absolute expiry instead of rotation), the client continues to use the same refresh token until its absolute expiry or explicit revocation.</p>
+        </div>
+        <div class="key-point">
+          <strong>Absolute vs. idle expiry:</strong> Refresh tokens have two types of expiry. Absolute expiry (e.g., 24 hours from issuance) limits how long a session can last regardless of activity. Idle/inactivity expiry (e.g., 1 hour without use) logs the user out if they are inactive. Okta supports both independently and both are enforced even with rotation.
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end flow-diagram refresh -->
+
+
+  <!-- ═══════════════════════════════════════════
+       WHAT WAS REMOVED
+  ═══════════════════════════════════════════ -->
+  <h2>What Was Removed in OAuth 2.1</h2>
+  <p>Two grant types present in OAuth 2.0 were removed from OAuth 2.1 because they cannot be made secure by any implementation measure. Their removal is not a configuration option — conforming OAuth 2.1 authorization servers must not support them.</p>
+
+  <div class="removed-feature">
+    <h3>Implicit Grant — response_type=token</h3>
+    <p><strong>How it worked:</strong> Instead of returning an authorization code to the redirect URI, the AS returned the access token directly in the URL fragment (<code>#access_token=...</code>). The intent was to avoid the extra round-trip needed for the code exchange, making it simpler for SPAs.</p>
+    <div class="code-block">// OAuth 2.0 Implicit — NEVER USE
+GET /authorize
+  ?response_type=token          ← requests token directly
+  &amp;client_id=0oa1abc234DEF
+  &amp;redirect_uri=https://spa.example.com/callback
+  &amp;scope=openid profile
+
+// AS redirects to:
+// https://spa.example.com/callback#access_token=LEAKED_TOKEN&amp;expires_in=3600
+//                                   ^^^^^^^^^^^^^^^^^^^^ in URL fragment</div>
+    <p><strong>Why it is removed:</strong></p>
+    <ul>
+      <li>The access token appears in the browser history and is accessible to JavaScript on the page — including third-party scripts (analytics, A/B testing, chat widgets)</li>
+      <li>The Referer header can leak the fragment to third-party origins if any navigation follows the redirect</li>
+      <li>No refresh token is possible — silent iframe renewals break with modern browser ITP/ETP restrictions</li>
+      <li>No PKCE protection is possible — any app could register the same redirect URI and steal the token</li>
+      <li>Auth Code + PKCE has all the simplicity benefits of Implicit with none of the vulnerabilities</li>
+    </ul>
+  </div>
+
+  <div class="removed-feature">
+    <h3>Resource Owner Password Credentials (ROPC) — grant_type=password</h3>
+    <p><strong>How it worked:</strong> The client collected the user's username and password directly (in its own login form) and POSTed them to the AS's token endpoint. The AS validated the credentials and returned tokens directly — no browser redirect, no consent screen.</p>
+    <div class="code-block">// OAuth 2.0 ROPC — NEVER USE
+POST /oauth2/default/v1/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password             ← removed in 2.1
+&amp;username=jane@acme.com        ← user's credential in client's hands
+&amp;password=hunter2              ← credential phishing risk
+&amp;client_id=0oa1abc234DEF
+&amp;scope=openid profile</div>
+    <p><strong>Why it is removed:</strong></p>
+    <ul>
+      <li><strong>Credential phishing:</strong> The user's password is typed into the client application — not into the AS's trusted login page. A compromised or malicious first-party app can harvest credentials for every user who logs in.</li>
+      <li><strong>MFA is impossible:</strong> The entire exchange is a single back-channel POST. There is no way to inject a second-factor challenge, bot detection CAPTCHA, or step-up authentication into this flow. MFA requirements are silently bypassed.</li>
+      <li><strong>No consent:</strong> There is no consent screen. Users cannot see or limit what the application is requesting.</li>
+      <li><strong>Violates the delegation model:</strong> The core premise of OAuth is that the user's credential never leaves the AS. ROPC fundamentally breaks this guarantee.</li>
+      <li><strong>Common misuse:</strong> ROPC was frequently used as a "shortcut" for first-party apps. The correct replacement is Auth Code + PKCE with an embedded web view (or system browser) pointed at the AS's own login page — users authenticate directly with the AS, and the app never sees the password.</li>
+    </ul>
+  </div>
+
+
+<div class="tab-nav-footer">
+<button class="tab-nav-btn tab-prev" onclick="switchTab(0)">&larr; Foundations</button>
+<button class="tab-nav-btn tab-next" onclick="switchTab(2)">DCR &amp; Registration &rarr;</button>
+</div>
+</div><!-- end tab-1 -->
+
+
+<!-- TAB 3: DCR & REGISTRATION -->
+<div class="tab-section" id="tab-2">
+
+<h2>Dynamic Client Registration &amp; Client Identity</h2>
+<p>Before an OAuth client can request tokens, it needs a <code>client_id</code>. How it gets one is the <strong>bootstrap problem</strong> — and it&rsquo;s one of the most actively evolving areas in the OAuth ecosystem, especially for MCP.</p>
+
+<div class="key-point">
+<strong>The M&times;N Problem:</strong> If there are M MCP clients (Claude, Cursor, VS Code) and N MCP servers, requiring manual pre-registration creates M&times;N administrative overhead. Dynamic registration solves this.
+</div>
+
+<h3>Three Registration Approaches</h3>
+<table class="info-table">
+<thead><tr><th>Approach</th><th>Mechanism</th><th>Server-Side State</th><th>Best For</th><th>MCP Spec Status</th></tr></thead>
+<tbody>
+<tr><td><strong>Static / Pre-registered</strong></td><td>Admin manually creates client in dashboard</td><td>Yes (permanent record)</td><td>Known, long-lived enterprise apps</td><td>Fallback</td></tr>
+<tr><td><strong>DCR (RFC 7591)</strong></td><td>Client POSTs to <code>/register</code></td><td>Yes (grows unbounded)</td><td>Ephemeral agents, mobile instances</td><td>MAY (was SHOULD)</td></tr>
+<tr><td><strong>CIMD</strong></td><td>Client hosts metadata at HTTPS URL; AS fetches on demand</td><td>No (stateless)</td><td>MCP clients with stable HTTPS origins</td><td>SHOULD (preferred)</td></tr>
+</tbody>
+</table>
+
+<h3>RFC 7591 — Dynamic Client Registration</h3>
+<div class="concept-card">
+<h3>The Registration Flow</h3>
+<div class="flow-diagram">
+<div class="flow-parties">
+<span class="party party-client">OAuth Client</span>
+<span class="party party-auth">Authorization Server</span>
+</div>
+<div class="flow-steps">
+<div class="flow-step" data-step="1" onclick="toggleStep(this)"><span class="step-num">1</span><span class="step-label">Discover registration_endpoint from AS metadata</span></div>
+<div class="step-detail" data-for-step="1">
+<div class="code-block">GET /.well-known/oauth-authorization-server
+// Response includes: "registration_endpoint": "https://auth.example.com/register"</div>
+<div class="step-explain">Client fetches AS metadata (RFC 8414) to find the registration endpoint. If no <code>registration_endpoint</code> is present, DCR is not supported.</div>
+</div>
+<div class="flow-step" data-step="2" onclick="toggleStep(this)"><span class="step-num">2</span><span class="step-label">POST /register with client metadata</span></div>
+<div class="step-detail" data-for-step="2">
+<div class="code-block">POST /register HTTP/1.1
+Host: auth.example.com
+Content-Type: application/json
+
+{
+  "client_name": "Claude Desktop",
+  "redirect_uris": ["http://127.0.0.1:61789/callback"],
+  "grant_types": ["authorization_code"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none"
+}</div>
+<div class="step-explain">The client self-describes its capabilities. Key fields: <code>redirect_uris</code> (required), <code>grant_types</code>, <code>token_endpoint_auth_method</code> (<code>none</code> for public clients, <code>private_key_jwt</code> for high-assurance).</div>
+</div>
+<div class="flow-step" data-step="3" onclick="toggleStep(this)"><span class="step-num">3</span><span class="step-label">Receive client_id + registration_access_token</span></div>
+<div class="step-detail" data-for-step="3">
+<div class="code-block">HTTP/1.1 201 Created
+{
+  "client_id": "s6BhdRkqt3",
+  "client_name": "Claude Desktop",
+  "redirect_uris": ["http://127.0.0.1:61789/callback"],
+  "token_endpoint_auth_method": "none",
+  "registration_access_token": "reg-23410913-abewfq.123483",
+  "registration_client_uri": "https://auth.example.com/register/s6BhdRkqt3"
+}</div>
+<div class="step-explain">The AS creates a client record and returns a <code>client_id</code>. The <code>registration_access_token</code> (RFC 7592) allows the client to later read, update, or delete its own registration.</div>
+</div>
+</div>
+</div>
+</div>
+
+<h3>Client Metadata Fields</h3>
+<table class="info-table">
+<thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>redirect_uris</code></td><td>Yes (for redirect flows)</td><td>Array of absolute URIs for authorization code callbacks</td></tr>
+<tr><td><code>token_endpoint_auth_method</code></td><td>No (default: client_secret_basic)</td><td><code>none</code>, <code>client_secret_basic</code>, <code>client_secret_post</code>, <code>private_key_jwt</code></td></tr>
+<tr><td><code>grant_types</code></td><td>No (default: authorization_code)</td><td>Array: <code>authorization_code</code>, <code>client_credentials</code>, <code>refresh_token</code></td></tr>
+<tr><td><code>client_name</code></td><td>No</td><td>Human-readable name shown on consent screens</td></tr>
+<tr><td><code>software_id</code></td><td>No</td><td>Stable identifier for the software package (across instances)</td></tr>
+<tr><td><code>software_statement</code></td><td>No</td><td>Signed JWT from a trusted third party asserting client metadata</td></tr>
+</tbody>
+</table>
+
+<h3>RFC 7592 — Registration Management</h3>
+<div class="concept-card">
+<p>After registration, the client can manage its own record using the <code>registration_access_token</code>:</p>
+<table class="info-table">
+<thead><tr><th>Operation</th><th>HTTP Method</th><th>Endpoint</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Read</td><td>GET</td><td><code>/register/{client_id}</code></td><td>Returns current metadata; may rotate the registration_access_token</td></tr>
+<tr><td>Update</td><td>PUT</td><td><code>/register/{client_id}</code></td><td>Full replacement (not partial patch); must include all fields</td></tr>
+<tr><td>Delete</td><td>DELETE</td><td><code>/register/{client_id}</code></td><td>Returns 204; revokes all tokens associated with this client</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>CIMD — Client ID Metadata Documents</h3>
+<div class="concept-card">
+<h3>How CIMD Works</h3>
+<p>Instead of registering with an AS, the client <strong>uses a stable HTTPS URL as its client_id</strong>. That URL hosts a JSON metadata document. The AS fetches it on demand during authorization.</p>
+<div class="code-block">// Client hosts this at: https://app.example.com/oauth/client-metadata.json
+// This URL IS the client_id
+
+{
+  "client_id": "https://app.example.com/oauth/client-metadata.json",
+  "client_name": "Example MCP Client",
+  "redirect_uris": ["http://127.0.0.1:3000/callback"],
+  "grant_types": ["authorization_code"],
+  "token_endpoint_auth_method": "none"
+}
+
+// AS advertises support via:
+// { "client_id_metadata_document_supported": true }</div>
+<h4>Advantages over DCR</h4>
+<ul>
+<li><strong>No server-side state</strong> — AS fetches on demand, no database records accumulate</li>
+<li><strong>Domain-backed identity</strong> — TLS + domain ownership provides stronger identity signal</li>
+<li><strong>One URL per app</strong> — same client_id regardless of how many users or instances</li>
+<li><strong>No registration endpoint to attack</strong> — no DoS surface for database writes</li>
+</ul>
+<h4>Limitations</h4>
+<ul>
+<li>Requires the client to host a public HTTPS endpoint — not viable for local desktop apps or CLI tools</li>
+<li>AS providers (Okta, Auth0, Ory) have not yet widely implemented CIMD support</li>
+</ul>
+</div>
+
+<div class="security-note">
+<div class="callout-title">Security: DCR Risks</div>
+<strong>Client impersonation:</strong> Any client can self-assert <code>"client_name": "Claude Desktop"</code> — the AS cannot verify identity without software statements.<br>
+<strong>State explosion:</strong> Every registration creates a permanent database record. Rate-limit the endpoint and implement cleanup policies.<br>
+<strong>DoS surface:</strong> An unauthenticated <code>/register</code> endpoint that writes to a database is trivially spammable.
+</div>
+
+<!-- Tab nav footer -->
+<div class="tab-nav-footer">
+<button class="tab-nav-btn tab-prev" onclick="switchTab(1)">&larr; Grant Flows</button>
+<button class="tab-nav-btn tab-next" onclick="switchTab(3)">Extensions &rarr;</button>
+</div>
+</div><!-- end tab-2 (DCR) -->
+
+
+<!-- TAB 4: EXTENSIONS -->
+<div class="tab-section" id="tab-3">
+
+<h2>OAuth Extensions</h2>
+<p>OAuth 2.1 provides the secure core. These companion specifications handle token validation, revocation, sender-constraining, and fine-grained authorization. Understanding them individually and as a system is essential for production deployments.</p>
+
+<h3>Token Introspection (RFC 7662)</h3>
+<div class="concept-card">
+<h3>What it does</h3>
+<p>A resource server calls the AS to check whether a token is valid: <code>POST /introspect</code> with the token, receive <code>{"active": true/false, ...}</code>. Essential when using opaque (non-JWT) tokens, or when real-time revocation status matters.</p>
+<div class="code-block">POST /oauth2/default/v1/introspect HTTP/1.1
+Authorization: Basic BASE64(client_id:client_secret)
+Content-Type: application/x-www-form-urlencoded
+
+token=eyJhbGciOiJS...
+
+---
+HTTP/1.1 200 OK
+{
+  "active": true,
+  "scope": "read write",
+  "client_id": "0oa1abc",
+  "sub": "user123",
+  "exp": 1737275311,
+  "token_type": "Bearer"
+}</div>
+<div class="security-note">Inactive/invalid tokens always return <code>{"active": false}</code> with HTTP 200 — never 4xx. This prevents information leakage about token existence.</div>
+</div>
+
+<h3>Token Revocation (RFC 7009)</h3>
+<div class="concept-card">
+<h3>What it does</h3>
+<p>Immediately invalidate an access or refresh token. Always returns HTTP 200 (even for tokens that don&rsquo;t exist — prevents info leakage).</p>
+<div class="code-block">POST /oauth2/default/v1/revoke HTTP/1.1
+Authorization: Basic BASE64(client_id:client_secret)
+Content-Type: application/x-www-form-urlencoded
+
+token=hGzdzs8Rv9NTr...&amp;token_type_hint=refresh_token</div>
+<div class="key-point"><strong>Cascade behavior:</strong> Revoking a refresh token invalidates all access tokens derived from it. Revoking only an access token leaves the refresh token alive.</div>
+</div>
+
+<h3>Pushed Authorization Requests — PAR (RFC 9126)</h3>
+<div class="concept-card">
+<h3>What it does</h3>
+<p>Moves authorization request parameters from the browser URL (front-channel) to a server-to-server POST (back-channel). The AS stores the request and returns a <code>request_uri</code>. The browser redirect uses only <code>client_id</code> + <code>request_uri</code>.</p>
+<div class="flow-diagram">
+<div class="flow-parties">
+<span class="party party-client">Client</span>
+<span class="party party-auth">Authorization Server</span>
+</div>
+<div class="flow-steps">
+<div class="flow-step" data-step="1" onclick="toggleStep(this)"><span class="step-num">1</span><span class="step-label">POST /par with all authorization parameters</span></div>
+<div class="step-detail" data-for-step="1">
+<div class="code-block">POST /oauth2/default/v1/par HTTP/1.1
+Authorization: Basic BASE64(client_id:client_secret)
+Content-Type: application/x-www-form-urlencoded
+
+response_type=code&amp;client_id=0oa1abc
+&amp;redirect_uri=https://app.example.com/callback
+&amp;scope=openid+accounts:read
+&amp;code_challenge=E9Melhoa2Ow...&amp;code_challenge_method=S256</div>
+<div class="step-explain">All parameters sent back-channel. Client authenticates. AS validates immediately.</div>
+</div>
+<div class="flow-step" data-step="2" onclick="toggleStep(this)"><span class="step-num">2</span><span class="step-label">Receive request_uri (valid ~60 seconds)</span></div>
+<div class="step-detail" data-for-step="2">
+<div class="code-block">HTTP/1.1 201 Created
+{
+  "request_uri": "urn:ietf:params:oauth:request_uri:bwc4JDEclQ0rz_rR2enqaQ",
+  "expires_in": 60
+}</div>
+</div>
+<div class="flow-step" data-step="3" onclick="toggleStep(this)"><span class="step-num">3</span><span class="step-label">Redirect browser with only client_id + request_uri</span></div>
+<div class="step-detail" data-for-step="3">
+<div class="code-block">GET /authorize?client_id=0oa1abc&amp;request_uri=urn:ietf:params:oauth:request_uri:bwc4JD...</div>
+<div class="step-explain">No sensitive parameters in the browser URL. No parameter tampering possible. URL length limits no longer a concern.</div>
+</div>
+</div>
+</div>
+<div class="security-note"><strong>PAR is mandatory in FAPI 2.0</strong> and strongly recommended for any deployment handling sensitive authorization parameters.</div>
+</div>
+
+<h3>DPoP — Demonstrating Proof-of-Possession (RFC 9449)</h3>
+<div class="concept-card">
+<h3>What it does</h3>
+<p>Binds access tokens to a client&rsquo;s cryptographic key pair. A stolen DPoP token is useless without the private key.</p>
+<div class="key-point"><strong>The hotel keycard analogy:</strong> Bearer tokens are like hotel keycards — anyone who finds one can open the door. DPoP is a keycard + fingerprint scanner — only the registered guest can use it.</div>
+
+<h4>How it works</h4>
+<ol>
+<li>Client generates an ephemeral EC/RSA key pair</li>
+<li>On each token/API request, client creates a <strong>DPoP proof JWT</strong> signed with its private key</li>
+<li>The proof JWT includes: <code>htm</code> (HTTP method), <code>htu</code> (target URL), <code>iat</code> (timestamp), <code>jti</code> (unique ID)</li>
+<li>AS issues token with <code>cnf.jkt</code> claim = SHA-256 thumbprint of client&rsquo;s public key</li>
+<li>Resource server verifies: proof signature, <code>cnf.jkt</code> matches proof key, <code>htm</code>/<code>htu</code> match request</li>
+</ol>
+
+<div class="code-block">// DPoP Proof JWT
+// Header: { "typ": "dpop+jwt", "alg": "ES256", "jwk": { /* public key */ } }
+// Payload:
+{
+  "jti": "unique-id-per-request",
+  "htm": "POST",
+  "htu": "https://auth.example.com/token",
+  "iat": 1712345678,
+  "nonce": "server-provided-nonce"   // Required by Okta
+}
+
+// Token response includes:
+// { "token_type": "DPoP", "access_token": "...", ... }
+// Access token JWT contains: { "cnf": { "jkt": "SHA256-thumbprint-of-public-key" } }</div>
+</div>
+
+<h3>Rich Authorization Requests — RAR (RFC 9396)</h3>
+<div class="concept-card">
+<h3>What it does</h3>
+<p>Replaces flat scope strings with structured JSON <code>authorization_details</code> for fine-grained permissions.</p>
+<div class="code-block">// Instead of: scope=payment_initiate
+// Use structured authorization_details:
+authorization_details=[{
+  "type": "payment_initiation",
+  "locations": ["https://api.bank.example.com/payments"],
+  "actions": ["initiate"],
+  "instructedAmount": { "currency": "EUR", "amount": "123.50" },
+  "creditorName": "ACME Corp"
+}]</div>
+<p>RAR travels in: authorization requests (via PAR), token responses, and introspection responses. Used extensively in Open Banking (PSD2) and healthcare (SMART on FHIR).</p>
+</div>
+
+<h3>FAPI 2.0 — Financial-Grade API Security Profile</h3>
+<div class="concept-card">
+<h3>What it mandates</h3>
+<p>FAPI 2.0 is a curated combination of OAuth extensions for regulated industries. It is the reference architecture for maximum security.</p>
+<table class="info-table">
+<thead><tr><th>Requirement</th><th>Status</th><th>What it means</th></tr></thead>
+<tbody>
+<tr><td>PAR (RFC 9126)</td><td>Mandatory</td><td>All auth requests must be pushed</td></tr>
+<tr><td>DPoP or mTLS</td><td>Mandatory</td><td>No bearer tokens — sender-constraining required</td></tr>
+<tr><td>PKCE S256</td><td>Mandatory</td><td>All auth code flows use PKCE</td></tr>
+<tr><td><code>private_key_jwt</code> or mTLS auth</td><td>Mandatory</td><td>No client secrets — only key-based auth</td></tr>
+<tr><td>Confidential clients only</td><td>Mandatory</td><td>No public clients in FAPI</td></tr>
+<tr><td>RAR</td><td>Recommended</td><td>Use when scopes are insufficient</td></tr>
+</tbody>
+</table>
+<p>Adopted by: UK Open Banking, Australia CDR, Brazil Open Finance, European Wallet (eIDAS), US FDX.</p>
+</div>
+
+<h3>Extension Summary</h3>
+<table class="info-table">
+<thead><tr><th>Extension</th><th>RFC</th><th>Solves</th><th>Phase</th></tr></thead>
+<tbody>
+<tr><td>Introspection</td><td>7662</td><td>Validating opaque tokens remotely</td><td>Token validation</td></tr>
+<tr><td>Revocation</td><td>7009</td><td>Immediate token invalidation</td><td>Token lifecycle</td></tr>
+<tr><td>PAR</td><td>9126</td><td>Front-channel parameter exposure</td><td>Authorization request</td></tr>
+<tr><td>DPoP</td><td>9449</td><td>Stolen bearer tokens</td><td>Token usage</td></tr>
+<tr><td>RAR</td><td>9396</td><td>Coarse-grained scope strings</td><td>Authorization request</td></tr>
+<tr><td>JAR</td><td>9101</td><td>Request integrity &amp; authentication</td><td>Authorization request</td></tr>
+</tbody>
+</table>
+
+<!-- Tab nav footer -->
+<div class="tab-nav-footer">
+<button class="tab-nav-btn tab-prev" onclick="switchTab(2)">&larr; DCR &amp; Registration</button>
+<button class="tab-nav-btn tab-next" onclick="switchTab(4)">MCP + OAuth &rarr;</button>
+</div>
+</div><!-- end tab-3 (Extensions) -->
+
+
+<!-- ============================================================
+     TAB 5 — MCP + OAuth 2.1 Authorization
+     ============================================================ -->
+<div class="tab-section" id="tab-4">
+
+  <h2>MCP + OAuth: The Full Authorization Architecture</h2>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">As of the 2025-06-18 spec revision, MCP servers are no longer Authorization Servers. They are OAuth 2.1 Resource Servers only. Understanding this separation is the foundation of every MCP security conversation.</p>
+
+  <!-- Role Architecture Cards -->
+  <h3>The Three-Party Architecture</h3>
+  <div class="cards-grid" style="margin-bottom: var(--spacing-lg); margin-top: var(--spacing-md);">
+    <div class="concept-card">
+      <div class="card-label">OAuth Role</div>
+      <div class="card-title">MCP Server</div>
+      <p style="font-weight: 600; color: var(--c-okta-blue); margin-bottom: var(--spacing-sm);">= Resource Server (RS)</p>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Hosts tools, validates incoming Bearer tokens, enforces scope-based access, and publishes its own protected resource metadata.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-text-secondary);">Validates: signature, expiry, audience (aud MUST match MCP URL), scopes</p>
+    </div>
+
+    <div class="concept-card">
+      <div class="card-label">OAuth Role</div>
+      <div class="card-title">MCP Client</div>
+      <p style="font-weight: 600; color: var(--c-okta-blue); margin-bottom: var(--spacing-sm);">= OAuth Client</p>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">The AI tool that connects to the MCP server. Examples: Claude Desktop, Cursor, VS Code Copilot, ChatGPT Plugins.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-text-secondary);">Responsible for: PKCE generation, AS discovery, client registration, token acquisition</p>
+    </div>
+
+    <div class="concept-card">
+      <div class="card-label">OAuth Role</div>
+      <div class="card-title">Authorization Server</div>
+      <p style="font-weight: 600; color: var(--c-okta-blue); margin-bottom: var(--spacing-sm);">= Separate Entity (AS)</p>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Issues access tokens. Completely separate from the MCP server. Examples: Auth0, Okta Custom AS, Keycloak, or any RFC 8414-compliant AS.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-text-secondary);">Endpoint: /.well-known/oauth-authorization-server or OIDC discovery</p>
+    </div>
+  </div>
+
+  <div class="key-point">
+    <strong>The Critical Separation (post-2025-06-18):</strong> The MCP server no longer doubles as an Authorization Server. It delegates all token issuance to an external AS. This means the MCP server only needs to <em>validate</em> tokens — it never <em>issues</em> them. This is a clean, auditable separation of concerns that mirrors standard OAuth 2.1 best practices.
+  </div>
+
+  <!-- Protected Resource Metadata -->
+  <h3 style="margin-top: var(--spacing-xl);">Protected Resource Metadata (RFC 9728)</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">RFC 9728 is mandatory as of the 2025-06-18 spec. The MCP server MUST publish a metadata document at a well-known URL so clients can discover which Authorization Servers are trusted and what scopes exist.</p>
+
+  <div class="code-block">
+    <div style="font-size: 0.8rem; color: var(--c-text-secondary); margin-bottom: 0.5rem; font-family: var(--font-mono);">GET https://mcp-server.example.com/.well-known/oauth-protected-resource</div>
+    <pre style="margin-bottom: 0;"><code>{
+  <span class="attr">"resource"</span>: <span class="str">"https://mcp-server.example.com"</span>,
+  <span class="attr">"authorization_servers"</span>: [
+    <span class="str">"https://auth.example.com"</span>
+  ],
+  <span class="attr">"scopes_supported"</span>: [
+    <span class="str">"mcp:tools:read"</span>,
+    <span class="str">"mcp:tools:execute"</span>,
+    <span class="str">"mcp:resources:read"</span>
+  ],
+  <span class="attr">"bearer_methods_supported"</span>: [<span class="str">"header"</span>],
+  <span class="attr">"resource_documentation"</span>: <span class="str">"https://mcp-server.example.com/docs"</span>
+}</code></pre>
+  </div>
+
+  <!-- 15-Step Interactive Flow -->
+  <h3 style="margin-top: var(--spacing-xl);">Complete 15-Step Authorization Flow</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Click any step to expand the detail. This is the full flow as specified in the 2025-11-25 draft spec — the one you should reference for current client implementations.</p>
+
+  <div class="flow-diagram" id="mcp-flow">
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-1')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">1</div>
+        <div>
+          <strong>MCP Client sends unauthenticated request</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">→ MCP Server</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-1">
+      <p>The client attempts to call a tool or list resources on the MCP server without any Authorization header. This is the initial probe — the client doesn't know yet what authorization is required.</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="kw">POST</span> /mcp HTTP/1.1
+Host: mcp-server.example.com
+Content-Type: application/json
+
+{<span class="attr">"jsonrpc"</span>: <span class="str">"2.0"</span>, <span class="attr">"method"</span>: <span class="str">"tools/list"</span>, <span class="attr">"id"</span>: <span class="num">1</span>}</code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-2')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">2</div>
+        <div>
+          <strong>MCP Server returns 401 + WWW-Authenticate</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">← resource_metadata URL</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-2">
+      <p>The server responds with a standard 401 and includes a <code>WWW-Authenticate</code> header pointing to the Protected Resource Metadata URL (RFC 9728). This is how the client discovers where to start the auth flow.</p>
+      <div class="code-block"><pre style="margin: 0;"><code>HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer realm="mcp-server",
+  resource_metadata="https://mcp-server.example.com/.well-known/oauth-protected-resource"</code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-3')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">3</div>
+        <div>
+          <strong>Client fetches Protected Resource Metadata</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">RFC 9728 — mandatory</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-3">
+      <p>The client GETs the PRM document from the URL in the <code>WWW-Authenticate</code> header. This is an unauthenticated, publicly accessible endpoint on the MCP server.</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="kw">GET</span> https://mcp-server.example.com/.well-known/oauth-protected-resource</code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-4')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">4</div>
+        <div>
+          <strong>PRM contains authorization_servers + scopes_supported</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">Client learns where the AS lives</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-4">
+      <p>The PRM response tells the client: (a) which Authorization Server(s) to use, and (b) what scopes the resource server accepts. The client will use the first AS in the <code>authorization_servers</code> array unless it has a preference.</p>
+      <p style="color: var(--c-text-secondary);">Key field: <code>authorization_servers</code> — an array of AS base URLs. The client will next fetch metadata for the chosen AS using RFC 8414 or OIDC Discovery.</p>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-5')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">5</div>
+        <div>
+          <strong>Client fetches AS Metadata</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">RFC 8414 or OIDC Discovery</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-5">
+      <p>The client retrieves the Authorization Server's metadata to learn the <code>authorization_endpoint</code>, <code>token_endpoint</code>, <code>registration_endpoint</code>, and other capabilities. Two possible discovery URLs:</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="cmt">// RFC 8414 (OAuth AS Metadata)</span>
+GET https://auth.example.com/.well-known/oauth-authorization-server
+
+<span class="cmt">// OIDC Discovery (if the AS is an OIDC provider)</span>
+GET https://auth.example.com/.well-known/openid-configuration</code></pre></div>
+      <p style="color: var(--c-text-secondary); margin-top: var(--spacing-sm);">Okta uses the OIDC Discovery path. For a custom AS: <code>https://{domain}/oauth2/{authServerId}/.well-known/openid-configuration</code></p>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-6')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">6</div>
+        <div>
+          <strong>Client registers (CIMD &gt; DCR &gt; pre-registered)</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">Priority order per 2025-11-25 draft</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-6">
+      <p>The client needs a <code>client_id</code> to proceed. Priority order per the 2025-11-25 draft:</p>
+      <ol style="margin-left: var(--spacing-lg); line-height: 2;">
+        <li><strong>CIMD (Client Identity Metadata Document)</strong> — SHOULD. Client publishes its own metadata at a well-known URL; AS fetches it. Highest trust, cryptographically verifiable client identity.</li>
+        <li><strong>DCR (Dynamic Client Registration, RFC 7591)</strong> — MAY. Client POSTs a registration request. Requires AS to support open or token-gated registration.</li>
+        <li><strong>Pre-registered</strong> — Fallback. client_id configured in advance. Traditional model; doesn't scale across many MCP servers.</li>
+      </ol>
+      <div class="security-note" style="margin-top: var(--spacing-md);">
+        <strong>Okta Note:</strong> Okta's DCR endpoint (<code>POST /oauth2/v1/clients</code>) requires an API token — it is NOT open registration. This differs from Auth0 which supports open DCR. For MCP clients targeting Okta, CIMD (once supported) or pre-registration is the practical path today.
+      </div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-7')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">7</div>
+        <div>
+          <strong>Generate PKCE code_verifier + code_challenge</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">S256 method mandatory as of 2025-11-25</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-7">
+      <p>The client generates PKCE parameters before initiating the authorization request. S256 (SHA-256) is mandatory — plain method is not permitted in MCP OAuth as of the 2025-11-25 draft.</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="cmt">// Pseudocode — client-side generation</span>
+code_verifier  = base64url(random_bytes(32))   <span class="cmt">// 43–128 chars</span>
+code_challenge = base64url(SHA256(code_verifier))
+code_challenge_method = <span class="str">"S256"</span>               <span class="cmt">// REQUIRED, plain prohibited</span></code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-8')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">8</div>
+        <div>
+          <strong>Open browser to /authorize with resource parameter</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">RFC 8707 — resource=MCP_URL mandatory</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-8">
+      <p>The client opens the system browser (or a local redirect server) to the authorization endpoint. The <code>resource</code> parameter (RFC 8707) tells the AS to bind the resulting token to the specific MCP server URL. This is how audience (<code>aud</code>) gets set correctly in the issued token.</p>
+      <div class="code-block"><pre style="margin: 0;"><code>GET https://auth.example.com/authorize?
+  response_type=code
+  &client_id=mcp-client-id
+  &redirect_uri=http://localhost:8765/callback
+  &scope=mcp%3Atools%3Aread+mcp%3Atools%3Aexecute
+  &state=RANDOM_STATE_VALUE
+  &code_challenge=BASE64URL_SHA256_OF_VERIFIER
+  &code_challenge_method=S256
+  &resource=https%3A%2F%2Fmcp-server.example.com  <span class="cmt">← RFC 8707</span></code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-9')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">9</div>
+        <div>
+          <strong>User authenticates and consents</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">In the browser — human in the loop</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-9">
+      <p>The user logs in to the Authorization Server and is shown a consent screen listing the requested scopes. This is the human-authorization gate. The user sees exactly what access they're granting to the MCP client. After consent, the AS generates an authorization code and redirects.</p>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-10')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">10</div>
+        <div>
+          <strong>Redirect back with authorization code</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">→ Client's local redirect_uri</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-10">
+      <p>The AS redirects to the client's <code>redirect_uri</code> with a short-lived one-time authorization code. The client also validates the <code>state</code> parameter to prevent CSRF attacks.</p>
+      <div class="code-block"><pre style="margin: 0;"><code>GET http://localhost:8765/callback?
+  code=AUTHORIZATION_CODE
+  &state=RANDOM_STATE_VALUE  <span class="cmt">← client validates this</span></code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-11')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">11</div>
+        <div>
+          <strong>POST /token with code + code_verifier + resource</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">PKCE verification + audience binding</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-11">
+      <p>The client exchanges the authorization code for tokens. Crucially, both the <code>code_verifier</code> (PKCE) and the <code>resource</code> parameter (RFC 8707) must be included. The AS verifies the PKCE challenge and uses the resource parameter to set the token's <code>aud</code> claim.</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="kw">POST</span> https://auth.example.com/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&code=AUTHORIZATION_CODE
+&redirect_uri=http://localhost:8765/callback
+&client_id=mcp-client-id
+&code_verifier=ORIGINAL_CODE_VERIFIER      <span class="cmt">← PKCE verification</span>
+&resource=https://mcp-server.example.com   <span class="cmt">← RFC 8707 audience binding</span></code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-12')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">12</div>
+        <div>
+          <strong>Receive access_token with aud=MCP_URL</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">Audience-bound JWT</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-12">
+      <p>The AS returns an access token (JWT) whose <code>aud</code> claim is set to the MCP server URL. This audience binding means the token can ONLY be used at this specific MCP server — it will be rejected anywhere else.</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="cmt">// Decoded JWT payload</span>
+{
+  <span class="attr">"iss"</span>: <span class="str">"https://auth.example.com"</span>,
+  <span class="attr">"sub"</span>: <span class="str">"user@example.com"</span>,
+  <span class="attr">"aud"</span>: <span class="str">"https://mcp-server.example.com"</span>,  <span class="cmt">← MUST match MCP URL</span>
+  <span class="attr">"exp"</span>: <span class="num">1708387200</span>,
+  <span class="attr">"scope"</span>: <span class="str">"mcp:tools:read mcp:tools:execute"</span>
+}</code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-13')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">13</div>
+        <div>
+          <strong>Send MCP request with Bearer token</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">Authorization: Bearer {token}</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-13">
+      <p>The client retries the original MCP request, this time including the access token in the <code>Authorization</code> header.</p>
+      <div class="code-block"><pre style="margin: 0;"><code><span class="kw">POST</span> /mcp HTTP/1.1
+Host: mcp-server.example.com
+Authorization: Bearer eyJhbGci...
+Content-Type: application/json
+
+{<span class="attr">"jsonrpc"</span>: <span class="str">"2.0"</span>, <span class="attr">"method"</span>: <span class="str">"tools/list"</span>, <span class="attr">"id"</span>: <span class="num">1</span>}</code></pre></div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-14')">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">14</div>
+        <div>
+          <strong>MCP server validates token</strong>
+          <span style="color: var(--c-text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">Signature, expiry, audience, scopes</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-14">
+      <p>The MCP server performs full JWT validation. All four checks must pass:</p>
+      <ol style="margin-left: var(--spacing-lg); line-height: 2;">
+        <li><strong>Signature</strong> — verified against the AS's public keys from its JWKS endpoint</li>
+        <li><strong>Expiry (<code>exp</code>)</strong> — token must not be expired</li>
+        <li><strong>Audience (<code>aud</code>)</strong> — MUST exactly match the MCP server's own URL. This is non-negotiable per spec.</li>
+        <li><strong>Scopes</strong> — token must include the scope required for the requested tool/resource</li>
+      </ol>
+      <div class="security-note" style="margin-top: var(--spacing-md);">
+        <strong>Audience validation is mandatory.</strong> If the MCP server skips audience checking, an attacker can reuse a token issued for a different resource. The confused deputy attack becomes trivial.
+      </div>
+    </div>
+
+    <div class="flow-step" onclick="toggleStep('mcp-step-15')" style="border-bottom: none;">
+      <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--c-accent-green); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; font-size: 0.9rem;">15</div>
+        <div>
+          <strong>MCP response returned</strong>
+          <span style="color: var(--c-accent-green); font-size: 0.9rem; margin-left: 0.5rem;">Authorized tool execution</span>
+        </div>
+        <span style="margin-left: auto; color: var(--c-text-secondary); font-size: 1.1rem; transition: transform 0.2s;" class="flow-toggle-icon">&#9660;</span>
+      </div>
+    </div>
+    <div class="step-detail" id="mcp-step-15">
+      <p>Validation passed. The MCP server executes the requested method and returns the JSON-RPC response. Subsequent requests within the token's lifetime reuse the same token — no re-authentication required until expiry.</p>
+      <div class="code-block"><pre style="margin: 0;"><code>{
+  <span class="attr">"jsonrpc"</span>: <span class="str">"2.0"</span>,
+  <span class="attr">"result"</span>: {
+    <span class="attr">"tools"</span>: [
+      {<span class="attr">"name"</span>: <span class="str">"read_file"</span>, <span class="attr">"description"</span>: <span class="str">"..."</span>},
+      {<span class="attr">"name"</span>: <span class="str">"search_code"</span>, <span class="attr">"description"</span>: <span class="str">"..."</span>}
+    ]
+  },
+  <span class="attr">"id"</span>: <span class="num">1</span>
+}</code></pre></div>
+    </div>
+
+  </div><!-- /flow-diagram -->
+
+  <script>
+    function toggleStep(id) {
+      var detail = document.getElementById(id);
+      var step = detail.previousElementSibling;
+      var icon = step.querySelector('.flow-toggle-icon');
+      var isOpen = detail.style.display === 'block';
+      detail.style.display = isOpen ? 'none' : 'block';
+      if (icon) icon.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+  </script>
+
+  <!-- Spec Revision Timeline -->
+  <h3 style="margin-top: var(--spacing-xl);">Spec Revision Timeline</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">The MCP authorization spec has changed dramatically since its introduction. Knowing the revision history prevents you from referencing outdated architecture in customer conversations.</p>
+
+  <table class="info-table" style="margin-top: var(--spacing-md);">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Key Changes</th>
+        <th>What This Means</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="timeline-item">
+        <td style="white-space: nowrap;"><strong>2025-03-26</strong></td>
+        <td><span class="spec-status" data-status="stable">v1</span></td>
+        <td>MCP server acts as both AS and RS. DCR <em>SHOULD</em> be supported. No RFC 8707. No RFC 9728.</td>
+        <td>Simple but architecturally wrong — conflating token issuance and validation in one component. Deprecated.</td>
+      </tr>
+      <tr class="timeline-item">
+        <td style="white-space: nowrap;"><strong>2025-06-18</strong></td>
+        <td><span class="spec-status" data-status="stable">v2</span></td>
+        <td>MCP server is RS only. RFC 9728 mandatory (<code>/.well-known/oauth-protected-resource</code>). RFC 8707 mandatory (<code>resource</code> param). DCR still SHOULD.</td>
+        <td>Major architectural shift. Existing 2025-03-26 clients need updates. This is the current production baseline.</td>
+      </tr>
+      <tr class="timeline-item">
+        <td style="white-space: nowrap;"><strong>2025-11-25</strong></td>
+        <td><span class="spec-status" data-status="draft">draft</span></td>
+        <td>CIMD SHOULD (replaces DCR SHOULD). DCR downgrades to MAY. PKCE S256 mandatory (plain prohibited). Step-up auth support. Scopes sent in token request.</td>
+        <td>Stronger client identity model. VS Code already ships CIMD. Okta DCR-requires-token model now has spec alignment.</td>
+      </tr>
+      <tr class="timeline-item">
+        <td style="white-space: nowrap;"><strong>Roadmap</strong></td>
+        <td><span class="spec-status" data-status="proposed">proposed</span></td>
+        <td>Token refresh flows. URL elicitation (preventing open-redirect vectors). Extensions framework for non-OAuth auth schemes.</td>
+        <td>Watch for: refresh token support will change long-running agent session handling significantly.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Client Support Matrix -->
+  <h3 style="margin-top: var(--spacing-xl);">MCP Client OAuth Support Matrix</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Not all MCP clients are equal. When advising customers on which clients to pilot with, this matrix is the reference.</p>
+
+  <table class="info-table" style="margin-top: var(--spacing-md);">
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>OAuth Support</th>
+        <th>PKCE</th>
+        <th>CIMD</th>
+        <th>DCR</th>
+        <th>RFC 8707 (resource)</th>
+        <th>Known Issues</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Claude Desktop</strong></td>
+        <td>Partial</td>
+        <td>S256</td>
+        <td style="color: var(--c-accent-amber);">In progress</td>
+        <td>Yes</td>
+        <td>Yes</td>
+        <td>CIMD not yet shipped</td>
+      </tr>
+      <tr>
+        <td><strong>Claude Code CLI</strong></td>
+        <td>Partial</td>
+        <td>S256</td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td>Yes</td>
+        <td>Partial</td>
+        <td style="color: var(--c-accent-red);">Bug #4540: does not send <code>scope</code> parameter in authorization request, causing AS to issue tokens without required scopes</td>
+      </tr>
+      <tr>
+        <td><strong>Cursor</strong></td>
+        <td style="color: var(--c-accent-green);">Full (first IDE)</td>
+        <td>S256</td>
+        <td style="color: var(--c-accent-amber);">No (planned)</td>
+        <td>Yes (primary method)</td>
+        <td>Yes</td>
+        <td>No CIMD support yet; uses DCR as primary registration</td>
+      </tr>
+      <tr>
+        <td><strong>VS Code Copilot</strong></td>
+        <td style="color: var(--c-accent-green);">Full</td>
+        <td>S256</td>
+        <td style="color: var(--c-accent-green);">Yes (first with CIMD)</td>
+        <td>Fallback</td>
+        <td>Yes</td>
+        <td>None known. Reference implementation for spec compliance.</td>
+      </tr>
+      <tr>
+        <td><strong>ChatGPT Plugins</strong></td>
+        <td style="color: var(--c-accent-green);">Full</td>
+        <td>S256</td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td>Yes (primary)</td>
+        <td>Yes</td>
+        <td>Sends <code>scope</code> properly. No CIMD. Open DCR model assumed.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Security Vulnerabilities -->
+  <h3 style="margin-top: var(--spacing-xl);">Security Vulnerabilities & Threat Vectors</h3>
+
+  <div class="security-note" style="margin-bottom: var(--spacing-lg);">
+    <strong>CVE-2025-6514 — Critical RCE in mcp-remote (CVSS 9.6)</strong>
+    <p style="margin-top: var(--spacing-sm); margin-bottom: 0;">The <code>mcp-remote</code> bridge package used to connect local MCP clients to remote servers had an unsanitized authorization URL injection vulnerability. A malicious MCP server could return an <code>authorization_endpoint</code> URL containing shell metacharacters or JavaScript payloads. Because <code>mcp-remote</code> opened auth URLs without sanitization, an attacker could achieve remote code execution on the victim's machine simply by serving a malicious Protected Resource Metadata document. <strong>Lesson: always validate and sanitize any URL received from a remote MCP server before passing to system APIs.</strong></p>
+  </div>
+
+  <div class="cards-grid" style="margin-top: var(--spacing-md);">
+    <div class="concept-card" style="border-left: 3px solid var(--c-accent-red);">
+      <div class="card-title" style="font-size: 1rem;">Token Passthrough Prohibition</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">An MCP server MUST NOT forward an incoming access token directly to an upstream API. If it does, it becomes a confused deputy — acting as the user but with the user's full OAuth permissions at the upstream service, not just the scopes needed for the MCP action.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-accent-red);">Pattern: Proxy/Bridge MCP servers that call upstream APIs must acquire their own token.</p>
+    </div>
+
+    <div class="concept-card" style="border-left: 3px solid var(--c-accent-red);">
+      <div class="card-title" style="font-size: 1rem;">Audience Validation Failure</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">If an MCP server skips <code>aud</code> claim validation, an attacker who obtains a token issued for a different resource (e.g., a calendar API) can replay it against the MCP server. Resource-binding via RFC 8707 is the preventive control — tokens are audience-locked at issuance.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-accent-red);">Always validate: aud === this server's URL.</p>
+    </div>
+
+    <div class="concept-card" style="border-left: 3px solid var(--c-accent-amber);">
+      <div class="card-title" style="font-size: 1rem;">Prompt Injection → Tool Abuse</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">An LLM processing untrusted content (web pages, documents, user inputs) can be instructed via injected text to call MCP tools the user never authorized. Even with proper OAuth, the tool call has a valid token — the authorization check passes, but the intent was malicious.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-accent-amber);">Mitigation: CIBA-style human approval for high-risk tool calls. Scope minimization.</p>
+    </div>
+
+    <div class="concept-card" style="border-left: 3px solid var(--c-accent-amber);">
+      <div class="card-title" style="font-size: 1rem;">Open Redirect via Authorization URL</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">A malicious MCP server can return an <code>authorization_servers</code> value pointing to an attacker-controlled AS. The client will send the user there for login, capturing credentials. The proposed URL elicitation extension addresses this with client-side URL validation before navigation.</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-accent-amber);">Status: addressed in roadmap spec; not yet in clients.</p>
+    </div>
+  </div>
+
+  <!-- Third-Party Auth Patterns -->
+  <h3 style="margin-top: var(--spacing-xl);">Third-Party Authorization Patterns</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Three distinct deployment patterns exist for integrating an external Authorization Server with an MCP server. Know which one your customer is building.</p>
+
+  <div class="comparison-grid" style="margin-top: var(--spacing-md);">
+    <div class="concept-card">
+      <div class="card-label">Pattern 1</div>
+      <div class="card-title">Self-Contained</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">The MCP server vendor bundles an Authorization Server. The MCP server's domain is both the resource server and hosts the AS.</p>
+      <p style="font-size: 0.85rem;"><strong>Pros:</strong> Simple deployment, no external dependency</p>
+      <p style="font-size: 0.85rem;"><strong>Cons:</strong> No enterprise IdP integration, users need a new account, no SSO</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-text-secondary); margin-top: var(--spacing-sm);">Example: A small SaaS MCP server shipping with its own built-in auth</p>
+    </div>
+
+    <div class="concept-card" style="border: 2px solid var(--c-okta-blue);">
+      <div class="card-label" style="color: var(--c-okta-blue);">Pattern 2 — Recommended</div>
+      <div class="card-title" style="color: var(--c-okta-blue);">External AS (Auth0 / Okta)</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">The MCP server is a pure Resource Server. It trusts tokens issued by an external enterprise AS. PRM <code>authorization_servers</code> points to the enterprise Okta or Auth0 tenant.</p>
+      <p style="font-size: 0.85rem;"><strong>Pros:</strong> Enterprise SSO, existing IdP policies apply, centralized token management, Okta access policies and inline hooks</p>
+      <p style="font-size: 0.85rem;"><strong>Cons:</strong> Requires AS configuration; customers must provision Okta app</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-okta-blue); margin-top: var(--spacing-sm);">This is the Okta sales motion target architecture.</p>
+    </div>
+
+    <div class="concept-card">
+      <div class="card-label">Pattern 3</div>
+      <div class="card-title">Proxy / Bridge</div>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">The MCP server is both a Resource Server (to the MCP client) and an OAuth Client (to an upstream API). It receives a user-bound token from Okta, then acquires its own scoped token to call the upstream API on the user's behalf.</p>
+      <p style="font-size: 0.85rem;"><strong>Pros:</strong> Scope isolation between MCP layer and upstream API layer</p>
+      <p style="font-size: 0.85rem;"><strong>Cons:</strong> Complex; must never passthrough tokens directly — must always re-acquire</p>
+      <p style="font-size: 0.85rem; font-family: var(--font-mono); color: var(--c-text-secondary); margin-top: var(--spacing-sm);">Example: GitHub Copilot MCP connecting to a corporate API</p>
+    </div>
+  </div>
+
+
+<div class="tab-nav-footer">
+<button class="tab-nav-btn tab-prev" onclick="switchTab(3)">&larr; Extensions</button>
+<button class="tab-nav-btn tab-next" onclick="switchTab(5)">Okta Implementation &rarr;</button>
+</div>
+</div><!-- end tab-4 -->
+
+
+<!-- ============================================================
+     TAB 6 — OKTA IMPLEMENTATION REFERENCE
+     ============================================================ -->
+<div class="tab-section" id="tab-5">
+
+  <h2>Okta Implementation Reference</h2>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">A complete mapping of OAuth 2.1 spec concepts to Okta products, endpoints, and configuration. Use this as your customer-facing technical reference when designing Okta AS deployments for agent architectures.</p>
+
+  <!-- Authorization Server Architecture -->
+  <h3>Okta Authorization Server Types</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Okta exposes two distinct Authorization Server types. Choosing the wrong one is the most common SE mistake in demo setups.</p>
+
+  <table class="info-table" style="margin-top: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Org Authorization Server</th>
+        <th>Custom Authorization Server</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Issuer URL</strong></td>
+        <td><code>https://{domain}</code></td>
+        <td><code>https://{domain}/oauth2/{authServerId}</code></td>
+      </tr>
+      <tr>
+        <td><strong>Custom scopes</strong></td>
+        <td style="color: var(--c-accent-red);">No — Okta-defined only</td>
+        <td style="color: var(--c-accent-green);">Yes — fully configurable</td>
+      </tr>
+      <tr>
+        <td><strong>Custom claims</strong></td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td style="color: var(--c-accent-green);">Yes — expression language</td>
+      </tr>
+      <tr>
+        <td><strong>Access policies</strong></td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td style="color: var(--c-accent-green);">Yes — granular policy + rules</td>
+      </tr>
+      <tr>
+        <td><strong>Inline hooks</strong></td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td style="color: var(--c-accent-green);">Yes (token inline hook)</td>
+      </tr>
+      <tr>
+        <td><strong>Client Credentials grant</strong></td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td style="color: var(--c-accent-green);">Yes (rule must specify "No user")</td>
+      </tr>
+      <tr>
+        <td><strong>Resource parameter (RFC 8707)</strong></td>
+        <td style="color: var(--c-accent-red);">No</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+      </tr>
+      <tr>
+        <td><strong>DPoP support</strong></td>
+        <td style="color: var(--c-accent-amber);">Limited</td>
+        <td style="color: var(--c-accent-green);">Yes — full nonce flow</td>
+      </tr>
+      <tr>
+        <td><strong>Intended for</strong></td>
+        <td>Okta's own admin APIs, SSWS tokens</td>
+        <td style="color: var(--c-okta-blue);"><strong>All customer application use cases — use this for agents and MCP</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="okta-note">
+    <strong>Always use a Custom Authorization Server for agent and MCP workloads.</strong> The Org AS cannot issue tokens with custom scopes, cannot enforce access policies on third-party applications, and does not support Client Credentials for machine-to-machine flows. The discovery endpoint for your Custom AS is: <code>https://{domain}/oauth2/{authServerId}/.well-known/openid-configuration</code>
+  </div>
+
+  <!-- Spec → Okta Mapping Table -->
+  <h3 style="margin-top: var(--spacing-xl);">OAuth 2.1 Spec → Okta Feature Mapping</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Comprehensive mapping of every major OAuth 2.1 and related spec feature to the corresponding Okta implementation detail. All endpoints listed are for Custom AS.</p>
+
+  <table class="info-table" style="margin-top: var(--spacing-md);">
+    <thead>
+      <tr>
+        <th>Spec Feature</th>
+        <th>RFC / Spec</th>
+        <th>Okta Support</th>
+        <th>Endpoint / Config</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Auth Code + PKCE</strong></td>
+        <td>RFC 6749 + RFC 7636</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/authorize</code></td>
+        <td>PKCE forced for SPAs. S256 only — plain method rejected. Set <code>token_endpoint_auth_method=none</code> for public clients.</td>
+      </tr>
+      <tr>
+        <td><strong>Client Credentials</strong></td>
+        <td>RFC 6749</td>
+        <td style="color: var(--c-accent-green);">Custom AS only</td>
+        <td><code>/oauth2/{id}/v1/token</code></td>
+        <td>Access policy rule MUST include "No user" condition. Scopes must be explicitly added to the AS and allowed in the rule.</td>
+      </tr>
+      <tr>
+        <td><strong>Device Authorization</strong></td>
+        <td>RFC 8628</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/device/authorize</code></td>
+        <td>Returns <code>device_code</code> + <code>user_code</code>. User enters code at <code>/activate</code>. Poll <code>/token</code> until approved.</td>
+      </tr>
+      <tr>
+        <td><strong>Refresh Tokens</strong></td>
+        <td>RFC 6749</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/token</code></td>
+        <td>Requires <code>offline_access</code> scope in the request AND in the AS scope list. Rotation configurable: one-time use (reuse window) or infinite. Revoke on logout.</td>
+      </tr>
+      <tr>
+        <td><strong>Token Introspection</strong></td>
+        <td>RFC 7662</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/introspect</code></td>
+        <td>POST with <code>token</code> + client credentials. Returns <code>active: true/false</code> + claims. Use for opaque tokens or when local JWT validation is not feasible.</td>
+      </tr>
+      <tr>
+        <td><strong>Token Revocation</strong></td>
+        <td>RFC 7009</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/revoke</code></td>
+        <td>POST with <code>token</code> + <code>token_type_hint</code>. Revoking a refresh token cascades to all derived access tokens. Revoking an access token does not revoke the refresh token.</td>
+      </tr>
+      <tr>
+        <td><strong>Dynamic Client Registration</strong></td>
+        <td>RFC 7591 / RFC 7592</td>
+        <td style="color: var(--c-accent-amber);">Yes — token required</td>
+        <td><code>/oauth2/v1/clients</code></td>
+        <td><strong>Not open registration.</strong> Requires an Okta API token (SSWS) or OAuth bearer with <code>okta.clients.manage</code> scope. This is a key differentiator vs. Auth0 which supports open DCR.</td>
+      </tr>
+      <tr>
+        <td><strong>Pushed Authorization Requests (PAR)</strong></td>
+        <td>RFC 9126</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/par</code></td>
+        <td>POST full authorization params server-to-server. Returns <code>request_uri</code> valid for 60s. /authorize then uses only <code>client_id</code> + <code>request_uri</code>. Prevents parameter tampering in browser URL.</td>
+      </tr>
+      <tr>
+        <td><strong>DPoP (Demonstrating Proof of Possession)</strong></td>
+        <td>RFC 9449</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/token</code></td>
+        <td>Client includes <code>DPoP</code> header (signed JWT) on token request. Okta may challenge with nonce (24h validity). Issued token contains <code>cnf.jkt</code> claim (key thumbprint). Resource server must verify DPoP proof on each request.</td>
+      </tr>
+      <tr>
+        <td><strong>Resource Indicators</strong></td>
+        <td>RFC 8707</td>
+        <td style="color: var(--c-accent-green);">Custom AS only</td>
+        <td><code>/authorize</code> + <code>/token</code></td>
+        <td>Pass <code>resource</code> param to bind token <code>aud</code> to a specific RS URL. Required for MCP deployments. Configure resource in the Custom AS audience settings.</td>
+      </tr>
+      <tr>
+        <td><strong>OIDC Discovery</strong></td>
+        <td>OIDC Core</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/.well-known/openid-configuration</code></td>
+        <td>Returns all endpoint URLs, supported scopes, grant types, signing algorithms. MCP clients use this to autodiscover endpoints.</td>
+      </tr>
+      <tr>
+        <td><strong>JWKS (Key Discovery)</strong></td>
+        <td>RFC 7517</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/keys</code></td>
+        <td>Public keys for JWT signature verification. Okta rotates keys; <code>kid</code> in JWT header identifies the key. Cache JWKS with TTL; re-fetch on unknown <code>kid</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>UserInfo</strong></td>
+        <td>OIDC Core</td>
+        <td style="color: var(--c-accent-green);">Yes</td>
+        <td><code>/oauth2/{id}/v1/userinfo</code></td>
+        <td>GET with Bearer access token containing OIDC scopes. Returns user claims. For agents: only call if you need claims not in the ID token; prefer JWT local validation.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Endpoint Reference -->
+  <h3 style="margin-top: var(--spacing-xl);">Complete Endpoint Reference (Custom AS)</h3>
+
+  <table class="info-table" style="margin-top: var(--spacing-md);">
+    <thead>
+      <tr>
+        <th>Endpoint</th>
+        <th>Full URL Pattern</th>
+        <th>Method</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Discovery</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/.well-known/openid-configuration</code></td>
+        <td>GET</td>
+        <td>AS metadata — endpoints, algorithms, capabilities</td>
+      </tr>
+      <tr>
+        <td><strong>JWKS</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/keys</code></td>
+        <td>GET</td>
+        <td>Public signing keys for JWT verification</td>
+      </tr>
+      <tr>
+        <td><strong>Authorize</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/authorize</code></td>
+        <td>GET</td>
+        <td>Start Auth Code flow; redirect user to login</td>
+      </tr>
+      <tr>
+        <td><strong>Token</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/token</code></td>
+        <td>POST</td>
+        <td>Exchange code for tokens; refresh; client_credentials; device code poll</td>
+      </tr>
+      <tr>
+        <td><strong>Introspect</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/introspect</code></td>
+        <td>POST</td>
+        <td>Validate any token; returns active status + claims</td>
+      </tr>
+      <tr>
+        <td><strong>Revoke</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/revoke</code></td>
+        <td>POST</td>
+        <td>Revoke access or refresh token</td>
+      </tr>
+      <tr>
+        <td><strong>UserInfo</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/userinfo</code></td>
+        <td>GET</td>
+        <td>Retrieve user claims using access token</td>
+      </tr>
+      <tr>
+        <td><strong>Device Authorize</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/device/authorize</code></td>
+        <td>POST</td>
+        <td>Start device flow; get device_code + user_code</td>
+      </tr>
+      <tr>
+        <td><strong>Logout</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/logout</code></td>
+        <td>GET</td>
+        <td>End OIDC session; revoke refresh tokens</td>
+      </tr>
+      <tr>
+        <td><strong>PAR</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/par</code></td>
+        <td>POST</td>
+        <td>Pushed Authorization Request; returns request_uri</td>
+      </tr>
+      <tr>
+        <td><strong>DCR</strong></td>
+        <td><code>https://{domain}/oauth2/v1/clients</code></td>
+        <td>POST</td>
+        <td>Register new OAuth client (requires API token)</td>
+      </tr>
+      <tr>
+        <td><strong>Token Exchange</strong></td>
+        <td><code>https://{domain}/oauth2/{id}/v1/token</code></td>
+        <td>POST</td>
+        <td>RFC 8693 — <code>grant_type=urn:ietf:params:oauth:grant-type:token-exchange</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Auth0 vs Okta Comparison -->
+  <h3 style="margin-top: var(--spacing-xl);">Auth0 vs. Okta Workforce — Key Differences</h3>
+  <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Both are Okta company products but target different personas and have architectural differences that matter for MCP deployments. Know when you're talking to an Auth0 shop vs. a workforce Okta shop.</p>
+
+  <table class="info-table" style="margin-top: var(--spacing-md);">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Auth0</th>
+        <th>Okta Workforce</th>
+        <th>Implication</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Dynamic Client Registration</strong></td>
+        <td style="color: var(--c-accent-green);">Open DCR — no auth required</td>
+        <td style="color: var(--c-accent-amber);">Requires API token (SSWS or OAuth)</td>
+        <td>MCP clients expecting open DCR (e.g., ChatGPT) work natively with Auth0. Okta requires pre-provisioning or token-gated registration flow.</td>
+      </tr>
+      <tr>
+        <td><strong>Token Customization</strong></td>
+        <td>Actions (JavaScript, async, no timeout enforced)</td>
+        <td>Inline Hooks (synchronous external HTTP, 3s timeout, fail-open)</td>
+        <td>Auth0 Actions run inside the Auth0 platform. Okta Inline Hooks call your external endpoint — latency matters. Fail-open means hook timeout = token issued without hook modifications.</td>
+      </tr>
+      <tr>
+        <td><strong>Authorization Policy Engine</strong></td>
+        <td>Actions + Rules (code-first)</td>
+        <td>Access Policies + Rules (UI-first, allowlist model)</td>
+        <td>Okta's policy model is declarative and auditable. Auth0's is more flexible but requires code review for security audits.</td>
+      </tr>
+      <tr>
+        <td><strong>PKCE</strong></td>
+        <td style="color: var(--c-accent-green);">Yes, S256 supported</td>
+        <td style="color: var(--c-accent-green);">Yes, S256 only (plain rejected for SPAs)</td>
+        <td>Both support S256. Okta is stricter — plain method not accepted for public clients.</td>
+      </tr>
+      <tr>
+        <td><strong>MCP / RFC 8707 support</strong></td>
+        <td style="color: var(--c-accent-green);">Yes (resource param)</td>
+        <td style="color: var(--c-accent-green);">Yes (Custom AS)</td>
+        <td>Both support audience binding via <code>resource</code> parameter. Required for MCP deployments.</td>
+      </tr>
+      <tr>
+        <td><strong>CIMD / RFC 9728</strong></td>
+        <td style="color: var(--c-accent-amber);">In roadmap</td>
+        <td style="color: var(--c-accent-amber);">In roadmap</td>
+        <td>Neither ships full CIMD support yet. VS Code is ahead of the AS vendors on this.</td>
+      </tr>
+      <tr>
+        <td><strong>Primary buyer</strong></td>
+        <td>Developer / B2C / CIAM</td>
+        <td>Enterprise IT / Workforce IAM</td>
+        <td>MCP agent deployments in enterprise settings = Okta Workforce. Consumer-facing AI products = Auth0.</td>
+      </tr>
+      <tr>
+        <td><strong>Tenant model</strong></td>
+        <td>Single tenant per application</td>
+        <td>Org = primary tenant; multiple Custom AS per org</td>
+        <td>Multi-AS setups (different AS for different apps/MCP servers) are native to Okta. Auth0 requires multiple tenants or complex routing.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Okta-Specific Features -->
+  <h3 style="margin-top: var(--spacing-xl);">Okta-Specific Features for Agent Architectures</h3>
+
+  <!-- Token Inline Hooks -->
+  <div class="accordion-item">
+    <div class="accordion-header">
+      <span><strong>Token Inline Hooks</strong> — Synchronous token customization via external HTTP endpoint</span>
+      <span class="accordion-icon">&#9660;</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        <p style="color: var(--c-text-secondary);">During token issuance, Okta can call an external HTTP endpoint synchronously. Your endpoint receives the token's pending claims and can add, modify, or remove claims before the token is issued. Critical characteristics:</p>
+        <ul style="margin-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 2;">
+          <li><strong>Timeout: 3 seconds</strong> — your endpoint must respond in under 3s</li>
+          <li><strong>Fail-open by default</strong> — if your endpoint times out or returns an error, Okta issues the token WITHOUT the hook modifications. This is a security consideration: a flaky hook won't break auth, but also won't add required claims.</li>
+          <li><strong>Use cases:</strong> Add dynamic scopes based on user attributes; inject external authorization decisions (e.g., OPA policy); add agent-specific claims like <code>agent_tier</code> or <code>delegation_level</code>.</li>
+        </ul>
+        <div class="code-block"><pre style="margin: 0;"><code><span class="cmt">// Inline Hook response — add a custom claim</span>
+{
+  <span class="attr">"commands"</span>: [{
+    <span class="attr">"type"</span>: <span class="str">"com.okta.access.patch"</span>,
+    <span class="attr">"value"</span>: [{
+      <span class="attr">"op"</span>: <span class="str">"add"</span>,
+      <span class="attr">"path"</span>: <span class="str">"/claims/agent_delegation_level"</span>,
+      <span class="attr">"value"</span>: <span class="str">"restricted"</span>
+    }]
+  }]
+}</code></pre></div>
+        <div class="security-note">
+          <strong>Fail-open security note:</strong> If your inline hook enforces a security control (e.g., "only issue token if external ABAC system approves"), fail-open means your security control silently fails. Consider using Okta access policies as the primary gate — hooks should augment, not be the sole security mechanism.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Access Policies -->
+  <div class="accordion-item">
+    <div class="accordion-header">
+      <span><strong>Access Policies and Rules</strong> — Allowlist-based authorization model</span>
+      <span class="accordion-icon">&#9660;</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        <p style="color: var(--c-text-secondary);">Every Custom AS has access policies. A policy is a set of rules that determine whether to issue a token, for what grant types, with what token lifetimes and scopes. The model is an allowlist — no matching rule means no token.</p>
+        <p style="font-weight: 600; margin-top: var(--spacing-md);">Rule Conditions (all must match for the rule to fire):</p>
+        <ul style="margin-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 2;">
+          <li><strong>Client:</strong> All clients, or specific client_ids</li>
+          <li><strong>User:</strong> Any user, no user (machine-to-machine), or specific groups</li>
+          <li><strong>Grant type:</strong> Auth code, client credentials, device, implicit (deprecated), token exchange</li>
+          <li><strong>Scopes:</strong> Which scopes this rule allows to be issued</li>
+        </ul>
+        <p style="font-weight: 600;">Token Lifetime Settings (per rule):</p>
+        <ul style="margin-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 2;">
+          <li><strong>Access token lifetime:</strong> 5 minutes to 24 hours. Default 1 hour. Recommend 5–15 minutes for agent workloads.</li>
+          <li><strong>Refresh token lifetime:</strong> Up to indefinite (but should be bounded for agents). Configure rotation behavior.</li>
+          <li><strong>Refresh token rotation:</strong> Rotate on use (new RT issued, old RT invalidated after reuse window). Reuse window default: 30 seconds.</li>
+        </ul>
+        <div class="okta-note">
+          <strong>For Client Credentials (machine-to-machine):</strong> The rule MUST have "User is: Not applicable." A rule that allows any user will NOT match a Client Credentials grant. This is the most common misconfiguration when setting up agent service accounts.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Encrypted Access Tokens -->
+  <div class="accordion-item">
+    <div class="accordion-header">
+      <span><strong>Encrypted Access Tokens (JWE)</strong> — Opaque to third parties</span>
+      <span class="accordion-icon">&#9660;</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        <p style="color: var(--c-text-secondary);">Okta supports issuing access tokens as JWE (JSON Web Encryption) instead of plain JWT. The token is opaque to anyone without the decryption key — including the MCP client holding it. The resource server decrypts using its private key registered with Okta.</p>
+        <p style="font-weight: 600; margin-top: var(--spacing-md);">Use cases for JWE in agent architectures:</p>
+        <ul style="margin-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 2;">
+          <li>Prevent agents from reading their own token claims (least-knowledge principle)</li>
+          <li>Hide sensitive claims (user attributes, internal role data) from the client</li>
+          <li>Compliance requirements where token contents must not be logged by intermediaries</li>
+        </ul>
+        <div class="key-point">
+          <strong>Tradeoff:</strong> JWE requires the resource server to call Okta's JWKS and perform decryption on every token validation — you lose the "validate locally without network call" benefit of plain JWT. For high-throughput MCP servers, benchmark the decryption overhead.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DPoP Nonce Flow -->
+  <div class="accordion-item">
+    <div class="accordion-header">
+      <span><strong>DPoP (Demonstrating Proof of Possession)</strong> — Token binding to client key pair</span>
+      <span class="accordion-icon">&#9660;</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        <p style="color: var(--c-text-secondary);">DPoP binds an access token to the client's private key. Even if the token is stolen, it's useless without the corresponding private key. Okta supports the full RFC 9449 DPoP flow including nonce challenges.</p>
+        <p style="font-weight: 600; margin-top: var(--spacing-md);">Full Okta DPoP Token Request Flow:</p>
+        <ol style="margin-left: var(--spacing-lg); margin-bottom: var(--spacing-md); line-height: 2.2;">
+          <li>Client generates an asymmetric key pair (EC P-256 or RSA)</li>
+          <li>Client POSTs to <code>/token</code> with a <code>DPoP</code> header containing a signed proof JWT (<code>htu</code> = token endpoint URL, <code>htm</code> = "POST", <code>iat</code> = now)</li>
+          <li>If Okta requires a nonce, it returns <code>401</code> with <code>DPoP-Nonce</code> header (nonce valid for 24 hours)</li>
+          <li>Client retries with <code>nonce</code> claim added to the DPoP proof JWT</li>
+          <li>Okta issues access token with <code>cnf.jkt</code> claim = SHA-256 thumbprint of the client's public key</li>
+          <li>On each resource request, client sends a new DPoP proof JWT bound to that specific request (<code>htu</code> = resource URL, <code>htm</code> = HTTP method, <code>ath</code> = hash of access token)</li>
+          <li>Resource server verifies: proof JWT signature, <code>cnf.jkt</code> matches proof key thumbprint, nonce freshness</li>
+        </ol>
+        <div class="code-block"><pre style="margin: 0;"><code><span class="cmt">// DPoP proof JWT header + payload (unsigned example)</span>
+{<span class="attr">"typ"</span>:<span class="str">"dpop+jwt"</span>, <span class="attr">"alg"</span>:<span class="str">"ES256"</span>, <span class="attr">"jwk"</span>:{<span class="cmt">/* public key */</span>}}
+{
+  <span class="attr">"jti"</span>: <span class="str">"UNIQUE_ID_PER_REQUEST"</span>,
+  <span class="attr">"htm"</span>: <span class="str">"POST"</span>,
+  <span class="attr">"htu"</span>: <span class="str">"https://mcp-server.example.com/mcp"</span>,
+  <span class="attr">"iat"</span>: <span class="num">1708387200</span>,
+  <span class="attr">"nonce"</span>: <span class="str">"OKTA_PROVIDED_NONCE"</span>,
+  <span class="attr">"ath"</span>: <span class="str">"BASE64URL_SHA256_OF_ACCESS_TOKEN"</span>
+}</code></pre></div>
+        <div class="okta-note">
+          <strong>Nonce validity:</strong> Okta DPoP nonces are valid for 24 hours. Clients should cache the nonce and reuse it across requests within that window. Refresh on 401 with new <code>DPoP-Nonce</code> header.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Okta-specific /authorize params -->
+  <div class="accordion-item">
+    <div class="accordion-header">
+      <span><strong>Okta-Specific /authorize Parameters</strong> — Beyond the standard spec</span>
+      <span class="accordion-icon">&#9660;</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        <p style="color: var(--c-text-secondary);">Okta extends the standard <code>/authorize</code> endpoint with proprietary parameters. These are useful for advanced agent authentication scenarios.</p>
+        <table class="info-table" style="margin-top: var(--spacing-md);">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Type</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>idp</code></td>
+              <td>string (IdP ID)</td>
+              <td>Skip Okta's login page; route directly to a specific IdP (e.g., Okta Identity Provider for a SAML provider or social login). Useful when agent knows the user's IdP from context.</td>
+            </tr>
+            <tr>
+              <td><code>acr_values</code></td>
+              <td>space-delimited string</td>
+              <td>Request a specific authentication context. MFA required: <code>urn:okta:loa:2fa:any</code>. Phishing-resistant: <code>urn:okta:loa:2fa:any:ifpossible</code>. Step-up auth for high-privilege agent actions.</td>
+            </tr>
+            <tr>
+              <td><code>sessionToken</code></td>
+              <td>string (one-time token)</td>
+              <td>Skip interactive login entirely — exchange a pre-authenticated Okta session token for OAuth tokens. Used in embedded auth flows where the app handles authentication before initiating OAuth.</td>
+            </tr>
+            <tr>
+              <td><code>response_mode</code></td>
+              <td><code>okta_post_message</code></td>
+              <td>Return the authorization response as a postMessage to the parent window (for iframes). Non-standard; not portable to other AS vendors. Use <code>query</code> (default) for agent redirect flows.</td>
+            </tr>
+            <tr>
+              <td><code>max_age</code></td>
+              <td>integer (seconds)</td>
+              <td>Standard OIDC parameter. Force re-authentication if the user's session is older than N seconds. For agent authorization, set low values (e.g., <code>max_age=300</code>) to ensure recent human authentication before granting agent access.</td>
+            </tr>
+            <tr>
+              <td><code>prompt</code></td>
+              <td><code>consent</code>, <code>login</code>, <code>none</code></td>
+              <td>Force consent screen (<code>consent</code>), force re-login (<code>login</code>), or silent auth fail if interaction needed (<code>none</code>). MCP agents should use <code>consent</code> on first authorization to ensure user explicitly approves MCP scopes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Token Exchange with Okta -->
+  <div class="accordion-item">
+    <div class="accordion-header">
+      <span><strong>RFC 8693 Token Exchange on Okta</strong> — Agent delegation via token swap</span>
+      <span class="accordion-icon">&#9660;</span>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-body">
+        <p style="color: var(--c-text-secondary);">Token Exchange allows a headless agent to obtain a scoped token representing "agent acting on behalf of user" without requiring a browser redirect. The agent presents the user's token plus its own credentials to Okta's token endpoint.</p>
+        <div class="code-block"><pre style="margin: 0;"><code><span class="kw">POST</span> https://{domain}/oauth2/{id}/v1/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {base64(client_id:client_secret)}
+
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+&subject_token=USER_ACCESS_TOKEN_OR_ID_TOKEN
+&subject_token_type=urn:ietf:params:oauth:token-type:access_token
+&scope=read:documents write:calendar
+&resource=https://mcp-server.example.com    <span class="cmt">← RFC 8707 binding</span></code></pre></div>
+        <p style="margin-top: var(--spacing-md);">The resulting token contains:</p>
+        <ul style="margin-left: var(--spacing-lg); line-height: 2;">
+          <li><code>sub</code> = the user's subject (NOT the agent's)</li>
+          <li><code>act.sub</code> = the agent's client_id (the actor)</li>
+          <li><code>scope</code> = only the scopes requested (narrower than user's full scope)</li>
+          <li><code>aud</code> = the MCP server URL (if <code>resource</code> param was included)</li>
+        </ul>
+        <div class="key-point">
+          <strong>The act claim is the audit trail.</strong> Every downstream API call made with this token is traceable to both the user (<code>sub</code>) and the agent (<code>act.sub</code>). This is what enables "user Alice authorized agent CRM-Assistant to read documents" in your SIEM.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div class="tab-nav-footer">
+<button class="tab-nav-btn tab-prev" onclick="switchTab(4)">&larr; MCP + OAuth</button>
+<button class="tab-nav-btn tab-next hidden">Next &rarr;</button>
+</div>
+</div><!-- end tab-5 -->
+
+</div>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>OAuth 2.1 Learning Reference &middot; Built for Enablement &middot; Last updated March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Based on draft-ietf-oauth-v2-1-15, MCP Spec 2025-11-25, and Okta Developer Documentation.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Tab Switching ─── */
+const visitedTabs=new Set([0]);
+let currentTab=0;
+
+function switchTab(index){
+  currentTab=index;
+  visitedTabs.add(index);
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    const i=parseInt(btn.dataset.tab);
+    btn.classList.toggle('active',i===index);
+    btn.classList.toggle('visited',visitedTabs.has(i)&&i!==index);
+  });
+  // Update sections
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  const target=document.getElementById('tab-'+index);
+  if(target)target.classList.add('active');
+  // Update progress
+  document.querySelectorAll('.progress-dot').forEach(d=>{
+    const i=parseInt(d.dataset.tab);
+    d.classList.toggle('active',i===index);
+    d.classList.toggle('completed',visitedTabs.has(i));
+    d.style.background=visitedTabs.has(i)?'':'';
+  });
+  const ct=document.getElementById('progressCount');
+  if(ct)ct.textContent=visitedTabs.size+'/6';
+  // Update hash
+  const names=['foundations','flows','dcr','extensions','mcp','okta'];
+  history.replaceState(null,null,'#'+names[index]);
+  // Scroll to top of content
+  document.querySelector('.tab-bar')?.scrollIntoView({behavior:'smooth'});
+  // Update prev/next
+  updateNavFooters();
+}
+
+function updateNavFooters(){
+  document.querySelectorAll('.tab-nav-footer').forEach(footer=>{
+    const section=footer.closest('.tab-section');
+    if(!section)return;
+    const idx=parseInt(section.id.replace('tab-',''));
+    const prev=footer.querySelector('.tab-prev');
+    const next=footer.querySelector('.tab-next');
+    if(prev)prev.classList.toggle('hidden',idx===0);
+    if(next)next.classList.toggle('hidden',idx===5);
+  });
+}
+
+/* ─── Flow Diagram Step Toggle ─── */
+function toggleStep(el){
+  const diagram=el.closest('.flow-diagram')||el.closest('.flow-steps')?.parentElement;
+  if(!diagram)return;
+  const wasActive=el.classList.contains('active');
+  // Close all steps in this diagram
+  diagram.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active'));
+  diagram.querySelectorAll('.step-detail').forEach(d=>d.classList.remove('visible'));
+  if(!wasActive){
+    el.classList.add('active');
+    const stepNum=el.dataset.step;
+    const detail=diagram.querySelector('.step-detail[data-for-step="'+stepNum+'"]');
+    if(detail)detail.classList.add('visible');
+  }
+}
+
+/* ─── Init from hash ─── */
+(function(){
+  const names=['foundations','flows','dcr','extensions','mcp','okta'];
+  const hash=location.hash.replace('#','');
+  const idx=names.indexOf(hash);
+  if(idx>-1)setTimeout(()=>switchTab(idx),100);
+})();
+</script>
+
+</body>
+</html>
