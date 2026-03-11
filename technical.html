@@ -2365,6 +2365,61 @@
           Workflow does not equal identity. Who authenticates the agent? Who governs its access? How do you audit? ServiceNow is for ops; Okta is for identity.
         </div>
       </div>
+
+      <!-- CyberArk -->
+      <div class="competitor-card">
+        <div class="competitor-name">CyberArk</div>
+
+        <div class="competitor-item">
+          <div class="item-label">Has:</div>
+          <div class="item-has">✓ Strong PAM install base, secrets vaulting, session recording, zero standing privileges (ZSP) messaging, dedicated AI agent security positioning</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Lacks:</div>
+          <div class="item-lack">— No OIDC token issuance, no OBO/ID-JAG token exchange, no CIBA, no FGA/ReBAC, no cross-SaaS federation, no MCP authorization</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Key Gap:</div>
+          <p style="margin: 0;">CyberArk controls the vault. Okta governs the identity federation, token issuance, delegation chain, and cross-SaaS authorization. CyberArk knows <em>what secret</em> the agent has; Okta knows <em>who authorized the agent</em>, <em>on whose behalf</em>, <em>with what scope</em>, and <em>for how long</em>.</p>
+        </div>
+
+        <div class="objection-box">
+          <strong>"We already have CyberArk for PAM"</strong>
+          CyberArk vaults secrets. Okta governs delegation. When an agent needs to access Salesforce on behalf of Bob in marketing, CyberArk can give it a credential — but can it prove Bob authorized it, scope it to read-only, expire it in 5 minutes, and log the delegation chain? That's XAA + ID-JAG + CIBA. They're complementary layers.
+        </div>
+
+        <div class="objection-box">
+          <strong>"CyberArk has zero standing privileges for agents"</strong>
+          ZSP for secrets is good. But agent security isn't just secrets — it's delegation authority. An agent with zero standing <em>secrets</em> but permanent <em>delegation scope</em> is still over-privileged. Okta provides just-in-time delegation (ID-JAG with 5-minute TTL) on top of just-in-time secrets.
+        </div>
+      </div>
+
+      <!-- SailPoint -->
+      <div class="competitor-card">
+        <div class="competitor-name">SailPoint</div>
+
+        <div class="competitor-item">
+          <div class="item-label">Has:</div>
+          <div class="item-has">✓ Agent Identity Security module, aggregates agents from Agentforce/AWS/Azure/GCP, access certification reviews, NHI governance workflows, MCP Server</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Lacks:</div>
+          <div class="item-lack">— No runtime token issuance, no OBO delegation chain, no CIBA step-up, no FGA for RAG, no Token Vault for third-party APIs, no MCP authorization enforcement</div>
+        </div>
+
+        <div class="competitor-item">
+          <div class="item-label">Key Gap:</div>
+          <p style="margin: 0;">SailPoint operates at <strong>governance-time</strong>: who should have access, certified quarterly. Okta operates at <strong>runtime</strong>: who has access right now, enforced per-request. SailPoint tells you what an agent <em>should</em> be allowed to do. Okta enforces that decision at token issuance with OBO chain, scope attenuation, and CIBA step-up.</p>
+        </div>
+
+        <div class="objection-box">
+          <strong>"We have SailPoint for IGA — why do we need Okta for agents?"</strong>
+          SailPoint certifies access quarterly. But who issues the token when the agent calls Salesforce at 2 AM? Who enforces that the token scope is read-only, not admin? Who triggers a human approval when the agent tries to access sensitive data? That's Okta — runtime enforcement, not governance-time review. You need both.
+        </div>
+      </div>
     </section>
 
     <!-- Troubleshooting & Edge Cases -->
