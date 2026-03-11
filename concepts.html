@@ -861,6 +861,13 @@
     </div>
 
     <div class="sidebar-section">
+      <div class="sidebar-label">Auth Flows</div>
+      <a class="sidebar-link" data-section="obo-flows">On-Behalf-Of (OBO)</a>
+      <a class="sidebar-link" data-section="autonomous-flows">Autonomous (M2M)</a>
+      <a class="sidebar-link" data-section="a2a-protocol">Agent-to-Agent (A2A)</a>
+    </div>
+
+    <div class="sidebar-section">
       <div class="sidebar-label">Delegation</div>
       <a class="sidebar-link" data-section="delegation-why">Why Delegation Matters</a>
       <a class="sidebar-link" data-section="token-exchange">Token Exchange</a>
@@ -1353,6 +1360,294 @@
 
       <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-amber);">
         <strong>The Contractor Analogy:</strong> A service account is like giving someone a copy of your house key — they can come and go whenever, you can't tell which visitor did what, and you'll probably forget to change the locks. An agent identity is like a bonded contractor with a time-limited badge that logs every room they enter, and the badge expires when the job is done.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- On-Behalf-Of (OBO) Flows -->
+    <!-- ═══════════════════════════════════ -->
+    <section id="obo-flows">
+      <h2>On-Behalf-Of (OBO) Flows</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">OBO flows are for agents that <strong>act with a user's authority</strong>. The user remains the subject; the agent is the actor. No matter how many hops the token travels, the original user's identity is preserved and auditable.</p>
+
+      <div class="callout" style="border-left-color: var(--c-okta-blue); margin-bottom: var(--spacing-lg);">
+        <strong>The Core Principle:</strong> In an OBO flow, the token's <code>sub</code> claim always points to the human user. The <code>act</code> claim identifies which agent is performing the action. This is how you answer "who authorized this?" for any agent action.
+      </div>
+
+      <h3>The <code>act</code> Claim — Delegation Context</h3>
+      <p style="margin-bottom: var(--spacing-md);">The <code>act</code> claim (RFC 8693 / RFC 9068) records the delegation chain in the JWT:</p>
+
+      <pre><code>{
+  "sub": "user-456",              <span class="cmt">// The user who authorized the action</span>
+  "aud": "resource_server",
+  "scope": "read:email write:calendar",
+  "act": {
+    "sub": "agent-finance-v1"     <span class="cmt">// The agent performing the action</span>
+  }
+}</code></pre>
+
+      <p style="margin-top: var(--spacing-md);">For chained agent delegation (agent → sub-agent), <code>act</code> nests recursively:</p>
+
+      <pre><code>{
+  "sub": "user@example.com",
+  "act": {
+    "sub": "orchestrator-agent",
+    "act": {
+      "sub": "sub-agent-finance"  <span class="cmt">// Full chain preserved for audit</span>
+    }
+  }
+}</code></pre>
+
+      <h3 style="margin-top: var(--spacing-lg);">Three OBO Implementations in Okta + Auth0</h3>
+
+      <div class="cards-grid" style="margin-top: var(--spacing-md);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-okta-blue); margin-bottom: var(--spacing-sm);">Enterprise APIs</div>
+          <h4 style="margin-top: 0;">XAA / ID-JAG</h4>
+          <p style="color: var(--c-text-secondary);">Agent accesses <strong>internal enterprise APIs</strong> (HR, CRM, ERP) on behalf of authenticated users. IT admin controls which agents connect to which apps via Managed Connections. Uses RFC 8693 token exchange to produce an ID-JAG.</p>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0; font-size: 0.9rem;"><strong>Flow:</strong> User → OIDC App → ID Token → Agent → Okta Token Exchange → ID-JAG → Resource AS → Access Token</p>
+        </div>
+
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-auth0-purple); margin-bottom: var(--spacing-sm);">Third-Party SaaS</div>
+          <h4 style="margin-top: 0;">Token Vault</h4>
+          <p style="color: var(--c-text-secondary);">Agent accesses <strong>external providers</strong> (Google, Slack, GitHub, Salesforce) with user consent. Auth0 stores and auto-refreshes provider OAuth tokens. Agent never holds raw credentials.</p>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0; font-size: 0.9rem;"><strong>SDK:</strong> <code>auth0AI.withTokenVault({ connection: "google-oauth2" })</code></p>
+        </div>
+
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-accent-red); margin-bottom: var(--spacing-sm);">High-Stakes Actions</div>
+          <h4 style="margin-top: 0;">CIBA (Async Approval)</h4>
+          <p style="color: var(--c-text-secondary);">Agent requests <strong>real-time human approval</strong> for sensitive operations via push notification. User approves on their phone with biometrics. Agent only proceeds after explicit consent.</p>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0; font-size: 0.9rem;"><strong>SDK:</strong> <code>auth0AI.withAsyncAuthorization({ bindingMessage: "Approve $50K transfer" })</code></p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-green);">
+        <strong>EU AI Act Compliance:</strong> OBO flows provide demonstrable human oversight (Article 14) because every agent action traces back to an authenticated user who authorized the delegation. The <code>act</code> claim creates the audit chain regulators require.
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- Autonomous (M2M) Flows -->
+    <!-- ═══════════════════════════════════ -->
+    <section id="autonomous-flows">
+      <h2>Autonomous Flows (Machine-to-Machine)</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Autonomous agents act as <strong>independent systems with their own identity</strong>. There is no user delegation. The <code>sub</code> claim points to the agent's client ID, not a human. No <code>act</code> claim exists.</p>
+
+      <h3>When to Use Autonomous</h3>
+      <div class="cards-grid" style="margin-top: var(--spacing-md);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0;">&#x1F504; Scheduled Tasks</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">Nightly data pipelines, batch processing, report generation — no user is awake to delegate.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0;">&#x1F6E1; System Monitoring</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">Health checks, alerting, anomaly detection — operates continuously at system scope.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0;">&#x2699; Infrastructure</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">CI/CD pipelines, IaC provisioning, auto-scaling — system-level permissions not tied to any user.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">Client Credentials Grant</h3>
+      <p style="margin-bottom: var(--spacing-md);">The standard OAuth grant for machine-to-machine authentication. Agent authenticates as itself:</p>
+
+      <pre><code><span class="cmt"># Okta Client Credentials</span>
+curl --request POST \
+  --url 'https://{yourOktaDomain}/oauth2/default/v1/token' \
+  --header 'Authorization: Basic {Base64(client_id:client_secret)}' \
+  --data 'grant_type=client_credentials' \
+  --data 'scope=monitoring:read alerts:write'
+
+<span class="cmt"># Resulting token: sub = client_id (no human user, no act claim)</span></code></pre>
+
+      <h3 style="margin-top: var(--spacing-lg);">Stronger Auth for Autonomous Agents</h3>
+      <p style="margin-bottom: var(--spacing-md);">Static client secrets are a liability. Prefer these approaches:</p>
+
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <thead>
+          <tr>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">Method</th>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">How It Works</th>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">Benefit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Private Key JWT</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Agent signs assertion with private key; AS verifies with registered public key</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">No secret transmitted over the wire</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>mTLS</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Client certificate in TLS handshake</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Strong identity at transport layer</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>DPoP (RFC 9449)</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Token bound to agent's key, re-proven on each request</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Stolen token is useless without the key</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Cloud IAM Roles</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">AWS instance profile, GCP Workload Identity, Azure Managed Identity</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">No credential to manage at all</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-red);">
+        <strong>Higher Risk:</strong> Autonomous agents are riskier than OBO agents because there is no user to notice and revoke permissions mid-session. Use short token lifetimes, purpose-specific scopes (not <code>write</code> but <code>infra:deploy:staging</code>), and Okta ISPM to detect orphaned agent identities.
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">OBO vs Autonomous — Decision Framework</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <thead>
+          <tr>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">Dimension</th>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">OBO / Delegated</th>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">Autonomous / M2M</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Token <code>sub</code></strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">User's identifier</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Agent's client ID</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong><code>act</code> claim</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Present — identifies the agent</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Absent</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Audit trail</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">"User X authorized agent Y to do Z"</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">"Agent Y did Z"</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Standards</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">RFC 8693, CIBA, ID-JAG</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">RFC 6749 client_credentials</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Scope source</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">User's permissions + agent policy</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Agent's registered scopes only</td>
+          </tr>
+          <tr>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Compliance fitness</strong></td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Strong (EU AI Act Art. 14)</td>
+            <td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Weaker without human chain</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ═══════════════════════════════════ -->
+    <!-- Agent-to-Agent (A2A) Protocol -->
+    <!-- ═══════════════════════════════════ -->
+    <section id="a2a-protocol">
+      <h2>Agent-to-Agent (A2A) Protocol</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Google's open standard (April 2025, 50+ partners, now Linux Foundation) for how agents discover and delegate to each other. Built on HTTP, JSON-RPC 2.0, and OAuth — complementary to MCP, not competing.</p>
+
+      <div class="callout" style="border-left-color: var(--c-auth0-purple); margin-bottom: var(--spacing-lg);">
+        <strong>The Clean Separation:</strong><br>
+        <strong>MCP</strong> = how an agent connects to <strong>tools</strong> (agent-to-resource)<br>
+        <strong>A2A</strong> = how agents <strong>delegate to each other</strong> (agent-to-agent)<br>
+        <strong>XAA</strong> = how IT <strong>governs</strong> both (enterprise authorization layer)<br>
+        All three use OAuth tokens — Okta/Auth0 sits at the center as the authorization server.
+      </div>
+
+      <h3>Agent Cards — Discovery Documents</h3>
+      <p style="margin-bottom: var(--spacing-md);">Every A2A agent publishes a JSON "business card" at <code>/.well-known/agent-card.json</code> describing its identity, capabilities, and auth requirements:</p>
+
+      <pre><code>{
+  "name": "FlightBookingAgent",
+  "url": "https://flights.example.com/agent",
+  "provider": { "organization": "Travel Services Corp" },
+  "capabilities": { "streaming": true, "pushNotifications": true },
+  <span class="cmt">// OAuth auth — works with Okta/Auth0 as the token endpoint</span>
+  "securitySchemes": {
+    "oauth2": {
+      "type": "oauth2",
+      "flows": {
+        "clientCredentials": {
+          "tokenUrl": "https://YOUR_AUTH0_DOMAIN/oauth/token",
+          "scopes": {
+            "flights:search": "Search flights",
+            "flights:book": "Book flights"
+          }
+        }
+      }
+    }
+  },
+  "skills": [
+    { "id": "flight-search", "name": "Flight Search",
+      "examples": ["Find flights from SFO to JFK on March 15"] }
+  ]
+}</code></pre>
+
+      <h3 style="margin-top: var(--spacing-lg);">Task Lifecycle</h3>
+      <p style="margin-bottom: var(--spacing-md);">A2A tasks are stateful with a defined lifecycle — unlike MCP's largely stateless tool calls:</p>
+
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;">
+        submitted → working → <span style="color: var(--c-accent-amber);">input-required</span> ← client provides input<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: var(--c-accent-red);">auth-required</span>&nbsp; ← client provides credentials<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: var(--c-accent-green);">completed</span> | <span style="color: var(--c-accent-red);">failed</span> | canceled | rejected
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">Token Delegation in A2A Chains</h3>
+      <p style="margin-bottom: var(--spacing-md);">As agents chain (User → Agent A → Agent B → Agent C), each hop uses RFC 8693 token exchange to <strong>downscope</strong> permissions:</p>
+
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;">
+        User <span style="color: var(--c-text-secondary);">(broad token: all scopes)</span><br>
+        &nbsp; │ token exchange → "orchestration:run"<br>
+        &nbsp; ↓<br>
+        <span style="color: var(--c-okta-blue);">Orchestrator Agent</span><br>
+        &nbsp; │ exchange → "flights:search flights:book" <span style="color: var(--c-text-secondary);">(aud=flight-agent)</span><br>
+        &nbsp; ↓<br>
+        <span style="color: var(--c-accent-green);">Flight Agent</span><br>
+        &nbsp; │ exchange → "payment:authorize" <span style="color: var(--c-text-secondary);">(aud=payment-agent)</span><br>
+        &nbsp; ↓<br>
+        <span style="color: var(--c-accent-amber);">Payment Agent</span> <span style="color: var(--c-text-secondary);">← cannot access flights or user data</span>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">A2A + MCP Together</h3>
+      <p style="margin-bottom: var(--spacing-md);">In practice, each A2A agent uses MCP internally to access its tools. A2A handles inter-agent coordination while MCP handles each agent's tool access:</p>
+
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto;">
+        [Orchestrator Agent]<br>
+        &nbsp; ├── <span style="color: var(--c-auth0-purple);">A2A</span> → [HR Agent]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → <span style="color: var(--c-okta-blue);">MCP</span> → HR Database<br>
+        &nbsp; ├── <span style="color: var(--c-auth0-purple);">A2A</span> → [Finance Agent]&nbsp; → <span style="color: var(--c-okta-blue);">MCP</span> → Accounting System<br>
+        &nbsp; └── <span style="color: var(--c-auth0-purple);">A2A</span> → [Calendar Agent] → <span style="color: var(--c-okta-blue);">MCP</span> → Google Calendar
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">A2A vs MCP Comparison</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+        <thead>
+          <tr>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">Dimension</th>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">MCP</th>
+            <th style="text-align: left; padding: var(--spacing-sm); border-bottom: 2px solid var(--c-border);">A2A</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Purpose</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Agent ↔ Tool</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Agent ↔ Agent</td></tr>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Created by</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Anthropic (Nov 2024)</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Google → Linux Foundation (Apr 2025)</td></tr>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>State</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Largely stateless</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Stateful task lifecycle</td></tr>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Long-running</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Not a focus</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Core feature (days/weeks)</td></tr>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Multi-hop delegation</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Single hop</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Multi-hop + downscoping</td></tr>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Discovery</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Server list</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">Agent Cards + registries</td></tr>
+          <tr><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);"><strong>Auth model</strong></td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">OAuth 2.1</td><td style="padding: var(--spacing-sm); border-bottom: 1px solid var(--c-border);">OAuth 2.0 + OpenAPI schemes</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-amber);">
+        <strong>SE Talk Track:</strong> "Will you use MCP or A2A?" → "You'll use both. MCP for tool connections, A2A for agent orchestration. Okta secures the tokens for both — one policy engine governs every agent interaction, whether it's calling a tool or delegating to another agent."
       </div>
     </section>
 
