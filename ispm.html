@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%230052a3'/><text x='16' y='21' text-anchor='middle' font-family='sans-serif' font-weight='700' font-size='16' fill='white'>O</text></svg>">
+<title>ISPM Agent Discovery &mdash; Enablement Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Variables ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f8f8fa;
+  --c-bg-elevated:#ffffff;
+  --c-bg-card:#ffffff99;
+  --c-surface:#f0f0f5;
+  --c-border:#d8d8e0;
+  --c-text:#1a1a2e;
+  --c-text-muted:#5a5a70;
+  --c-text-dim:#9090a0;
+  --c-okta-blue:#0052a3;
+  --c-okta-blue-light:#0066cc;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#5a35c0;
+  --c-accent-amber:#d48a00;
+  --c-accent-red:#e03e4d;
+  --c-accent-green:#1faa58;
+  --c-accent-cyan:#0099bb;
+  --c-nav-bg:rgba(248,248,250,0.9);
+  --c-inset-bg:rgba(0,0,0,0.06);
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --nav-h:64px;
+  --section-pad:clamp(40px,6vw,80px);
+  --max-w:1200px;
+}
+
+html[data-theme="dark"]{
+  --c-bg:#0a0a0f;
+  --c-bg-elevated:#12121a;
+  --c-bg-card:#18182299;
+  --c-surface:#1e1e2a;
+  --c-border:#2a2a3a;
+  --c-text:#e8e6e3;
+  --c-text-muted:#8a8a9a;
+  --c-text-dim:#5a5a6a;
+  --c-okta-blue:#0066cc;
+  --c-okta-blue-light:#3399ff;
+  --c-auth0-purple:#6742d5;
+  --c-auth0-purple-light:#b3a7ff;
+  --c-accent-amber:#f5a623;
+  --c-accent-red:#ff4757;
+  --c-accent-green:#2ed573;
+  --c-accent-cyan:#00d4ff;
+  --c-nav-bg:rgba(10,10,15,0.85);
+  --c-inset-bg:rgba(0,0,0,0.3);
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-h) + 60px)}
+body{
+  font-family:var(--font-body);
+  background:var(--c-bg);
+  color:var(--c-text);
+  line-height:1.65;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--c-accent-red);color:#fff}
+
+/* ─── Noise Overlay ─── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.15;
+}
+html[data-theme="dark"] body::before{opacity:0.4}
+
+/* ─── Utility ─── */
+.container{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--c-text-muted);margin-bottom:16px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:24px;height:1px;background:var(--c-text-muted)}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;
+}
+.section-subtitle{font-size:18px;color:var(--c-text-muted);max-width:640px;line-height:1.6}
+
+/* ─── Navigation ─── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:var(--nav-h);background:var(--c-nav-bg);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--c-border);
+  display:flex;align-items:center;
+}
+.nav-inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{
+  font-family:var(--font-display);font-size:20px;color:var(--c-text);
+  text-decoration:none;display:flex;align-items:center;gap:10px;
+}
+.nav-brand .okta-mark{
+  width:28px;height:28px;border-radius:50%;background:var(--c-okta-blue);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-family:var(--font-body);font-size:12px;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:6px;list-style:none;flex-wrap:nowrap}
+.nav-links a{
+  color:var(--c-text-muted);text-decoration:none;font-size:12px;
+  padding:5px 8px;border-radius:6px;transition:all 0.2s;font-weight:500;white-space:nowrap;
+}
+.nav-links a:hover{color:var(--c-text);background:var(--c-surface)}
+.nav-links a.current{color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px}
+
+/* ─── Hamburger ─── */
+.hamburger{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:8px;
+}
+.hamburger span{width:24px;height:2px;background:var(--c-text);border-radius:2px;transition:all 0.3s}
+
+/* ─── Mobile Drawer ─── */
+.nav-overlay{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:999;
+  opacity:0;visibility:hidden;transition:all 0.3s;
+}
+.nav-overlay.active{opacity:1;visibility:visible}
+.nav-drawer{
+  position:fixed;top:var(--nav-h);left:0;width:100%;max-width:320px;
+  background:var(--c-bg-elevated);border-right:1px solid var(--c-border);
+  max-height:calc(100vh - var(--nav-h));overflow-y:auto;z-index:1001;
+  transform:translateX(-100%);transition:transform 0.3s ease;
+}
+.nav-drawer.active{transform:translateX(0)}
+.nav-drawer-content{padding:24px;display:flex;flex-direction:column;gap:16px}
+.nav-drawer-links{list-style:none;display:flex;flex-direction:column;gap:4px}
+.nav-drawer-links a{
+  display:block;padding:12px 16px;border-radius:8px;color:var(--c-text);
+  text-decoration:none;font-size:15px;transition:all 0.2s;
+}
+.nav-drawer-links a:hover{background:var(--c-surface)}
+.nav-drawer-close{
+  position:absolute;top:16px;right:16px;background:none;border:none;
+  font-size:24px;cursor:pointer;color:var(--c-text-muted);
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+}
+
+/* ─── Theme Toggle ─── */
+.theme-toggle{
+  background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:8px;padding:6px 10px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;gap:6px;
+  transition:all 0.2s;color:var(--c-text);
+}
+.theme-toggle:hover{background:var(--c-border)}
+
+/* ─── Hero ─── */
+.hero{
+  padding:calc(var(--nav-h) + 60px) 0 60px;
+  background:linear-gradient(180deg, var(--c-surface) 0%, var(--c-bg) 100%);
+}
+.hero-content{text-align:center}
+.hero .section-label{justify-content:center}
+.hero .section-label::before{display:none}
+.hero .section-title{max-width:800px;margin:0 auto 16px}
+.hero .section-subtitle{max-width:600px;margin:0 auto}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:20px;padding:6px 16px;font-size:12px;font-family:var(--font-mono);
+  color:var(--c-text-muted);margin-bottom:24px;
+}
+.hero-badge .status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--c-accent-red);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* ─── Content Area ─── */
+.content-area{
+  max-width:var(--max-w);margin:0 auto;padding:var(--section-pad) 24px;
+}
+
+/* ─── Content Section Headers ─── */
+.content-section{margin-bottom:60px}
+.content-section-header{
+  display:flex;align-items:center;gap:16px;margin-bottom:32px;
+  padding-bottom:16px;border-bottom:1px solid var(--c-border);
+}
+.section-num{
+  width:36px;height:36px;border-radius:50%;background:var(--c-okta-blue);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;font-family:var(--font-mono);flex-shrink:0;
+}
+.content-section-header h2{
+  font-family:var(--font-display);font-size:clamp(22px,3vw,30px);
+  line-height:1.15;letter-spacing:-0.01em;
+}
+.content-section h3{
+  font-size:17px;font-weight:600;margin:28px 0 12px;
+  color:var(--c-text);
+}
+.content-section p{
+  color:var(--c-text-muted);line-height:1.75;margin-bottom:14px;
+}
+
+/* ─── Concept Cards ─── */
+.concept-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;margin-bottom:20px;
+  transition:border-color 0.2s;
+}
+.concept-card:hover{border-color:var(--c-text-dim)}
+.concept-card h3{font-size:18px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.concept-card p{color:var(--c-text-muted);line-height:1.7;margin-bottom:0}
+.concept-card h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--c-text)}
+
+/* ─── Grid Layouts ─── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:20px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0}
+@media(max-width:768px){.two-col{grid-template-columns:1fr}}
+
+/* ─── Stage Cards ─── */
+.stage-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;position:relative;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.stage-card:hover{border-color:var(--c-text-dim)}
+.stage-num{
+  position:absolute;top:16px;right:20px;
+  font-family:var(--font-display);font-size:48px;opacity:0.07;line-height:1;
+}
+.stage-badge{
+  display:inline-block;font-family:var(--font-mono);font-size:10px;
+  letter-spacing:2px;text-transform:uppercase;padding:3px 10px;
+  border-radius:4px;margin-bottom:12px;font-weight:600;
+}
+.stage-badge.s1{background:rgba(0,82,163,0.1);color:var(--c-okta-blue)}
+.stage-badge.s2{background:rgba(212,138,0,0.1);color:var(--c-accent-amber)}
+.stage-badge.s3{background:rgba(224,62,77,0.1);color:var(--c-accent-red)}
+.stage-badge.s4{background:rgba(31,170,88,0.1);color:var(--c-accent-green)}
+.stage-card h3{font-size:16px;font-weight:600;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.stage-card p{font-size:14px;color:var(--c-text-muted);line-height:1.65;margin-bottom:0}
+.stage-card ul{list-style:none;margin-top:12px}
+.stage-card ul li{
+  font-size:13px;color:var(--c-text-muted);padding:5px 0;
+  border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:8px;
+}
+.stage-card ul li:last-child{border-bottom:none}
+.stage-card ul li::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  flex-shrink:0;background:var(--c-text-dim);
+}
+
+/* ─── Callout Boxes ─── */
+.security-note,.key-point,.okta-note,.removed-feature,.mcp-note{
+  border-radius:10px;padding:16px 20px;margin:16px 0;
+  font-size:14px;line-height:1.7;
+}
+.security-note{background:rgba(212,138,0,0.08);border-left:3px solid var(--c-accent-amber)}
+.key-point{background:rgba(0,82,163,0.06);border-left:3px solid var(--c-okta-blue)}
+.removed-feature{background:rgba(224,62,77,0.06);border-left:3px solid var(--c-accent-red)}
+.okta-note{background:rgba(0,153,187,0.06);border-left:3px solid var(--c-accent-cyan)}
+.mcp-note{background:rgba(103,66,213,0.06);border-left:3px solid var(--c-auth0-purple)}
+.callout-title{font-weight:600;margin-bottom:6px;font-size:13px;display:flex;align-items:center;gap:8px}
+
+/* ─── Code Blocks ─── */
+.code-block{
+  background:var(--c-bg);border:1px solid var(--c-border);
+  border-radius:8px;padding:14px 18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.7;
+  overflow-x:auto;white-space:pre;color:var(--c-text);
+}
+html[data-theme="dark"] .code-block{background:#0d0d14}
+.code-label{
+  font-size:11px;font-family:var(--font-mono);letter-spacing:1px;
+  text-transform:uppercase;color:var(--c-text-dim);margin-bottom:6px;
+}
+
+/* ─── Tables ─── */
+.info-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+.info-table th{
+  text-align:left;padding:10px 14px;font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+  background:var(--c-surface);border-bottom:2px solid var(--c-border);
+  color:var(--c-text-muted);
+}
+.info-table td{
+  padding:10px 14px;border-bottom:1px solid var(--c-border);
+  vertical-align:top;
+}
+.info-table tr:last-child td{border-bottom:none}
+.info-table tr:hover td{background:rgba(0,0,0,0.02)}
+html[data-theme="dark"] .info-table tr:hover td{background:rgba(255,255,255,0.02)}
+.info-table code{
+  font-family:var(--font-mono);font-size:12px;
+  background:var(--c-surface);padding:2px 6px;border-radius:4px;
+}
+
+/* ─── Severity Badges ─── */
+.badge{
+  display:inline-block;font-family:var(--font-mono);font-size:10px;
+  font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:4px;white-space:nowrap;
+}
+.badge-critical{background:rgba(224,62,77,0.15);color:var(--c-accent-red)}
+.badge-high{background:rgba(212,138,0,0.15);color:var(--c-accent-amber)}
+.badge-medium{background:rgba(0,82,163,0.12);color:var(--c-okta-blue)}
+.badge-low{background:rgba(31,170,88,0.1);color:var(--c-accent-green)}
+
+/* ─── NHI Type Tags ─── */
+.nhi-tag{
+  display:inline-block;font-size:11px;font-family:var(--font-mono);
+  padding:3px 8px;border-radius:4px;border:1px solid var(--c-border);
+  color:var(--c-text-muted);margin:2px;
+}
+
+/* ─── Fabric Flow ─── */
+.fabric-flow{
+  display:flex;flex-wrap:wrap;align-items:center;gap:0;margin:24px 0;
+}
+.fabric-node{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:8px;padding:12px 16px;text-align:center;flex:1;min-width:120px;
+  transition:border-color 0.2s;
+}
+.fabric-node:hover{border-color:var(--c-okta-blue)}
+.fabric-node .fn-icon{font-size:22px;margin-bottom:4px}
+.fabric-node .fn-label{font-size:12px;font-weight:600;color:var(--c-text)}
+.fabric-node .fn-sub{font-size:10px;color:var(--c-text-dim);font-family:var(--font-mono);margin-top:2px}
+.fabric-arrow{
+  font-size:18px;color:var(--c-text-dim);flex-shrink:0;padding:0 4px;
+  align-self:center;
+}
+@media(max-width:768px){
+  .fabric-flow{gap:8px}
+  .fabric-arrow{display:none}
+  .fabric-node{min-width:calc(50% - 8px)}
+}
+
+/* ─── Demo Script ─── */
+.demo-step{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:10px;margin-bottom:16px;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.demo-step-header{
+  padding:16px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;
+}
+.demo-step-header:hover{background:var(--c-surface)}
+.demo-step-num{
+  width:32px;height:32px;border-radius:50%;background:var(--c-okta-blue);
+  color:#fff;font-size:13px;font-weight:700;font-family:var(--font-mono);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.demo-step-title{font-weight:600;font-size:15px;flex:1}
+.demo-step-toggle{color:var(--c-text-dim);font-size:18px;transition:transform 0.2s}
+.demo-step.open .demo-step-toggle{transform:rotate(90deg)}
+.demo-step-body{
+  display:none;padding:0 20px 20px;border-top:1px solid var(--c-border);
+}
+.demo-step.open .demo-step-body{display:block}
+.talking-point{
+  background:rgba(0,82,163,0.05);border-left:2px solid var(--c-okta-blue);
+  padding:10px 14px;margin:10px 0;font-size:13px;border-radius:0 6px 6px 0;
+  font-style:italic;color:var(--c-text-muted);
+}
+.objection-row{
+  background:rgba(224,62,77,0.04);border-left:2px solid var(--c-accent-red);
+  padding:10px 14px;margin:10px 0;font-size:13px;border-radius:0 6px 6px 0;
+}
+.objection-row .obj-q{font-weight:600;color:var(--c-accent-red);margin-bottom:4px}
+.objection-row .obj-a{color:var(--c-text-muted)}
+
+/* ─── Stat Cards ─── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}
+.stat-card{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;padding:24px;text-align:center;
+}
+.stat-value{
+  font-family:var(--font-display);font-size:clamp(36px,5vw,52px);
+  line-height:1;margin-bottom:8px;
+}
+.stat-label{font-size:13px;color:var(--c-text-muted);line-height:1.5}
+.stat-source{font-size:10px;font-family:var(--font-mono);color:var(--c-text-dim);margin-top:6px}
+
+/* ─── Plugin Diagram ─── */
+.plugin-flow{
+  background:var(--c-bg-elevated);border:1px solid var(--c-border);
+  border-radius:12px;overflow:hidden;margin:24px 0;
+}
+.plugin-flow-title{
+  padding:14px 20px;font-weight:600;font-size:14px;
+  border-bottom:1px solid var(--c-border);background:var(--c-surface);
+  font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;font-size:11px;
+  color:var(--c-text-muted);
+}
+.plugin-flow-body{padding:20px}
+.plugin-row{
+  display:flex;align-items:flex-start;gap:14px;padding:12px 0;
+  border-bottom:1px solid var(--c-border);
+}
+.plugin-row:last-child{border-bottom:none}
+.plugin-icon{
+  width:36px;height:36px;border-radius:8px;background:var(--c-surface);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.plugin-info h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.plugin-info p{font-size:13px;color:var(--c-text-muted);margin-bottom:0}
+
+/* ─── Footer ─── */
+footer{
+  padding:40px 0;border-top:1px solid var(--c-border);
+  text-align:center;margin-top:60px;
+}
+footer p{font-size:12px;color:var(--c-text-dim)}
+
+/* ─── Responsive ─── */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .card-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Navigation ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <span class="okta-mark">O</span>
+      Enablement Hub
+    </a>
+    <button class="hamburger" id="hamburger" type="button" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts</a></li>
+      <li><a href="technical.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">Technical &rarr;</a></li>
+      <li><a href="usecases.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">Use Cases &rarr;</a></li>
+      <li><a href="oauth.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OAuth 2.1 &rarr;</a></li>
+      <li><a href="agent-identity.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Agent Identity &rarr;</a></li>
+      <li><a href="fga.html" style="color:var(--c-accent-amber);border:1px solid rgba(212,138,0,0.3);border-radius:6px">FGA &rarr;</a></li>
+      <li><a href="ai-gateway.html" style="color:var(--c-accent-red);border:1px solid rgba(224,62,77,0.3);border-radius:6px">AI Gateway &rarr;</a></li>
+      <li><a href="oidc.html" style="color:var(--c-accent-cyan);border:1px solid rgba(0,153,187,0.3);border-radius:6px">OIDC &rarr;</a></li>
+      <li><a href="opa.html" style="color:var(--c-auth0-purple);border:1px solid rgba(103,66,213,0.3);border-radius:6px">OPA &rarr;</a></li>
+      <li><a href="itp.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">ITP &rarr;</a></li>
+      <li><a href="integrations.html" style="color:var(--c-accent-green);border:1px solid rgba(31,170,88,0.3);border-radius:6px">Integrations &rarr;</a></li>
+      <li><a href="ispm.html" class="current">ISPM &rarr;</a></li>
+    </ul>
+    <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span class="theme-icon">&#9790;</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── Mobile Drawer ─── -->
+<div class="nav-overlay" id="navOverlay"></div>
+<div class="nav-drawer" id="navDrawer">
+  <div class="nav-drawer-content">
+    <button class="nav-drawer-close" id="navDrawerClose" type="button">&#10005;</button>
+    <ul class="nav-drawer-links">
+      <li><a href="index.html">Hub Home</a></li>
+      <li><a href="concepts.html">Concepts Guide</a></li>
+      <li><a href="technical.html">Technical Deep-Dive</a></li>
+      <li><a href="usecases.html">Use Cases</a></li>
+      <li><a href="oauth.html">OAuth 2.1 Deep Dive</a></li>
+      <li><a href="agent-identity.html">Agent Identity &amp; Delegation</a></li>
+      <li><a href="fga.html">Fine-Grained Authorization</a></li>
+      <li><a href="ai-gateway.html">AI Gateway &amp; API Security</a></li>
+      <li><a href="oidc.html">OpenID Connect Deep Dive</a></li>
+      <li><a href="opa.html">OPA Policy Engine</a></li>
+      <li><a href="itp.html">Identity Threat Protection</a></li>
+      <li><a href="integrations.html">Platform Integration Patterns</a></li>
+      <li><a href="ispm.html" style="font-weight:600;color:var(--c-accent-red)">ISPM Agent Discovery</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">
+      <span class="status-dot"></span>
+      Shadow AI &middot; NHI Discovery &middot; OWASP NHI Top 10
+    </div>
+    <div class="section-label">Enablement Hub</div>
+    <h1 class="section-title">ISPM Agent Discovery</h1>
+    <p class="section-subtitle">Find every shadow AI agent, unsanctioned OAuth grant, and orphaned credential in your environment &mdash; before attackers do.</p>
+  </div>
+</section>
+
+<!-- ─── Main Content ─── -->
+<div class="content-area">
+
+
+  <!-- ===== SECTION 1 — THE SHADOW AI PROBLEM ===== -->
+  <div class="content-section" id="shadow-ai">
+    <div class="content-section-header">
+      <div class="section-num">1</div>
+      <h2>The Shadow AI Problem</h2>
+    </div>
+
+    <p>Employees are building and connecting AI agents faster than security teams can track them. Unapproved platforms, unsanctioned OAuth grants, and agents running on shared admin credentials are now among the most common unmanaged attack surfaces in enterprise environments. ISPM Agent Discovery (EA February 2026) is Okta's answer.</p>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--c-accent-red)">69%</div>
+        <div class="stat-label">of organizations suspect unauthorized GenAI usage by employees</div>
+        <div class="stat-source">Gartner, 2025</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--c-accent-amber)">10%</div>
+        <div class="stat-label">of enterprises have a formal Non-Human Identity governance strategy in place</div>
+        <div class="stat-source">Gartner, 2025</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--c-okta-blue)">25+</div>
+        <div class="stat-label">OWASP NHI Top 10 risk detections in the ISPM detection library</div>
+        <div class="stat-source">ISPM EA, Feb 2026</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="concept-card" style="border-left:3px solid var(--c-accent-red)">
+        <h3>Unsanctioned Platforms</h3>
+        <p>Employees connect personal accounts on ChatGPT Teams, Notion AI, Glean, and other unapproved platforms, granting broad OAuth scopes to company data without IT visibility. Each OAuth grant is a persistent credential that outlives the employee's tenure.</p>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-accent-amber)">
+        <h3>Shadow Agent Credentials</h3>
+        <p>Agentic workflows built in n8n, Zapier, and Make.com routinely run under shared service accounts or personal API tokens with admin-level permissions. No rotation policy. No owner. No lifecycle management.</p>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-auth0-purple)">
+        <h3>Platform AI Sprawl</h3>
+        <p>Salesforce Agentforce, Microsoft Copilot, AWS Bedrock, and Google Vertex AI are all creating new classes of non-human identity. Each platform registers agents differently, and none of them feed into a unified identity governance view by default.</p>
+      </div>
+    </div>
+
+    <div class="removed-feature">
+      <div class="callout-title">Why Traditional PAM and IGA Miss This</div>
+      Privileged Access Management tools were built for human users and server accounts. IGA tools manage the joiner-mover-leaver lifecycle for humans. Neither was designed to discover OAuth app registrations, analyze scopes granted to AI agents, or track service principals created by a Salesforce flow builder. ISPM fills this gap.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 2 — AGENT DISCOVERY MODEL ===== -->
+  <div class="content-section" id="discovery-model">
+    <div class="content-section-header">
+      <div class="section-num">2</div>
+      <h2>Agent Discovery (EA Feb 2026): Four-Stage Model</h2>
+    </div>
+
+    <p>ISPM Agent Discovery uses a four-stage model to surface all AI agents and NHIs in an environment &mdash; from sanctioned enterprise platforms to shadow OAuth grants discovered via the SAM browser plugin. Each stage feeds the unified remediation workflow.</p>
+
+    <div class="card-grid">
+      <div class="stage-card">
+        <div class="stage-num">1</div>
+        <span class="stage-badge s1">Stage 1</span>
+        <h3>Crown Jewel AI Platform Visibility</h3>
+        <p>API connectors to the major enterprise AI platforms provide authoritative inventory of all registered agents, service principals, and connected apps.</p>
+        <ul>
+          <li>Microsoft Copilot &amp; Azure AI</li>
+          <li>Salesforce Agentforce</li>
+          <li>AWS Bedrock agents &amp; IAM roles</li>
+          <li>Google Vertex AI &amp; Workspace</li>
+          <li>OpenAI API (org-level keys)</li>
+        </ul>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">2</div>
+        <span class="stage-badge s2">Stage 2</span>
+        <h3>Shadow AI via SAM Browser Plugin</h3>
+        <p>The SAM (SaaS Access Management) Chrome extension monitors OAuth authorization events in real time. When an employee grants OAuth access to an AI tool, ISPM captures it regardless of whether the app is on the approved list.</p>
+        <ul>
+          <li>OAuth grant monitoring (all apps)</li>
+          <li>Scope analysis per grant</li>
+          <li>User-to-app attribution</li>
+          <li>Unapproved app flagging</li>
+        </ul>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">3</div>
+        <span class="stage-badge s3">Stage 3</span>
+        <h3>NHI Hardening</h3>
+        <p>ISPM continuously evaluates all discovered NHIs against the OWASP NHI Top 10 risk framework, surfacing misconfigurations, over-privilege, and stale credentials.</p>
+        <ul>
+          <li>25+ built-in risk detections</li>
+          <li>OWASP NHI Top 10 mapped</li>
+          <li>Severity scoring per finding</li>
+          <li>Remediation recommendations</li>
+        </ul>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">4</div>
+        <span class="stage-badge s4">Stage 4</span>
+        <h3>Remediation via Unified Identity Platform</h3>
+        <p>Shadow agents discovered by ISPM can be formally registered into Okta Universal Directory, vaulted via Okta Privileged Access, or revoked. Discovery feeds governance, not just alerting.</p>
+        <ul>
+          <li>Register shadow agents in UD</li>
+          <li>Vault credentials in OPA</li>
+          <li>Trigger OIG access review</li>
+          <li>Revoke via Universal Logout</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">EA Timeline Note</div>
+      Agent Discovery launched in Early Access in February 2026. Stage 1 (Crown Jewel platforms) and Stage 2 (SAM Browser Plugin) are GA-bound. Stage 3 (NHI hardening detections) and Stage 4 (full remediation workflow) are actively expanding. Check the EA documentation for current connector availability.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 3 — SAM BROWSER PLUGIN ===== -->
+  <div class="content-section" id="sam-plugin">
+    <div class="content-section-header">
+      <div class="section-num">3</div>
+      <h2>SAM Browser Plugin: Shadow OAuth Detection</h2>
+    </div>
+
+    <p>The SAM (SaaS Access Management) Chrome extension is the primary mechanism for discovering shadow AI tools. Deployed via Chrome managed policy to corporate devices, it operates at the browser layer where OAuth authorization decisions happen &mdash; giving ISPM visibility that no API-level integration can match.</p>
+
+    <div class="plugin-flow">
+      <div class="plugin-flow-title">SAM Browser Plugin — Detection &amp; Telemetry Flow</div>
+      <div class="plugin-flow-body">
+        <div class="plugin-row">
+          <div class="plugin-icon">&#x1F4BB;</div>
+          <div class="plugin-info">
+            <h4>Employee Opens AI Tool</h4>
+            <p>Employee navigates to an AI platform (e.g., Claude.ai, Perplexity, Notion AI) and initiates an OAuth authorization flow using their corporate Google or Microsoft identity.</p>
+          </div>
+        </div>
+        <div class="plugin-row">
+          <div class="plugin-icon">&#x1F50D;</div>
+          <div class="plugin-info">
+            <h4>Plugin Intercepts OAuth Grant</h4>
+            <p>The SAM extension detects the OAuth redirect and captures the client ID, requested scopes, and resource server. It does not block the flow by default &mdash; it observes and reports.</p>
+          </div>
+        </div>
+        <div class="plugin-row">
+          <div class="plugin-icon">&#x1F4E1;</div>
+          <div class="plugin-info">
+            <h4>Telemetry Sent to ISPM Console</h4>
+            <p>Grant details are transmitted to the ISPM console: app name, client ID, authorized scopes (read, write, admin), the granting user identity, and timestamp. The app is checked against the approved SaaS catalog.</p>
+          </div>
+        </div>
+        <div class="plugin-row">
+          <div class="plugin-icon">&#x26A0;</div>
+          <div class="plugin-info">
+            <h4>Risk Analysis &amp; Classification</h4>
+            <p>ISPM evaluates the grant against policy: Is the app approved? Are scopes excessive relative to declared use? Is this user permitted to grant external OAuth access? Unapproved apps surface as Shadow AI findings in the console.</p>
+          </div>
+        </div>
+        <div class="plugin-row">
+          <div class="plugin-icon">&#x2705;</div>
+          <div class="plugin-info">
+            <h4>Remediation Options</h4>
+            <p>Security team can revoke the grant via Okta, add the app to the approved catalog with scope restrictions, or escalate to an OIG access certification campaign to make the owner formally attest the access.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>What the Plugin Detects</h3>
+        <div class="concept-card">
+          <h4>OAuth Grants to AI Tools</h4>
+          <p>Any OAuth authorization to an external application, with full scope inventory. Captures implicit grants and PKCE flows.</p>
+        </div>
+        <div class="concept-card">
+          <h4>Scope Analysis</h4>
+          <p>Flags overly broad scopes: <code>mail.read</code>, <code>files.readwrite.all</code>, <code>calendars.readwrite</code>. Compares against scope baselines for the app category.</p>
+        </div>
+        <div class="concept-card">
+          <h4>Client-Resource Mapping</h4>
+          <p>Maps the OAuth client (the AI tool) to the resource server it was granted access to. Identifies cases where one AI tool holds access to multiple resource servers.</p>
+        </div>
+      </div>
+      <div>
+        <h3>Deployment</h3>
+        <div class="concept-card">
+          <h4>Chrome Managed Policy</h4>
+          <p>Deploy the extension via Google Workspace Admin Console or Microsoft Intune. Force-install to all managed Chrome profiles. No user action required.</p>
+        </div>
+        <div class="concept-card">
+          <h4>Privacy Boundary</h4>
+          <p>The plugin only captures OAuth authorization events and application telemetry. It does not read page content, capture keystrokes, or transmit browsing history.</p>
+        </div>
+        <div class="concept-card">
+          <h4>Identity Correlation</h4>
+          <p>Extension telemetry is correlated with the user's Okta identity, giving full attribution: which employee authorized which AI tool with which scopes.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="security-note">
+      <div class="callout-title">Key SE Talking Point: Passive Discovery</div>
+      The SAM plugin is passive by default. It does not block employee productivity or prompt for approval during the OAuth flow. This makes it easy to deploy without change management friction &mdash; and means you can get a complete picture of shadow AI before deciding on enforcement policy.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 4 — NHI TYPES DISCOVERED ===== -->
+  <div class="content-section" id="nhi-types">
+    <div class="content-section-header">
+      <div class="section-num">4</div>
+      <h2>NHI Types Discovered</h2>
+    </div>
+
+    <p>ISPM surfaces Non-Human Identities across six categories, spanning cloud infrastructure, SaaS platforms, and AI-native identity types. Each type carries its own risk profile and requires different governance treatment.</p>
+
+    <div class="card-grid">
+      <div class="concept-card" style="border-left:3px solid var(--c-okta-blue)">
+        <h3>Service Accounts</h3>
+        <p>Directory service accounts (Active Directory, LDAP) used by applications and automated workflows. Often highly privileged, rarely rotated, frequently shared across systems.</p>
+        <div>
+          <span class="nhi-tag">AD service accounts</span>
+          <span class="nhi-tag">LDAP bind accounts</span>
+          <span class="nhi-tag">Windows service identities</span>
+        </div>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-accent-amber)">
+        <h3>API Keys</h3>
+        <p>Long-lived secrets used to authenticate to APIs. Embedded in code, CI/CD pipelines, and low-code automation tools. Primary target for secret scanning and rotation enforcement.</p>
+        <div>
+          <span class="nhi-tag">OpenAI API keys</span>
+          <span class="nhi-tag">Anthropic keys</span>
+          <span class="nhi-tag">Internal API tokens</span>
+        </div>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-auth0-purple)">
+        <h3>OAuth Apps &amp; Service Principals</h3>
+        <p>Registered OAuth clients and their associated service principals across cloud identity providers. Each app registration may hold access to multiple resource servers with varying scopes.</p>
+        <div>
+          <span class="nhi-tag">Entra service principals</span>
+          <span class="nhi-tag">Salesforce connected apps</span>
+          <span class="nhi-tag">GCP service accounts</span>
+          <span class="nhi-tag">AWS IAM roles</span>
+          <span class="nhi-tag">GitHub OAuth apps</span>
+        </div>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-accent-green)">
+        <h3>Salesforce AI Agents</h3>
+        <p>Agentforce agents, Einstein Bots, and Connected App integrations registered in Salesforce. Run under named or shared credentials, often with broad CRM data access and no formal owner.</p>
+        <div>
+          <span class="nhi-tag">Agentforce agents</span>
+          <span class="nhi-tag">Einstein Bots</span>
+          <span class="nhi-tag">Connected Apps</span>
+        </div>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-accent-red)">
+        <h3>M2M Application Credentials</h3>
+        <p>Client credentials (client_id + client_secret) used in OAuth 2.0 Client Credentials grant flows. Machine-to-machine authentication for backend services, no human in the loop, frequently long-lived.</p>
+        <div>
+          <span class="nhi-tag">client_credentials flows</span>
+          <span class="nhi-tag">service-to-service tokens</span>
+          <span class="nhi-tag">CI/CD system tokens</span>
+        </div>
+      </div>
+      <div class="concept-card" style="border-left:3px solid var(--c-accent-cyan)">
+        <h3>Agentic Workflow Identities</h3>
+        <p>Identities created or used by low-code / no-code automation platforms. Often inherit the creating user's permissions or use a shared platform account, bypassing least-privilege entirely.</p>
+        <div>
+          <span class="nhi-tag">Zapier automations</span>
+          <span class="nhi-tag">Make.com scenarios</span>
+          <span class="nhi-tag">n8n workflows</span>
+          <span class="nhi-tag">Power Automate flows</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="okta-note">
+      <div class="callout-title">OWASP NHI Top 10 Coverage</div>
+      ISPM maps all discovered NHIs against the OWASP Non-Human Identities Top 10 framework (2025). Every finding in the detection library references the relevant OWASP NHI category, giving security teams a standardized risk vocabulary aligned to the industry framework.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 5 — ISPM DETECTION LIBRARY ===== -->
+  <div class="content-section" id="detections">
+    <div class="content-section-header">
+      <div class="section-num">5</div>
+      <h2>ISPM Detection Library</h2>
+    </div>
+
+    <p>ISPM ships with 25+ pre-built detections aligned to the OWASP NHI Top 10. Each detection includes a severity rating, the affected NHI type, and a recommended remediation action available directly from the ISPM console.</p>
+
+    <div style="overflow-x:auto">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Detection</th>
+            <th>Severity</th>
+            <th>NHI Type</th>
+            <th>OWASP NHI</th>
+            <th>Remediation Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Multiple agents sharing same service account</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Two or more AI agents authenticated with identical service account credentials</span></td>
+            <td><span class="badge badge-critical">Critical</span></td>
+            <td>Service Account</td>
+            <td>NHI-03 Overprivileged</td>
+            <td>Issue unique credentials per agent; revoke shared account</td>
+          </tr>
+          <tr>
+            <td><strong>Super admin account with active API tokens</strong><br><span style="font-size:12px;color:var(--c-text-muted)">An account with global admin privileges has long-lived API tokens that grant equivalent access</span></td>
+            <td><span class="badge badge-critical">Critical</span></td>
+            <td>API Key</td>
+            <td>NHI-01 Improper Offboarding</td>
+            <td>Rotate token; scope to least-privilege service account</td>
+          </tr>
+          <tr>
+            <td><strong>Unauthorized OAuth app granted admin consent</strong><br><span style="font-size:12px;color:var(--c-text-muted)">An OAuth application not in the approved catalog received tenant-wide admin consent</span></td>
+            <td><span class="badge badge-critical">Critical</span></td>
+            <td>OAuth App</td>
+            <td>NHI-05 Inadequate Governance</td>
+            <td>Revoke admin consent; add to catalog or block permanently</td>
+          </tr>
+          <tr>
+            <td><strong>Credentials not rotated in 90+ days</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Service account password or API key has not been rotated within the policy window</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>Service Account / API Key</td>
+            <td>NHI-02 Secret Leakage</td>
+            <td>Trigger OPA credential rotation workflow</td>
+          </tr>
+          <tr>
+            <td><strong>Over-privileged OAuth scopes</strong><br><span style="font-size:12px;color:var(--c-text-muted)">OAuth app granted scopes that exceed the declared use case (e.g., write access for a read-only integration)</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>OAuth App</td>
+            <td>NHI-03 Overprivileged</td>
+            <td>Revoke &amp; re-consent with minimum required scopes</td>
+          </tr>
+          <tr>
+            <td><strong>Orphaned service account (no owner in UD)</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Service account has no associated owner or responsible team in Universal Directory</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>Service Account</td>
+            <td>NHI-01 Improper Offboarding</td>
+            <td>Assign owner in UD; trigger OIG certification</td>
+          </tr>
+          <tr>
+            <td><strong>Shadow AI app with mail access</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Unapproved OAuth app granted mail.read or mail.readwrite scope to a corporate mailbox</span></td>
+            <td><span class="badge badge-high">High</span></td>
+            <td>OAuth App (Shadow)</td>
+            <td>NHI-05 Inadequate Governance</td>
+            <td>Revoke OAuth grant; notify user; add app to block list</td>
+          </tr>
+          <tr>
+            <td><strong>Salesforce agent with no MFA-capable owner</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Agentforce agent connected app is owned by a Salesforce user account without MFA enrolled</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Salesforce AI Agent</td>
+            <td>NHI-04 Insufficient Monitoring</td>
+            <td>Enforce MFA on owner account; review agent permissions</td>
+          </tr>
+          <tr>
+            <td><strong>Inactive NHI with active credentials</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Service account or OAuth app has had no authentication activity in 30+ days but credentials remain valid</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Any NHI</td>
+            <td>NHI-01 Improper Offboarding</td>
+            <td>Disable or deprovision; validate with owner before deletion</td>
+          </tr>
+          <tr>
+            <td><strong>M2M token with refresh token issued</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Client Credentials grant issued a refresh token (non-standard; indicates misconfiguration or excessive lifetime)</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>M2M Credential</td>
+            <td>NHI-06 Insecure Authentication</td>
+            <td>Remove refresh token from client_credentials policy</td>
+          </tr>
+          <tr>
+            <td><strong>Agent credential embedded in public repository</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Secret scanning detected a service account password or API key in a public GitHub repository</span></td>
+            <td><span class="badge badge-critical">Critical</span></td>
+            <td>API Key</td>
+            <td>NHI-02 Secret Leakage</td>
+            <td>Rotate immediately; audit all actions taken with the key</td>
+          </tr>
+          <tr>
+            <td><strong>Low-code flow using personal OAuth grant</strong><br><span style="font-size:12px;color:var(--c-text-muted)">Zapier, Make, or Power Automate workflow authenticated with an individual employee's personal OAuth token rather than a service account</span></td>
+            <td><span class="badge badge-medium">Medium</span></td>
+            <td>Agentic Workflow Identity</td>
+            <td>NHI-05 Inadequate Governance</td>
+            <td>Migrate to dedicated service account; add to NHI inventory</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mcp-note">
+      <div class="callout-title">Detection Library is Expanding</div>
+      The ISPM detection library is growing with each release. Okta's security research team continually adds detections aligned to emerging NHI attack patterns. In EA, customers can also request custom detections based on their specific policy requirements. Check the EA changelog for the latest additions.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 6 — FROM DISCOVERY TO GOVERNANCE ===== -->
+  <div class="content-section" id="governance-fabric">
+    <div class="content-section-header">
+      <div class="section-num">6</div>
+      <h2>From Discovery to Governance: The Identity Security Fabric</h2>
+    </div>
+
+    <p>ISPM Agent Discovery is not a standalone product &mdash; it is the discovery engine for the full Okta Identity Security Fabric. Every shadow agent ISPM surfaces feeds into the broader governance, vaulting, certification, and threat detection pipeline. This is the complete end-to-end flow.</p>
+
+    <div class="fabric-flow">
+      <div class="fabric-node">
+        <div class="fn-icon">&#x1F50E;</div>
+        <div class="fn-label">ISPM Finds</div>
+        <div class="fn-sub">Shadow agent<br>detected</div>
+      </div>
+      <div class="fabric-arrow">&rarr;</div>
+      <div class="fabric-node">
+        <div class="fn-icon">&#x1F4C1;</div>
+        <div class="fn-label">UD Registers</div>
+        <div class="fn-sub">Agent added to<br>Universal Directory</div>
+      </div>
+      <div class="fabric-arrow">&rarr;</div>
+      <div class="fabric-node">
+        <div class="fn-icon">&#x1F511;</div>
+        <div class="fn-label">OPA Vaults</div>
+        <div class="fn-sub">Credential vaulted<br>in Privileged Access</div>
+      </div>
+      <div class="fabric-arrow">&rarr;</div>
+      <div class="fabric-node">
+        <div class="fn-icon">&#x2705;</div>
+        <div class="fn-label">OIG Certifies</div>
+        <div class="fn-sub">Access review<br>triggered in OIG</div>
+      </div>
+      <div class="fabric-arrow">&rarr;</div>
+      <div class="fabric-node">
+        <div class="fn-icon">&#x1F6A8;</div>
+        <div class="fn-label">ITP Monitors</div>
+        <div class="fn-sub">Continuous threat<br>detection active</div>
+      </div>
+      <div class="fabric-arrow">&rarr;</div>
+      <div class="fabric-node" style="border-color:var(--c-accent-red)">
+        <div class="fn-icon">&#x1F6AA;</div>
+        <div class="fn-label">Universal Logout</div>
+        <div class="fn-sub">Immediate revocation<br>if compromised</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="concept-card">
+        <h3>ISPM &rarr; Universal Directory</h3>
+        <p>Shadow agents discovered by ISPM can be formally registered as service accounts or OAuth apps in Okta Universal Directory. This promotes them from "unknown" to "governed" status and assigns an owner for lifecycle management.</p>
+      </div>
+      <div class="concept-card">
+        <h3>UD &rarr; Okta Privileged Access (OPA)</h3>
+        <p>Once registered in UD, agent credentials (API keys, service account passwords) are vaulted in OPA. OPA enforces just-in-time access, automatic rotation, and full audit logging for every credential checkout.</p>
+      </div>
+      <div class="concept-card">
+        <h3>UD &rarr; Okta Identity Governance (OIG)</h3>
+        <p>ISPM findings can trigger OIG access certification campaigns. The assigned owner is asked to formally attest that the agent's access is appropriate and still required. Unattested access is automatically revoked.</p>
+      </div>
+      <div class="concept-card">
+        <h3>ISPM + ITP: Continuous Monitoring</h3>
+        <p>Identity Threat Protection (ITP) uses ISPM's NHI inventory as context for behavioral anomaly detection. If a newly registered agent starts authenticating from unusual locations or at unusual times, ITP fires a risk signal.</p>
+      </div>
+      <div class="concept-card">
+        <h3>Universal Logout</h3>
+        <p>If a registered agent is compromised &mdash; detected by ITP, reported by a security tool, or identified manually &mdash; Universal Logout can revoke all active tokens and sessions for that NHI across all integrated systems simultaneously.</p>
+      </div>
+      <div class="concept-card">
+        <h3>SIEM / SOAR Integration</h3>
+        <p>All ISPM findings and remediation events are available via the Okta System Log and API. Feed into Splunk, Sentinel, or Chronicle for correlation with broader security events. Trigger SOAR playbooks on critical severity findings.</p>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">The Core Value Prop in One Sentence</div>
+      ISPM turns shadow AI from a blind spot into a governed asset &mdash; and the Okta Identity Security Fabric ensures that "governed" means vaulted, certified, monitored, and revocable.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 7 — SE DEMO SCRIPT ===== -->
+  <div class="content-section" id="demo-script">
+    <div class="content-section-header">
+      <div class="section-num">7</div>
+      <h2>SE Demo Script: ISPM Agent Discovery</h2>
+    </div>
+
+    <p>A step-by-step demo flow through the ISPM console. Estimated run time: 20&ndash;25 minutes. Recommended for CISO-level audiences, security operations leads, and identity governance buyers.</p>
+
+    <div class="security-note">
+      <div class="callout-title">Pre-Demo Setup</div>
+      Ensure your demo org has the ISPM EA feature enabled. Pre-seed the console with: at least one shadow AI finding (via SAM plugin in the demo browser), a service account with 90+ day stale credentials, and one Salesforce Agentforce agent connected app. The SAM plugin should be installed on the demo machine's Chrome profile.
+    </div>
+
+    <div class="demo-step open" id="step1">
+      <div class="demo-step-header" onclick="toggleStep('step1')">
+        <div class="demo-step-num">1</div>
+        <div class="demo-step-title">Open ISPM Dashboard &mdash; Surface the Problem</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Navigate to <strong>Security &rarr; Identity Security Posture Management</strong> in the Okta Admin Console. Land on the ISPM dashboard and let the summary stats tell the story.</p>
+        <div class="talking-point">"The first thing I want you to notice is this number &mdash; [X] unknown non-human identities. These are agents, API keys, and OAuth grants that exist in your environment right now but aren't registered anywhere. That's your shadow AI surface area."</div>
+        <p>Point to the severity breakdown: Critical / High / Medium findings. Highlight that this view didn't exist before; these risks were completely invisible.</p>
+        <div class="talking-point">"Before ISPM, the only way to find these was a manual audit. And manual audits happen once a year. Attackers don't wait."</div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="step2">
+      <div class="demo-step-header" onclick="toggleStep('step2')">
+        <div class="demo-step-num">2</div>
+        <div class="demo-step-title">Show SAM Browser Plugin in Action</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Open a new Chrome tab (with the SAM plugin installed). Navigate to an AI tool &mdash; Notion AI or Perplexity works well. Show the OAuth authorization screen. Grant access. Switch back to the ISPM console.</p>
+        <div class="talking-point">"Watch what just happened. I just authorized an AI tool using my corporate Google account. Let's go back to the ISPM console and refresh the Shadow AI tab."</div>
+        <p>Show the new finding appearing in near-real time. Expand it to show: app name, authorized scopes (e.g., <code>drive.readonly</code>, <code>gmail.readonly</code>), the user who authorized it, and the timestamp.</p>
+        <div class="talking-point">"That's the browser plugin doing its job. No API integration with the AI tool needed. No firewall inspection. Just passive observation of where OAuth grants go &mdash; which is exactly where shadow AI lives."</div>
+        <div class="objection-row">
+          <div class="obj-q">Objection: "We already block unapproved apps at the network layer."</div>
+          <div class="obj-a">Network blocks miss apps accessed over personal hotspots, home networks, or VPN split-tunnel configurations. OAuth grants also persist after the network session ends &mdash; the grant survives even if you block the app tomorrow. ISPM captures what's already been authorized, not just what's being accessed right now.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="step3">
+      <div class="demo-step-header" onclick="toggleStep('step3')">
+        <div class="demo-step-num">3</div>
+        <div class="demo-step-title">Drill Into a Critical Finding: Super Admin API Token</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Navigate to <strong>Findings &rarr; Critical</strong>. Select the pre-seeded finding: "Super admin account with active long-lived API token." Expand the full finding detail.</p>
+        <p>Show: the account name (service-admin@company.com), the token creation date (180+ days ago), the last-used timestamp, the scopes/permissions it grants, and the OWASP NHI category (NHI-01).</p>
+        <div class="talking-point">"This is a real attack vector. A service account with global admin privileges has an API token that's six months old. If that token is in a script somewhere and the script is in a repo, you have a critical exposure. The attacker doesn't need to phish anyone &mdash; they just need to find the token."</div>
+        <p>Click the <strong>Remediate</strong> button. Show the options: rotate credential (triggers OPA), assign owner, open in UD, or create OIG certification campaign.</p>
+        <div class="talking-point">"From here I can rotate the credential immediately into OPA &mdash; which means it gets vaulted, the old token is invalidated, and every future checkout is audited. Or I can assign an owner and trigger a certification. The key thing is this is actionable, not just an alert."</div>
+        <div class="objection-row">
+          <div class="obj-q">Objection: "We have PAM for privileged accounts already."</div>
+          <div class="obj-a">Traditional PAM was built for human privileged accounts &mdash; server admins, DBA accounts. It doesn't understand OAuth app registrations, doesn't discover shadow AI tools, and doesn't have the browser-layer visibility to catch grants made from personal devices. ISPM extends PAM to the NHI dimension that PAM was never designed to cover.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="step4">
+      <div class="demo-step-header" onclick="toggleStep('step4')">
+        <div class="demo-step-num">4</div>
+        <div class="demo-step-title">Show the NHI Inventory: Crown Jewel Platforms</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Navigate to <strong>Inventory &rarr; All NHIs</strong>. Apply the filter: Source = "Salesforce." Show the Agentforce agent connected apps. Click one to show its full profile: owner, last active, scopes, authentication method.</p>
+        <div class="talking-point">"This is your Salesforce AI surface area. Every Agentforce agent, every connected app, every Einstein Bot &mdash; all in one place, with risk scores applied. Notice that this agent has no owner assigned. When the person who built it leaves the company, this thing keeps running. Nobody owns it. Nobody knows it exists."</div>
+        <p>Switch to the AWS view. Show IAM roles associated with Bedrock agents. Highlight any that have <code>AdministratorAccess</code> or overly broad policies.</p>
+        <div class="talking-point">"Same pattern across every cloud. AWS, GCP, Azure. The agents were built by developers who needed to move fast. Security governance wasn't part of the build process. ISPM is how you retrofit governance without slowing them down."</div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="step5">
+      <div class="demo-step-header" onclick="toggleStep('step5')">
+        <div class="demo-step-num">5</div>
+        <div class="demo-step-title">Close the Loop: Register Shadow Agent into UD</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Return to the shadow AI finding from Step 2. Click <strong>Register in Universal Directory</strong>. Show the registration form: assign an owner, tag with cost center, set credential rotation policy, assign to an OIG certification campaign.</p>
+        <div class="talking-point">"This is the action that changes the risk posture. We took something that was unknown and unmanaged and made it a governed identity. The owner will get an OIG certification request in their queue. The credential will rotate on a 90-day policy. ITP will start baseline monitoring. Universal Logout can now reach it if it's ever compromised."</div>
+        <p>Briefly show the OIG certification queue with the new item. Show how the owner receives an email asking them to attest access or revoke.</p>
+        <div class="talking-point">"The process is familiar to your governance team because it's the same access review workflow they use for humans. We're just extending it to machines. That's the unified identity platform advantage &mdash; one workflow, one governance model, for humans and agents alike."</div>
+        <div class="objection-row">
+          <div class="obj-q">Objection: "This looks like a lot of work for the security team."</div>
+          <div class="obj-a">The work only happens once per NHI &mdash; the initial registration. After that, the governance lifecycle (rotation, certification, monitoring) is automated. And consider the alternative: the work is already happening, but informally and inconsistently, via spreadsheets and ad-hoc Jira tickets. ISPM systematizes work that's already being done badly.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="step6">
+      <div class="demo-step-header" onclick="toggleStep('step6')">
+        <div class="demo-step-num">6</div>
+        <div class="demo-step-title">Incident Response: Universal Logout for a Compromised Agent</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Navigate to the NHI detail view for the registered agent. Show the <strong>ITP Risk Score</strong> (if elevated in the demo, explain that ITP has detected an anomaly &mdash; auth from new IP, unusual time). Click <strong>Respond &rarr; Universal Logout</strong>.</p>
+        <div class="talking-point">"ITP flagged this agent as authenticating from a new AWS region it's never used before at 2am. That could be a legitimate deployment change or a compromised token being used by an attacker. We don't wait to find out. Universal Logout terminates all active sessions and tokens for this identity &mdash; across every integrated system &mdash; in seconds."</div>
+        <p>Show the confirmation: tokens revoked in Okta, downstream app sessions terminated, audit trail created, incident created for investigation.</p>
+        <div class="objection-row">
+          <div class="obj-q">Objection: "We use CrowdStrike / Defender for threat detection. Why do we need this too?"</div>
+          <div class="obj-a">Endpoint detection tools see what's happening on devices. They don't see OAuth token usage, service account authentication patterns, or API key usage in cloud-native environments. ITP adds the identity signal layer &mdash; and more importantly, Universal Logout is the response capability. CrowdStrike can alert; Okta can revoke. They're complementary.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="key-point">
+      <div class="callout-title">Demo Closing Frame</div>
+      End by returning to the dashboard. Show the "resolved findings" count increasing. Frame the narrative: "You started this demo with [X] unknown NHIs and [Y] critical findings. In 20 minutes, you've registered a shadow agent, rotated a stale credential, triggered a governance campaign, and tested your incident response workflow. That's the value of ISPM as the discovery layer for your identity security program."
+    </div>
+  </div>
+
+
+</div><!-- /content-area -->
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <p>ISPM Agent Discovery &middot; Enablement Hub &middot; March 2026</p>
+    <p style="margin-top:8px;font-size:11px;color:var(--c-text-dim)">Covers shadow AI detection, SAM browser plugin, NHI discovery, OWASP NHI Top 10 detections, and the Identity Security Fabric remediation flow. EA February 2026.</p>
+  </div>
+</footer>
+
+<script>
+/* ─── Theme ─── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  const t=isDark?'light':'dark';
+  html.setAttribute('data-theme',t);
+  try{localStorage.setItem('theme',t)}catch(e){}
+  document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+}
+(function(){
+  try{
+    const t=localStorage.getItem('theme')||'light';
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    document.querySelectorAll('.theme-icon').forEach(i=>i.textContent=t==='dark'?'\u2600':'\u263E');
+  }catch(e){}
+})();
+
+/* ─── Mobile Menu ─── */
+document.getElementById('hamburger')?.addEventListener('click',()=>{
+  const d=document.getElementById('navDrawer'),o=document.getElementById('navOverlay');
+  const active=d.classList.toggle('active');
+  o.classList.toggle('active',active);
+  document.body.style.overflow=active?'hidden':'';
+});
+document.getElementById('navOverlay')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+document.getElementById('navDrawerClose')?.addEventListener('click',()=>{
+  document.getElementById('navDrawer').classList.remove('active');
+  document.getElementById('navOverlay').classList.remove('active');
+  document.body.style.overflow='';
+});
+
+/* ─── Demo Step Toggle ─── */
+function toggleStep(id){
+  const step=document.getElementById(id);
+  if(!step)return;
+  step.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

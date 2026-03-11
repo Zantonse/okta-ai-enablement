@@ -841,6 +841,20 @@
     </div>
 
     <div class="sidebar-section">
+      <div class="sidebar-label">Education</div>
+      <a class="sidebar-link" data-section="edu-tutoring">AI Tutoring Agent</a>
+      <a class="sidebar-link" data-section="edu-research">Research Data Agent</a>
+      <a class="sidebar-link" data-section="edu-enrollment">Enrollment &amp; Advising Agent</a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Telecom</div>
+      <a class="sidebar-link" data-section="telco-netops">Network Operations Agent</a>
+      <a class="sidebar-link" data-section="telco-customer">Customer Service Agent</a>
+      <a class="sidebar-link" data-section="telco-fraud">Fraud Detection Agent</a>
+    </div>
+
+    <div class="sidebar-section">
       <div class="sidebar-label">More Guides</div>
       <a class="sidebar-link" href="technical.html">SE Technical Reference &rarr;</a>
       <a class="sidebar-link" href="concepts.html">Concepts Guide &rarr;</a>
@@ -2927,6 +2941,572 @@
         <div class="seller-badge">SE ONLY</div>
         <h4>Seller Mode: VP Operations Buyer</h4>
         <p>"In manufacturing, the CISO isn't your buyer — the VP Operations is. $50K/hour downtime and safety stories resonate with plant managers, not IT."</p>
+      </div>
+    </section>
+
+    <!-- Education / EdTech -->
+    <section id="edu">
+      <h2>Education / EdTech</h2>
+      <p>Education AI agents access student records, research repositories, and financial aid systems — all governed by strict regulations like FERPA and COPPA. When an agent can read a student's transcript or approve a financial aid disbursement, identity and access controls are a compliance requirement.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">74%</div>
+          <div class="stat-label">Of higher-ed institutions piloting AI-powered student services (EDUCAUSE, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">$6.1B</div>
+          <div class="stat-label">EdTech AI market projected by 2027 (HolonIQ)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">FERPA</div>
+          <div class="stat-label">Student education records protected under federal law — AI agents must comply</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="edu-tutoring">
+      <h3>AI Tutoring Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Sofia</h4>
+        <p>8th-grade math teacher at a public school district. 120 students across 4 classes, including minors under 13. Uses an AI tutoring platform that accesses student performance records to personalize lesson plans.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Tutoring agent has broad read access to student records. Agent retrieves Student A's performance history while generating a lesson plan for Student B — cross-contaminating FERPA-protected data. For students under 13, COPPA requires parental consent before any data collection, which the agent bypasses entirely.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Sofia opens the tutoring platform</strong> and requests a personalized lesson plan for Student A</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates via OBO delegation</strong> — acts on Sofia's behalf, inheriting only her permissions for her enrolled students</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>FGA enforces per-student document isolation</strong> — agent can only access Student A's records, not other students' data</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Age-gate check:</strong> if student is under 13, agent verifies COPPA parental consent flag before proceeding</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Agent generates personalized plan</strong> using only the authorized student's performance history</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>All data access events are logged</strong> with student ID, teacher ID, timestamp, and records accessed for FERPA audit trail</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Sofia reviews and delivers lesson plan.</strong> Audit log available to district compliance officer on demand.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">OBO</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Audit Logs</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before &amp; After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Broad record access → Student A's grades visible in Student B's plan → FERPA violation → district liability</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA enforces per-student isolation + OBO scoping + COPPA age-gate → zero cross-student data leakage</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>FERPA compliance maintained across all AI-generated lesson plans</li>
+          <li>Zero unauthorized cross-student record access</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: FERPA as Opener</h4>
+        <p>"FERPA is your opener. Ask: 'If a student's AI tutoring agent accessed another student's grades, would your current system catch it?' FGA + audit logging is the answer."</p>
+      </div>
+    </section>
+
+    <section id="edu-research">
+      <h3>Research Data Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Dr. Patel</h4>
+        <p>Research data administrator at a large research university. Manages access to institutional data repositories shared across students, faculty, and external research collaborators from partner institutions.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Research agent has tenant-wide access to data repositories. External collaborator's agent from a partner institution queries proprietary datasets that were not shared under the collaboration agreement — the multi-tenant boundary is not enforced at the data layer.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (6 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Agent Identity registration</strong> — research agent is registered with a unique identity scoped to its institution and project</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>External collaborator authenticates via XAA</strong> — cross-institution federation with scoped resource access</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>FGA enforces dataset-level permissions</strong> — collaborator's agent can only access datasets explicitly shared under the agreement</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Multi-tenant boundaries enforced:</strong> student tenant, faculty tenant, and external researcher tenant each have isolated access scopes</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Agent executes research query</strong> against permitted datasets only</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Dr. Patel reviews access logs.</strong> Any attempt to access unauthorized datasets is blocked and flagged.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">XAA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Multi-Tenant</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before &amp; After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>External agent accesses proprietary datasets not covered by agreement → data leak → collaboration agreement violation</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>XAA federation + FGA dataset boundaries → external agents access only permitted data across institutional lines</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Cross-institution research collaboration enabled without data boundary violations</li>
+          <li>Dataset-level access control replaces coarse institution-level permissions</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: Cross-Institution Federation</h4>
+        <p>"Research universities share data with dozens of partner institutions. Ask: 'When a partner's AI agent queries your repository, does your system know which datasets it's authorized to access — at the field level?'"</p>
+      </div>
+    </section>
+
+    <section id="edu-enrollment">
+      <h3>Enrollment &amp; Advising Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Carlos</h4>
+        <p>Director of Enrollment Services at a mid-size university. Oversees financial aid processing, course registration, and degree audits across 8 academic departments, each with its own administrative staff.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Administrative agent can approve financial aid disbursements autonomously. A misconfigured agent processes a fraudulent aid application without human review — disbursing $15,000 to a non-qualifying student. No approval trail, no departmental oversight.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Student submits financial aid application.</strong> Agent begins eligibility review.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>OIG certification check:</strong> agent must be certified by the Financial Aid department before processing any disbursement requests</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Agent reviews eligibility criteria</strong> — access to student PII scoped to enrollment records only</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Financial aid disbursement = high-value action → CIBA push notification</strong> to Financial Aid advisor: "Approve $15,000 aid disbursement for Student ID 4821?"</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Advisor reviews and approves.</strong> Disbursement authorized with advisor's identity bound to the action.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>ISPM continuously monitors</strong> for unauthorized advising agents operating outside the certified agent registry</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Full audit trail logged</strong> — student ID, agent ID, advisor approval, timestamp, and disbursement amount.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">OIG</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">ISPM</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before &amp; After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Agent autonomously processes disbursements → fraud goes undetected → $15K unauthorized payment → no audit trail</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>CIBA requires human approval for every disbursement → OIG certifies agents per department → ISPM catches rogue advisors</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Zero unauthorized financial aid disbursements</li>
+          <li>Departmental agent governance enforced across all 8 departments</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: FERPA is Your Opener</h4>
+        <p>"FERPA is your opener. Ask: 'If a student's AI tutoring agent accessed another student's grades, would your current system catch it?' FGA + audit logging is the answer."</p>
+      </div>
+    </section>
+
+    <!-- Telecommunications -->
+    <section id="telco">
+      <h2>Telecommunications</h2>
+      <p>Telecom AI agents operate at the intersection of network infrastructure, customer data, and regulatory compliance. When an agent can modify a router config or port a phone number, the identity and access controls governing that agent are mission-critical — for network reliability and for CPNI protection.</p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value">$14B</div>
+          <div class="stat-label">Telecom AI market projected by 2028 (Grand View Research)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">40%</div>
+          <div class="stat-label">Of NOC tasks automatable via AI agents (McKinsey, 2025)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value">CPNI</div>
+          <div class="stat-label">Customer Proprietary Network Information — federal law governs agent access to call records</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="telco-netops">
+      <h3>Network Operations Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Dominic</h4>
+        <p>NOC manager at a regional telecom carrier. Oversees 24/7 network operations covering 12,000 network elements across 3 vendors (Cisco, Nokia, Ericsson). AI agents handle routine configuration changes and anomaly response autonomously.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>NOC agent has broad access to all network element configurations. A compromised agent — or a misconfigured automation script — pushes an incorrect BGP route update to the core router at 2 AM, causing a regional outage affecting 400,000 subscribers. No human was in the loop; no access boundary prevented it.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>NOC agent detects anomaly</strong> — traffic spike on Edge Router 7 in the Chicago POP</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates via M2M with short-lived tokens</strong> — scoped to Chicago POP, Edge Router 7 only, 15-minute TTL</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>FGA enforces per-network-element permissions</strong> — agent cannot push configs to core routers or cross-vendor elements outside its scope</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Routine config change (ACL update) executed autonomously.</strong> Logged with agent ID, element ID, change diff, and token scope.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>ITP detects anomalous behavior:</strong> agent attempting to modify core router BGP config outside its approved scope → access blocked, alert raised</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Dominic receives alert.</strong> Incident response initiated. Compromised agent token revoked immediately.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Network protected. Outage prevented.</strong> Short-lived tokens ensure compromised credentials expire within minutes even if not manually revoked.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">M2M Auth</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">ITP</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Short-Lived Tokens</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before &amp; After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Agent has broad config access → compromised at 2 AM → bad BGP route pushed → 400K subscriber outage</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA scopes per-element + ITP detects anomaly + short-lived tokens limit blast radius → outage prevented</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>NOC automation enabled without broad network-wide agent access</li>
+          <li>Anomalous configuration changes blocked before reaching production</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: CTO vs. CISO Angle</h4>
+        <p>"Telecom SEs: The CTO cares about network automation efficiency. The CISO cares about CPNI exposure. Lead with: 'Your NOC agents have access to every router config. Who approved that access, and when does it expire?'"</p>
+      </div>
+    </section>
+
+    <section id="telco-customer">
+      <h3>Customer Service Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Priya</h4>
+        <p>VP of Customer Operations at a national wireless carrier. Customer service agents handle account changes, number porting, and billing disputes — all involving CPNI-protected data and high-fraud-risk actions.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Customer service agent has delegated access to billing and porting systems. A fraudster social-engineers the agent into initiating a SIM swap — porting the victim's number to a new carrier without the customer's verified consent. The agent executes the port because it has standing access to the porting API.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (7 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Customer contacts service agent</strong> requesting a number port to another carrier</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>Agent authenticates via OBO delegation</strong> — acts on behalf of the authenticated customer session only</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Token Vault provides scoped CRM access</strong> — agent retrieves account details without exposing standing API credentials</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>Number porting = high-value, irreversible action → CIBA push:</strong> "Confirm port of 312-555-0192 to T-Mobile? This action cannot be undone." Customer confirms via Okta Verify.</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>Fraudulent port attempt:</strong> customer does not confirm → port request rejected → fraud flagged in SIEM</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Legitimate port:</strong> customer approves → agent executes via Token Vault-scoped API call → action logged with customer identity bound</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">7</div>
+          <div><p><strong>Priya reviews fraud metrics.</strong> CIBA approval rate and failed port attempts surfaced in compliance dashboard.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">OBO</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">CIBA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Token Vault</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before &amp; After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Agent has standing porting API access → social engineering succeeds → SIM swap fraud → victim loses number</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>CIBA requires customer identity confirmation for every port → fraudulent requests blocked before execution</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>SIM swap fraud eliminated via CIBA customer confirmation</li>
+          <li>CPNI protection maintained with scoped, time-limited agent access</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: CPNI and Fraud Prevention</h4>
+        <p>"Telecom SEs: The CTO cares about network automation efficiency. The CISO cares about CPNI exposure. Lead with: 'Your NOC agents have access to every router config. Who approved that access, and when does it expire?'"</p>
+      </div>
+    </section>
+
+    <section id="telco-fraud">
+      <h3>Fraud Detection Agent</h3>
+
+      <!-- Persona -->
+      <div style="background: var(--c-surface-alt); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>Persona: Wei</h4>
+        <p>Head of Fraud Operations at a national carrier. AI agents analyze call detail records (CDRs) and billing data in real time to detect subscription fraud, toll fraud, and roaming anomalies across 8 million subscribers.</p>
+      </div>
+
+      <!-- Problem -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4>The Problem</h4>
+        <p>Fraud detection agent has unrestricted access to all CDR databases. Under CALEA, access to subscriber call records requires strict controls and audit trails. A compromised or overprivileged agent exfiltrating CDR data creates both a CALEA violation and a serious subscriber privacy breach — all while the fraud team is unaware.</p>
+      </div>
+
+      <!-- Workflow -->
+      <h4>Secure Workflow (6 Steps)</h4>
+      <div style="margin-bottom: var(--spacing-lg);">
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">1</div>
+          <div><p><strong>Fraud agent authenticates with least-privilege scope</strong> — read-only access to CDR aggregation layer, not raw CDR databases</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">2</div>
+          <div><p><strong>FGA enforces field-level access:</strong> agent sees anomaly patterns, not individual subscriber PII or full call records</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">3</div>
+          <div><p><strong>Agent detects toll fraud pattern:</strong> Account X generated 847 international calls in 4 hours — anomalous vs. historical baseline</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">4</div>
+          <div><p><strong>All access events logged</strong> with agent ID, data class accessed, query scope, and timestamp — CALEA audit trail maintained</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">5</div>
+          <div><p><strong>ISPM detects unauthorized agent</strong> attempting to access raw CDR databases outside the approved fraud analytics pipeline → access blocked, incident raised</p></div>
+        </div>
+        <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); align-items: flex-start;">
+          <div style="background: var(--c-okta-blue); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 600; flex-shrink: 0;">6</div>
+          <div><p><strong>Wei reviews dashboard.</strong> Fraud case escalated. CALEA-compliant audit log available for law enforcement on demand.</p></div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div style="margin-bottom: var(--spacing-lg);">
+        <h4>Required Capabilities</h4>
+        <p>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">FGA</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Audit Logs</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">ISPM</span>
+          <span style="display:inline-block;padding:4px 10px;background:var(--c-okta-blue);color:#fff;border-radius:12px;font-size:0.75rem;font-weight:600;margin:2px;">Agent Identity</span>
+        </p>
+      </div>
+
+      <!-- Before/After -->
+      <h4>Before &amp; After</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>Without Okta</h5>
+          <p>Broad CDR access → overprivileged agent exfiltrates subscriber data → CALEA violation → regulatory fine</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h5>With Okta</h5>
+          <p>FGA limits CDR access to aggregation layer + ISPM detects rogue agents + audit logs satisfy CALEA requirements</p>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div style="background: linear-gradient(135deg, rgba(31, 170, 88, 0.1), rgba(31, 170, 88, 0.05)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-green); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0;">Impact</h4>
+        <ul>
+          <li>Fraud detection pipeline operates with least-privilege CDR access</li>
+          <li>CALEA-compliant audit trail maintained for every agent data access event</li>
+        </ul>
+      </div>
+
+      <!-- Seller Mode -->
+      <div class="seller-section" style="padding: var(--spacing-lg); border: 1px solid var(--c-border); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <div class="seller-badge">SE ONLY</div>
+        <h4>Seller Mode: CPNI and CALEA Compliance</h4>
+        <p>"Telecom SEs: The CTO cares about network automation efficiency. The CISO cares about CPNI exposure. Lead with: 'Your NOC agents have access to every router config. Who approved that access, and when does it expire?'"</p>
       </div>
     </section>
 

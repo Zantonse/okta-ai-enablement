@@ -2420,6 +2420,32 @@
           SailPoint certifies access quarterly. But who issues the token when the agent calls Salesforce at 2 AM? Who enforces that the token scope is read-only, not admin? Who triggers a human approval when the agent tries to access sensitive data? That's Okta — runtime enforcement, not governance-time review. You need both.
         </div>
       </div>
+
+      <!-- Ecosystem Partners -->
+      <h3 style="margin-top: var(--spacing-xl);">Ecosystem Partners — "Better Together"</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Not every tool in the agent security stack is a competitor. These are complementary layers that work with Okta.</p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--spacing-md);">
+        <!-- Aembit -->
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+            <div style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-accent-green); color: #000; padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px;">Okta Ventures Portfolio</div>
+          </div>
+          <h4 style="margin-top: 0;">Aembit — Workload IAM</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Secretless access between workloads and AI agents. Aembit handles dynamic credential injection at the workload level so agents never hold static secrets. Okta Ventures invested — this is a partner, not a competitor.</p>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Boundary:</strong> Aembit = workload-to-workload secret injection. Okta = human-delegated authorization, OIDC token chain, cross-SaaS federation. Different layers of the same stack.</p>
+        </div>
+
+        <!-- HashiCorp Vault -->
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm);">
+            <div style="font-family: var(--font-mono); font-size: 0.7rem; background: var(--c-okta-blue); color: #fff; padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 1px;">Complementary</div>
+          </div>
+          <h4 style="margin-top: 0;">HashiCorp Vault — Infrastructure Secrets</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Vault manages secrets and dynamic credentials at the infrastructure level (database passwords, API keys, cloud IAM roles). Okta manages identity, delegation, and token exchange at the application/protocol level. Most enterprises run both.</p>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>Integration:</strong> Vault's Workload Identity Federation (WIF) uses Okta as the identity source that validates agent identity <em>before</em> issuing dynamic credentials. Okta says "this agent is who it claims to be." Vault says "here's the database password for 1 hour."</p>
+        </div>
+      </div>
     </section>
 
     <!-- Troubleshooting & Edge Cases -->
