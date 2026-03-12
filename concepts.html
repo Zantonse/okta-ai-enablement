@@ -912,6 +912,7 @@
       <div class="sidebar-label">SE Guide</div>
       <a class="sidebar-link" data-section="persona-messaging">Persona Messaging</a>
       <a class="sidebar-link" data-section="objection-framework">Objection Framework</a>
+      <a class="sidebar-link" data-section="ea-ga-status">EA/GA Status Reference</a>
     </div>
 
     <div class="sidebar-section">
@@ -1750,6 +1751,36 @@ curl --request POST \
             <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>WHY:</strong> The access token is the proof-of-authorization. It's scoped, short-lived, and traceable. Every API call is logged with who (agent), on behalf of whom (user), what scope, and when.</p>
           </div>
         </div>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">Token Exchange — Curl Example</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Steps 2 and 3 from above — the actual HTTP calls your agent makes.</p>
+
+      <div class="code-wrapper" style="margin-bottom: var(--spacing-md);">
+        <button class="copy-btn">Copy</button>
+        <pre><code><span class="cmt"># Step 2: Exchange ID token for ID-JAG (Okta org AS)</span>
+curl -X POST <span class="str">"https://{yourOktaDomain}/oauth2/v1/token"</span> \
+  -H <span class="str">"Content-Type: application/x-www-form-urlencoded"</span> \
+  -d <span class="str">"grant_type=urn:ietf:params:oauth:grant-type:token-exchange"</span> \
+  -d <span class="str">"requested_token_type=urn:ietf:params:oauth:token-type:id-jag"</span> \
+  -d <span class="str">"audience=https://{auth0TenantDomain}/"</span> \
+  -d <span class="str">"subject_token=${OKTA_ID_TOKEN}"</span> \
+  -d <span class="str">"subject_token_type=urn:ietf:params:oauth:token-type:id_token"</span> \
+  -d <span class="str">"client_id=${AGENT_CLIENT_ID}"</span> \
+  -d <span class="str">"client_secret=${AGENT_CLIENT_SECRET}"</span>
+
+<span class="cmt"># Step 3: Exchange ID-JAG for access token (Resource AS)</span>
+curl -X POST <span class="str">"https://{auth0TenantDomain}/oauth/token"</span> \
+  -H <span class="str">"Content-Type: application/x-www-form-urlencoded"</span> \
+  -d <span class="str">"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer"</span> \
+  -d <span class="str">"client_id=${AGENT_CLIENT_ID_IN_AUTH0}"</span> \
+  -d <span class="str">"client_secret=${AGENT_CLIENT_SECRET_IN_AUTH0}"</span> \
+  -d <span class="str">"scope=read:todos%20write:todos"</span> \
+  -d <span class="str">"assertion=${ID_JAG}"</span></code></pre>
+      </div>
+
+      <div class="callout" style="margin-bottom: var(--spacing-lg);">
+        <strong>Try it live:</strong> Walk through the full XAA flow interactively at <a href="https://xaa.dev" target="_blank" rel="noopener" style="color: var(--c-okta-blue);">xaa.dev</a> — free, no signup required. Walk through all 4 steps and inspect raw tokens. For the full Agent Registration API reference (<code>workload-principals/api/v1/</code>), see the <a href="agent-identity.html" style="color: var(--c-okta-blue);">Agent Identity page</a>.
       </div>
     </section>
 
@@ -3502,6 +3533,105 @@ curl --request POST \
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- EA/GA Feature Status Reference -->
+    <section id="ea-ga-status">
+      <h2>EA/GA Feature Status Reference</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Current availability as of March 2026. EA features require separate enablement.</p>
+
+      <div style="overflow-x: auto;">
+        <table class="integration-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Auth0 for AI Agents (core bundle)</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(31, 170, 88, 0.15); color: #1faa58; border: 1px solid rgba(31, 170, 88, 0.3);">GA</span></td>
+              <td>October 2025</td>
+              <td>Universal Login, FGA, Token Vault, CIBA SDKs</td>
+            </tr>
+            <tr>
+              <td>Auth0 Vertical Sample Apps</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(31, 170, 88, 0.15); color: #1faa58; border: 1px solid rgba(31, 170, 88, 0.3);">GA</span></td>
+              <td>September 2025</td>
+              <td>Reference implementations</td>
+            </tr>
+            <tr>
+              <td>Cross App Access (XAA) in Okta Workforce</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(212, 138, 0, 0.15); color: #d48a00; border: 1px solid rgba(212, 138, 0, 0.3);">EA (self-service)</span></td>
+              <td>January 2026</td>
+              <td>Enable via Settings &gt; Features</td>
+            </tr>
+            <tr>
+              <td>XAA as MCP authorization extension</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(31, 170, 88, 0.15); color: #1faa58; border: 1px solid rgba(31, 170, 88, 0.3);">Incorporated in MCP spec</span></td>
+              <td>November 2025</td>
+              <td>Enterprise-Managed Authorization</td>
+            </tr>
+            <tr>
+              <td>Token Vault (Auth0)</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(212, 138, 0, 0.15); color: #d48a00; border: 1px solid rgba(212, 138, 0, 0.3);">EA</span></td>
+              <td>~Q3/Q4 2025</td>
+              <td>Connected Accounts + token exchange</td>
+            </tr>
+            <tr>
+              <td>ISPM Agent Detection (SAM plugin)</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(212, 138, 0, 0.15); color: #d48a00; border: 1px solid rgba(212, 138, 0, 0.3);">EA</span></td>
+              <td>February 5, 2026</td>
+              <td>Chrome-only, 7-day lag</td>
+            </tr>
+            <tr>
+              <td>ISPM NHI visibility</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(31, 170, 88, 0.15); color: #1faa58; border: 1px solid rgba(31, 170, 88, 0.3);">GA</span></td>
+              <td>March 2025</td>
+              <td>Service accounts, API keys</td>
+            </tr>
+            <tr>
+              <td>ISPM OWASP NHI Top 10 detections</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(31, 170, 88, 0.15); color: #1faa58; border: 1px solid rgba(31, 170, 88, 0.3);">GA</span></td>
+              <td>2025</td>
+              <td>25+ prioritized detections</td>
+            </tr>
+            <tr>
+              <td>Okta for AI Agents Phase 1</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(212, 138, 0, 0.15); color: #d48a00; border: 1px solid rgba(212, 138, 0, 0.3);">EA</span></td>
+              <td>January 2026</td>
+              <td>ISPM, UD, IAM, OPA</td>
+            </tr>
+            <tr>
+              <td>Okta for AI Agents Phase 2</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(212, 138, 0, 0.15); color: #d48a00; border: 1px solid rgba(212, 138, 0, 0.3);">GA target</span></td>
+              <td>FY27</td>
+              <td>Access Certs, Extended Universal Logout</td>
+            </tr>
+            <tr>
+              <td>OPA with Axiom</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(212, 138, 0, 0.15); color: #d48a00; border: 1px solid rgba(212, 138, 0, 0.3);">EA</span></td>
+              <td>Q1 CY 2026</td>
+              <td>Privileged credential vaulting</td>
+            </tr>
+            <tr>
+              <td>xaa.dev playground</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(103, 66, 213, 0.15); color: #6742d5; border: 1px solid rgba(103, 66, 213, 0.3);">Beta</span></td>
+              <td>January 2026</td>
+              <td>Free, no-signup</td>
+            </tr>
+            <tr>
+              <td>Agent Registration API</td>
+              <td><span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: rgba(103, 66, 213, 0.15); color: #6742d5; border: 1px solid rgba(103, 66, 213, 0.3);">Beta</span></td>
+              <td>2026</td>
+              <td><code>workload-principals/api/v1/</code></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
