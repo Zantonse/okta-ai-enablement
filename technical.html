@@ -1109,8 +1109,10 @@
     <div class="sidebar-section">
       <div class="sidebar-label">Reference</div>
       <a class="sidebar-link" data-section="quick-ref">Quick Reference</a>
+      <a class="sidebar-link" data-section="sdk-reference">SDK Reference</a>
       <a class="sidebar-link" data-section="demo-envs">Demo Environments</a>
       <a class="sidebar-link" data-section="ea-limitations">EA Limitations</a>
+      <a class="sidebar-link" data-section="owasp-mapping">OWASP Mapping</a>
       <a class="sidebar-link" data-section="stats">Key Stats</a>
     </div>
 
@@ -2658,6 +2660,204 @@
       </div>
     </section>
 
+    <!-- Auth0 AI SDK Master Reference -->
+    <section id="sdk-reference">
+      <div class="card-label" style="margin-bottom: var(--spacing-sm);">AUTH0 AI SDK</div>
+      <h2>Auth0 AI SDK — Complete Package Reference</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">All SDK packages across JavaScript and Python, with install commands and framework mapping.</p>
+
+      <!-- Master Package Table -->
+      <h3>Master Package Table</h3>
+      <table class="integration-table" style="margin-bottom: var(--spacing-lg);">
+        <thead>
+          <tr>
+            <th>Package</th>
+            <th>Language</th>
+            <th>Framework</th>
+            <th>Install Command</th>
+            <th>Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>@auth0/ai</code></td>
+            <td>TypeScript</td>
+            <td>Base (no framework)</td>
+            <td><code>npm install @auth0/ai</code></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td><code>@auth0/ai-langchain</code></td>
+            <td>TypeScript</td>
+            <td>LangChain / LangGraph</td>
+            <td><code>npm install @auth0/ai-langchain</code></td>
+            <td>4.x</td>
+          </tr>
+          <tr>
+            <td><code>@auth0/ai-llamaindex</code></td>
+            <td>TypeScript</td>
+            <td>LlamaIndex.TS</td>
+            <td><code>npm install @auth0/ai-llamaindex</code></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td><code>@auth0/ai-vercel</code></td>
+            <td>TypeScript</td>
+            <td>Vercel AI SDK</td>
+            <td><code>npm install @auth0/ai-vercel</code></td>
+            <td>5.1.0</td>
+          </tr>
+          <tr>
+            <td><code>@auth0/ai-genkit</code></td>
+            <td>TypeScript</td>
+            <td>Firebase Genkit</td>
+            <td><code>npm install @auth0/ai-genkit</code></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td><code>@auth0/ai-redis</code></td>
+            <td>TypeScript</td>
+            <td>Redis persistence</td>
+            <td><code>npm install @auth0/ai-redis</code></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td><code>auth0-ai-langchain</code></td>
+            <td>Python</td>
+            <td>LangChain / LangGraph</td>
+            <td><code>pip install auth0-ai-langchain</code></td>
+            <td>1.0.2</td>
+          </tr>
+          <tr>
+            <td><code>auth0-ai-llamaindex</code></td>
+            <td>Python</td>
+            <td>LlamaIndex</td>
+            <td><code>pip install auth0-ai-llamaindex</code></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Source Repositories -->
+      <h3>Source Repositories</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <p style="margin-bottom: var(--spacing-sm);"><strong>JS monorepo:</strong> <a href="https://github.com/auth0/auth0-ai-js" target="_blank" style="font-family: var(--font-mono); font-size: 0.9rem;">github.com/auth0/auth0-ai-js</a></p>
+        <p style="margin-bottom: 0;"><strong>Python packages:</strong> <a href="https://github.com/auth0/auth0-ai-python" target="_blank" style="font-family: var(--font-mono); font-size: 0.9rem;">github.com/auth0/auth0-ai-python</a></p>
+      </div>
+
+      <!-- Framework Decision Guide -->
+      <h3>Framework Decision Guide</h3>
+      <table class="integration-table" style="margin-bottom: var(--spacing-lg);">
+        <thead>
+          <tr>
+            <th>If your stack uses...</th>
+            <th>Install</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LangChain / LangGraph (JS)</td>
+            <td><code>@auth0/ai-langchain</code></td>
+          </tr>
+          <tr>
+            <td>LangChain / LangGraph (Python)</td>
+            <td><code>auth0-ai-langchain</code></td>
+          </tr>
+          <tr>
+            <td>Vercel AI SDK / Next.js</td>
+            <td><code>@auth0/ai-vercel</code></td>
+          </tr>
+          <tr>
+            <td>LlamaIndex (JS or Python)</td>
+            <td><code>@auth0/ai-llamaindex</code> or <code>auth0-ai-llamaindex</code></td>
+          </tr>
+          <tr>
+            <td>Firebase Genkit</td>
+            <td><code>@auth0/ai-genkit</code></td>
+          </tr>
+          <tr>
+            <td>Custom / No framework</td>
+            <td><code>@auth0/ai</code> (base package)</td>
+          </tr>
+          <tr>
+            <td>Need CIBA state persistence</td>
+            <td>Add <code>@auth0/ai-redis</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Key Capabilities Per Package -->
+      <h3>Key Capabilities Per Package</h3>
+      <table class="integration-table" style="margin-bottom: var(--spacing-lg);">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>LangChain JS</th>
+            <th>LangChain Py</th>
+            <th>Vercel AI</th>
+            <th>LlamaIndex</th>
+            <th>Base</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>FGARetriever (RAG)</td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>FGAFilter</td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check-mark">Yes</span></td>
+          </tr>
+          <tr>
+            <td>withTokenVault</td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>withAsyncAuthorization (CIBA)</td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>GraphResumer (CIBA polling)</td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td>withFGA (tool-level authz)</td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="check-mark">Yes</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="check-mark">Yes</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Version Pinning Warning -->
+      <div class="callout" style="border-left-color: var(--c-accent-amber); background: linear-gradient(135deg, rgba(212,138,0,0.08), rgba(0,102,204,0.05));">
+        <strong>Version Pinning Warning</strong>
+        These SDKs are under heavy development. The v4&rarr;v5&rarr;v6 jumps happened within months. Pin to specific versions in production. Lock files are essential.
+      </div>
+    </section>
+
     <!-- Demo Environments -->
     <section id="demo-envs">
       <div class="card-label" style="margin-bottom: var(--spacing-sm);">DEMO ENVIRONMENTS</div>
@@ -2830,6 +3030,130 @@
               <li><strong>7-day initial data lag</strong> — After deploying the SAM plugin, expect a 7-day delay before meaningful discovery data appears in ISPM dashboards.</li>
               <li><strong>ISPM is reactive, not preventive</strong> — ISPM discovers existing OAuth grants and shadow AI usage. It does not block new grants at the point of authorization.</li>
             </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OWASP Cross-Mapping -->
+    <section id="owasp-mapping">
+      <div class="card-label" style="margin-bottom: var(--spacing-sm);">SECURITY FRAMEWORK</div>
+      <h2>OWASP Cross-Mapping — Capability vs. Risk Framework</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">How each Okta/Auth0 capability maps to the three major AI/NHI security risk frameworks. Use this table with security architects and auditors.</p>
+
+      <!-- Main Mapping Table -->
+      <table class="integration-table" style="margin-bottom: var(--spacing-lg);">
+        <thead>
+          <tr>
+            <th style="min-width: 180px;">Okta/Auth0 Capability</th>
+            <th>OWASP Agentic Top 10</th>
+            <th>OWASP LLM Top 10 (2025)</th>
+            <th>OWASP NHI Top 10</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Cross-App Access (XAA)</strong></td>
+            <td>AG01: Excessive Agency — scoped delegation</td>
+            <td>LLM06: Excessive Agency — least-privilege tokens</td>
+            <td>NHI-03: Insecure Auth — replaces static keys with JIT tokens</td>
+          </tr>
+          <tr>
+            <td><strong>Token Vault</strong></td>
+            <td>AG02: Insecure Tool Integrations — credentials never in agent code</td>
+            <td>LLM06: Excessive Agency — scoped provider access</td>
+            <td>NHI-01: Improper Offboarding — centralized token lifecycle</td>
+          </tr>
+          <tr>
+            <td><strong>CIBA (Async Auth)</strong></td>
+            <td>AG01: Excessive Agency — human approval for high-value actions</td>
+            <td>LLM06: Excessive Agency — step-up for sensitive ops</td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td><strong>FGA for RAG</strong></td>
+            <td>AG05: Insufficient Input Validation — authorization-filtered context</td>
+            <td>LLM02: Sensitive Info Disclosure — document-level access control</td>
+            <td><span class="dash">—</span></td>
+          </tr>
+          <tr>
+            <td><strong>Agent Registry (UD)</strong></td>
+            <td>AG04: Inadequate Sandboxing — registered identity per agent</td>
+            <td><span class="dash">—</span></td>
+            <td>NHI-02: Secret Leakage — credential rotation policies</td>
+          </tr>
+          <tr>
+            <td><strong>ISPM Agent Discovery</strong></td>
+            <td>AG10: Insufficient Logging — shadow agent visibility</td>
+            <td><span class="dash">—</span></td>
+            <td>NHI-09: Unauthorized Access — OAuth grant audit</td>
+          </tr>
+          <tr>
+            <td><strong>MCP Authorization</strong></td>
+            <td>AG02: Insecure Tool Integrations — OAuth-gated MCP access</td>
+            <td>LLM04: Data Poisoning — audience-bound tokens prevent passthrough</td>
+            <td>NHI-04: Insecure Auth Grants — scoped MCP tokens</td>
+          </tr>
+          <tr>
+            <td><strong>Identity Governance (OIG)</strong></td>
+            <td>AG08: Insufficient Access Controls — automated access reviews</td>
+            <td><span class="dash">—</span></td>
+            <td>NHI-05: Over-Privileged Access — certification workflows</td>
+          </tr>
+          <tr>
+            <td><strong>Privileged Access (OPA)</strong></td>
+            <td>AG04: Inadequate Sandboxing — vaulted credentials with rotation</td>
+            <td><span class="dash">—</span></td>
+            <td>NHI-02: Secret Leakage — automated rotation, JIT checkout</td>
+          </tr>
+          <tr>
+            <td><strong>Identity Threat Protection (ITP)</strong></td>
+            <td>AG10: Insufficient Logging — behavioral analytics</td>
+            <td>LLM09: Misinformation — anomaly detection for agent drift</td>
+            <td>NHI-07: Insecure Secrets — Universal Logout on threat detection</td>
+          </tr>
+          <tr>
+            <td><strong>AI Gateway</strong></td>
+            <td>AG05: Insufficient Input Validation — prompt injection defense</td>
+            <td>LLM01: Prompt Injection — input/output guardrails</td>
+            <td><span class="dash">—</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- How to Use This Table callout -->
+      <div class="callout positioning-callout">
+        <strong>How to Use This Table</strong>
+        In SE conversations with security architects or CISOs, use this table to show coverage breadth. Most competitors address 1-2 columns. Okta's platform spans all three because AI agent security requires both identity controls (NHI) AND AI-specific controls (LLM/Agentic). The question isn't "do you need OWASP compliance?" — it's "which OWASP list does your team follow?" and Okta covers all of them.
+      </div>
+
+      <!-- Three Framework Reference Cards -->
+      <h3 style="margin-top: var(--spacing-lg);">Three Framework Reference Cards</h3>
+      <div class="cards-grid">
+        <div class="card" style="border-left: 4px solid var(--c-accent-amber);">
+          <div class="card-label" style="color: var(--c-accent-amber);">OWASP Agentic Top 10 — Dec 2025</div>
+          <div class="card-title">Top 10 for Agentic Security</div>
+          <div class="card-content">
+            <p style="margin-bottom: var(--spacing-sm);">Focus: AI agent behavioral risks — how agents interact with tools, data, and humans.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem;"><strong>Key risks:</strong> Excessive Agency (AG01), Insecure Tool Integrations (AG02), Insufficient Logging (AG10)</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--c-auth0-purple);">
+          <div class="card-label" style="color: var(--c-auth0-purple);">OWASP LLM Top 10 — 2025</div>
+          <div class="card-title">Top 10 for LLMs</div>
+          <div class="card-content">
+            <p style="margin-bottom: var(--spacing-sm);">Focus: LLM-specific vulnerabilities — prompt injection, data leakage, model manipulation.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem;"><strong>Key risks:</strong> Prompt Injection (LLM01), Sensitive Info Disclosure (LLM02), Excessive Agency (LLM06)</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--c-accent-cyan);">
+          <div class="card-label" style="color: var(--c-accent-cyan);">OWASP NHI Top 10 — 2025</div>
+          <div class="card-title">Top 10 for Non-Human Identities</div>
+          <div class="card-content">
+            <p style="margin-bottom: var(--spacing-sm);">Focus: Machine identity hygiene — secrets, tokens, service accounts, API keys.</p>
+            <p style="color: var(--c-text-secondary); font-size: 0.9rem;"><strong>Key risks:</strong> Improper Offboarding (NHI-01), Secret Leakage (NHI-02), Insecure Auth (NHI-03)</p>
           </div>
         </div>
       </div>

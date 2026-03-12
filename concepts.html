@@ -864,6 +864,7 @@
     <div class="sidebar-section">
       <div class="sidebar-label">Auth Flows</div>
       <a class="sidebar-link" data-section="obo-flows">On-Behalf-Of (OBO)</a>
+      <a class="sidebar-link" data-section="token-vault-concepts" style="padding-left: 2rem; font-size: 0.875rem;">Token Vault Concepts</a>
       <a class="sidebar-link" data-section="autonomous-flows">Autonomous (M2M)</a>
       <a class="sidebar-link" data-section="a2a-protocol">Agent-to-Agent (A2A)</a>
     </div>
@@ -880,6 +881,7 @@
       <a class="sidebar-link" data-section="fga-rebac">FGA / ReBAC</a>
       <a class="sidebar-link" data-section="ciba">CIBA</a>
       <a class="sidebar-link" data-section="mcp-auth">MCP Authorization</a>
+      <a class="sidebar-link" href="#mcp-auth-patterns" style="padding-left: 2rem; font-size: 0.875rem;">MCP Auth Patterns</a>
     </div>
 
     <div class="sidebar-section">
@@ -1429,6 +1431,125 @@
 
       <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-green);">
         <strong>EU AI Act Compliance:</strong> OBO flows provide demonstrable human oversight (Article 14) because every agent action traces back to an authenticated user who authorized the delegation. The <code>act</code> claim creates the audit chain regulators require.
+      </div>
+    </section>
+
+    <!-- Token Vault Concepts Section -->
+    <section id="token-vault-concepts">
+      <h2>Token Vault — How It Works</h2>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">Auth0 Token Vault is the secure credential store that allows agents to access third-party APIs (Google, Slack, GitHub, Salesforce, etc.) on behalf of users. Provider OAuth tokens are stored in an encrypted vault — your app and your agent never touch raw credentials.</p>
+
+      <!-- Connected Accounts Lifecycle -->
+      <h3 style="margin-top: var(--spacing-lg);">Connected Accounts Lifecycle</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Every provider credential moves through five phases from initial consent to removal.</p>
+
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); margin-top: var(--spacing-md);">
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-auth0-purple); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">1</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Acquisition</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">User completes Connected Accounts consent. Provider returns access + refresh tokens to Auth0. Endpoint: <code>POST /me/v1/connected-accounts/connect</code></p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-auth0-purple); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">2</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Storage</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Encrypted in Auth0 Token Vault, linked to <code>connected_accounts[]</code> on user profile. Never stored in your database.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-auth0-purple); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">3</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Refresh</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">When agent calls token exchange: if the provider access token is expired, Auth0 automatically uses the stored refresh token. Transparent to your code — the agent always gets a valid token.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-auth0-purple); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">4</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Expiration</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Auth0 deletes provider refresh tokens when the provider sets expiry, or when a token has been unused for 1 year.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--c-auth0-purple); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">5</div>
+          <div style="flex: 1; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+            <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Revocation</h4>
+            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Deleting the connected account removes tokens from vault. Does NOT revoke with the provider — that must be done separately via the provider's token revocation endpoint.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Three Exchange Types -->
+      <h3 style="margin-top: var(--spacing-lg);">Three Exchange Types</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Token Vault supports three token exchange patterns depending on the client architecture.</p>
+
+      <div class="cards-grid" style="margin-top: var(--spacing-md);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-auth0-purple); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-auth0-purple); margin-bottom: var(--spacing-sm);">Type 1 — Most Common</div>
+          <h4 style="margin-top: 0;">Refresh Token Exchange</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">For web and mobile apps. Agent sends Auth0 refresh token, gets back provider access token.</p>
+          <div style="background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem; color: var(--c-text-secondary);">
+            <code>subject_token_type</code>: <span style="color: var(--c-accent-green);">urn:ietf:params:oauth:token-type:refresh_token</span>
+          </div>
+        </div>
+
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-okta-blue); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-okta-blue); margin-bottom: var(--spacing-sm);">Type 2 — SPAs</div>
+          <h4 style="margin-top: 0;">Access Token Exchange</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">For SPAs calling backend APIs. Backend exchanges SPA's access token for provider token.</p>
+          <div style="background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem; color: var(--c-text-secondary);">
+            <code>subject_token_type</code>: <span style="color: var(--c-accent-green);">urn:ietf:params:oauth:token-type:access_token</span>
+          </div>
+        </div>
+
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-accent-amber); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-accent-amber); margin-bottom: var(--spacing-sm);">Type 3 — M2M</div>
+          <h4 style="margin-top: 0;">Privileged Worker Exchange</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">For M2M and backend service-to-service. Uses signed JWT bearer token for backend services without a user session.</p>
+          <div style="background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem; color: var(--c-text-secondary);">
+            Uses signed JWT bearer token
+          </div>
+        </div>
+      </div>
+
+      <!-- Token Exchange Example -->
+      <h3 style="margin-top: var(--spacing-lg);">Token Exchange Request</h3>
+      <div class="code-wrapper">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code><span class="cmt"># Type 1: Refresh Token Exchange (most common)</span>
+curl --request POST <span class="str">'https://{yourDomain}/oauth/token'</span> \
+  --data <span class="str">'{
+    "client_id": "&lt;CLIENT_ID&gt;",
+    "client_secret": "&lt;CLIENT_SECRET&gt;",
+    "subject_token": "&lt;AUTH0_REFRESH_TOKEN&gt;",
+    "grant_type": "urn:auth0:params:oauth:grant-type:token-exchange:federated-connection-access-token",
+    "subject_token_type": "urn:ietf:params:oauth:token-type:refresh_token",
+    "requested_token_type": "http://auth0.com/oauth/token-type/federated-connection-access-token",
+    "connection": "google-oauth2"
+  }'</span></code></pre>
+      </div>
+
+      <!-- Security Properties -->
+      <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-green);">
+        <strong>Security Properties:</strong>
+        <ul style="margin-top: var(--spacing-sm); margin-bottom: 0; padding-left: var(--spacing-lg); font-style: normal;">
+          <li>Provider refresh tokens NEVER leave Auth0's vault</li>
+          <li>Agent only sees short-lived, scoped access tokens</li>
+          <li>Token exchange is server-to-server only — never exposed to the frontend</li>
+          <li>DPoP support for sender-constraining tokens</li>
+        </ul>
+      </div>
+
+      <!-- Critical Constraints -->
+      <div style="background: linear-gradient(135deg, rgba(224, 62, 77, 0.08), rgba(212, 138, 0, 0.08)); border: 1px solid var(--c-border); border-left: 4px solid var(--c-accent-red); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-top: var(--spacing-lg);">
+        <strong style="display: block; font-style: normal; color: var(--c-accent-red); margin-bottom: var(--spacing-sm);">Critical Constraints</strong>
+        <ul style="margin-bottom: 0; padding-left: var(--spacing-lg); color: var(--c-text-secondary);">
+          <li style="margin-bottom: var(--spacing-xs);"><strong style="color: var(--c-text);">Disable refresh token rotation</strong> for applications using Token Vault — rotation breaks the vault's ability to use stored refresh tokens</li>
+          <li style="margin-bottom: var(--spacing-xs);"><strong style="color: var(--c-text);">MFA "Always" policy breaks token exchanges</strong> — set to "Never" and use Actions for selective MFA enforcement</li>
+          <li><strong style="color: var(--c-text);">Client requirements:</strong> <code>is_first_party: true</code>, confidential client, OIDC conformant</li>
+        </ul>
       </div>
     </section>
 
@@ -2201,6 +2322,167 @@ curl -X POST <span class="str">"https://{auth0TenantDomain}/oauth/token"</span> 
       <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-accent-amber);">
         <strong>Timeout Strategy:</strong> Default: 300 seconds (5 minutes). If the user doesn't respond, the request expires. For high-value transactions, consider shorter timeouts (60-120 seconds) to reduce the window for social engineering.
       </div>
+
+      <!-- CIBA API Mechanics -->
+      <h3 style="margin-top: var(--spacing-xl);">CIBA API Mechanics</h3>
+
+      <h4 style="margin-top: var(--spacing-lg);">1. bc-authorize Request</h4>
+      <div class="code-wrapper">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>curl <span class="str">'https://{domain}.auth0.com/bc-authorize'</span> \
+  --request POST \
+  --header <span class="str">'Content-Type: application/x-www-form-urlencoded'</span> \
+  --data-urlencode <span class="str">'client_id={CLIENT_ID}'</span> \
+  --data-urlencode <span class="str">'client_secret={CLIENT_SECRET}'</span> \
+  --data-urlencode <span class="str">'login_hint={"format": "iss_sub", "iss": "https://{domain}.auth0.com/", "sub":"{USER_ID}"}'</span> \
+  --data-urlencode <span class="str">'audience=https://api.example.com'</span> \
+  --data-urlencode <span class="str">'binding_message=Confirm payment of 2500'</span> \
+  --data-urlencode <span class="str">'scope=openid'</span> \
+  --data-urlencode <span class="str">'authorization_details=[{"type": "money_transfer", "instructedAmount": {"amount": 2500, "currency": "USD"}, "beneficiary": "Hanna Herwitz"}]'</span></code></pre>
+      </div>
+
+      <h4 style="margin-top: var(--spacing-lg);">2. Acknowledgment Response</h4>
+      <div class="code-wrapper">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>{
+  <span class="attr">"auth_req_id"</span>: <span class="str">"eyJh..."</span>,
+  <span class="attr">"expires_in"</span>: <span class="num">300</span>,
+  <span class="attr">"interval"</span>: <span class="num">5</span>
+}</code></pre>
+      </div>
+
+      <h4 style="margin-top: var(--spacing-lg);">3. Polling for Token</h4>
+      <div class="code-wrapper">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>curl <span class="str">'https://{domain}.auth0.com/oauth/token'</span> \
+  --data-urlencode <span class="str">'client_id={CLIENT_ID}'</span> \
+  --data-urlencode <span class="str">'client_secret={CLIENT_SECRET}'</span> \
+  --data-urlencode <span class="str">'auth_req_id={AUTH_REQ_ID}'</span> \
+  --data-urlencode <span class="str">'grant_type=urn:openid:params:grant-type:ciba'</span></code></pre>
+      </div>
+
+      <h4 style="margin-top: var(--spacing-lg);">Poll Response States</h4>
+      <div class="cards-grid" style="margin-top: var(--spacing-md);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-accent-amber); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-accent-amber); margin-bottom: var(--spacing-sm);">Pending</div>
+          <pre style="margin-bottom: var(--spacing-sm);"><code>{<span class="attr">"error"</span>: <span class="str">"authorization_pending"</span>}</code></pre>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0; font-size: 0.9rem;">Keep polling at the specified interval</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-accent-amber); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-accent-amber); margin-bottom: var(--spacing-sm);">Too Fast</div>
+          <pre style="margin-bottom: var(--spacing-sm);"><code>{<span class="attr">"error"</span>: <span class="str">"slow_down"</span>, <span class="attr">"interval"</span>: <span class="num">10</span>}</code></pre>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0; font-size: 0.9rem;">Back off — increase interval by the given value</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 3px solid var(--c-accent-red); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-accent-red); margin-bottom: var(--spacing-sm);">Denied / Expired</div>
+          <pre style="margin-bottom: var(--spacing-sm);"><code>{<span class="attr">"error"</span>: <span class="str">"access_denied"</span>}</code></pre>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0; font-size: 0.9rem;">User denied or request timed out — new bc-authorize request required</p>
+        </div>
+      </div>
+
+      <h4 style="margin-top: var(--spacing-lg);">4. Approved Response (with RAR)</h4>
+      <div class="code-wrapper">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>{
+  <span class="attr">"access_token"</span>: <span class="str">"ey...ZQ"</span>,
+  <span class="attr">"expires_in"</span>: <span class="num">86400</span>,
+  <span class="attr">"authorization_details"</span>: [{
+    <span class="attr">"type"</span>: <span class="str">"money_transfer"</span>,
+    <span class="attr">"instructedAmount"</span>: {<span class="attr">"amount"</span>: <span class="num">2500</span>, <span class="attr">"currency"</span>: <span class="str">"USD"</span>},
+    <span class="attr">"beneficiary"</span>: <span class="str">"Hanna Herwitz"</span>
+  }],
+  <span class="attr">"token_type"</span>: <span class="str">"Bearer"</span>
+}</code></pre>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">Channel Selection Logic</h3>
+      <table class="integration-table" style="margin-top: var(--spacing-md);">
+        <thead>
+          <tr>
+            <th>Condition</th>
+            <th>Channel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>requested_expiry</code> &le; 300s AND user enrolled in Guardian</td>
+            <td>Guardian push notification</td>
+          </tr>
+          <tr>
+            <td><code>requested_expiry</code> 301–259,200s</td>
+            <td>Email notification</td>
+          </tr>
+          <tr>
+            <td>User not enrolled in Guardian</td>
+            <td>Falls back to email</td>
+          </tr>
+          <tr>
+            <td>User email not verified</td>
+            <td>Request rejected</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top: var(--spacing-lg);">RAR Examples</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Rich Authorization Request (RAR) payloads encode exactly what the agent is requesting — users see precise context when approving.</p>
+
+      <div class="cards-grid" style="margin-top: var(--spacing-md);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Payment</div>
+          <pre style="font-size: 0.8rem; margin-bottom: 0;"><code>{<span class="attr">"type"</span>: <span class="str">"money_transfer"</span>,
+ <span class="attr">"amount"</span>: <span class="num">2500</span>,
+ <span class="attr">"currency"</span>: <span class="str">"USD"</span>}</code></pre>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Calendar</div>
+          <pre style="font-size: 0.8rem; margin-bottom: 0;"><code>{<span class="attr">"type"</span>: <span class="str">"calendar_booking"</span>,
+ <span class="attr">"appointment"</span>: <span class="str">"Doctor's Appointment"</span>,
+ <span class="attr">"new_time"</span>: <span class="str">"2026-03-15T14:00:00Z"</span>}</code></pre>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">Deployment</div>
+          <pre style="font-size: 0.8rem; margin-bottom: 0;"><code>{<span class="attr">"type"</span>: <span class="str">"deployment"</span>,
+ <span class="attr">"environment"</span>: <span class="str">"production"</span>,
+ <span class="attr">"service"</span>: <span class="str">"api-gateway"</span>,
+ <span class="attr">"version"</span>: <span class="str">"v2.3.1"</span>}</code></pre>
+        </div>
+      </div>
+
+      <h3 style="margin-top: var(--spacing-lg);">Limits Reference</h3>
+      <table class="integration-table" style="margin-top: var(--spacing-md);">
+        <thead>
+          <tr>
+            <th>Limit</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Max CIBA requests / minute / tenant</td>
+            <td><strong>500</strong></td>
+          </tr>
+          <tr>
+            <td>Max pending requests / tenant</td>
+            <td><strong>5,000</strong></td>
+          </tr>
+          <tr>
+            <td>Default <code>requested_expiry</code></td>
+            <td><strong>300 seconds</strong></td>
+          </tr>
+          <tr>
+            <td>Max <code>requested_expiry</code></td>
+            <td><strong>259,200 seconds (72 hours)</strong></td>
+          </tr>
+          <tr>
+            <td><code>binding_message</code> max length</td>
+            <td><strong>64 characters</strong></td>
+          </tr>
+          <tr>
+            <td>Polling interval</td>
+            <td><strong>~5 seconds minimum</strong></td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- MCP Authorization Section -->
@@ -2337,6 +2619,145 @@ curl -X POST <span class="str">"https://{auth0TenantDomain}/oauth/token"</span> 
       <div class="callout" style="margin-top: var(--spacing-lg); border-left-color: var(--c-auth0-purple);">
         <strong>MCP + A2A:</strong> Google's Agent2Agent (A2A) protocol (April 2025, 50+ partners) is <strong>complementary to MCP</strong>. MCP handles agent-to-resource connections; A2A handles agent-to-agent delegation. Both use OAuth Bearer tokens — Okta/Auth0 is the authorization server for both.
       </div>
+
+      <!-- MCP Authorization Patterns subsection -->
+      <h3 id="mcp-auth-patterns" style="margin-top: var(--spacing-xl); scroll-margin-top: 120px;">MCP Authorization Patterns</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-lg);">The MCP Auth Spec (2025-06-18) defines two distinct authorization architectures. Understanding which pattern to recommend is critical for SE conversations about enterprise MCP deployments.</p>
+
+      <!-- Pattern A -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-okta-blue); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-okta-blue); margin-bottom: var(--spacing-sm);">Pattern A</div>
+        <h4 style="margin-top: 0; color: var(--c-okta-blue);">Okta as Separated External Authorization Server (MCP Spec-Compliant)</h4>
+        <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">The MCP server is an OAuth 2.1 Resource Server. Okta is the Authorization Server. The MCP client (Claude Desktop, VS Code Copilot, etc.) is the OAuth 2.1 client. This is the standard pattern defined by the MCP Auth Specification — the AS is intentionally separated from the MCP server itself.</p>
+
+        <h4 style="margin-top: var(--spacing-md);">Discovery Sequence</h4>
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">1</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">MCP client sends unauthenticated request to MCP server</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">2</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">MCP server returns <code>HTTP 401</code> with <code>WWW-Authenticate</code> header pointing to Protected Resource Metadata URL</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">3</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">Client fetches <code>/.well-known/oauth-protected-resource</code> — contains <code>authorization_servers</code> array pointing to Okta's issuer URL</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">4</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">Client fetches Okta's <code>/.well-known/oauth-authorization-server</code> for token and auth endpoints</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">5</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">Full OAuth 2.1 Authorization Code + PKCE flow runs against Okta</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">6</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">Client sends the <code>resource</code> parameter (RFC 8707) in both auth and token requests</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">7</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">Okta issues a scoped access token bound to that specific MCP server audience</div>
+          </div>
+          <div style="display: flex; align-items: stretch; gap: var(--spacing-md);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-okta-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">8</div>
+            <div style="flex: 1; background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); font-size: 0.9rem;">Client sends <code>Authorization: Bearer &lt;token&gt;</code> on every subsequent request</div>
+          </div>
+        </div>
+
+        <h4 style="margin-top: var(--spacing-md);">Protected Resource Metadata Document</h4>
+        <div class="code-wrapper">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code>{
+  <span class="attr">"resource"</span>: <span class="str">"https://your-mcp-server.example.com/mcp"</span>,
+  <span class="attr">"authorization_servers"</span>: [<span class="str">"https://your-okta-domain.okta.com/oauth2/your-auth-server-id"</span>]
+}</code></pre>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+          <div style="background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md);">
+            <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-text-secondary); margin-bottom: 4px;">Standards Mandated</div>
+            <div style="font-size: 0.85rem; color: var(--c-text);">OAuth 2.1 &bull; RFC 8414 &bull; RFC 9728 &bull; RFC 8707 &bull; RFC 7591 (recommended) &bull; PKCE mandatory</div>
+          </div>
+          <div style="background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md);">
+            <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-text-secondary); margin-bottom: 4px;">Token Rules</div>
+            <div style="font-size: 0.85rem; color: var(--c-text);">Bearer on every request &bull; Server MUST validate audience &bull; Token passthrough forbidden &bull; HTTP 401 invalid/expired &bull; HTTP 403 insufficient scope</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pattern B -->
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-left: 4px solid var(--c-auth0-purple); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--c-auth0-purple); margin-bottom: var(--spacing-sm);">Pattern B</div>
+        <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Cross-App Access (XAA) / ID-JAG as Enterprise Extension</h4>
+        <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Okta's native enterprise pattern. Eliminates user consent screens — admins control everything centrally. The MCP Resource Server's authorization server validates the ID-JAG and issues access tokens. This pattern is designed for enterprise-managed agent deployments where user-facing OAuth consent flows would be disruptive or impractical.</p>
+
+        <h4 style="margin-top: var(--spacing-md);">Flow</h4>
+        <div style="background: var(--c-bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); font-family: var(--font-mono); font-size: 0.85rem; line-height: 2; overflow-x: auto;">
+          User SSO &rarr; ID token &rarr; Token Exchange at Okta Org AS &rarr; ID-JAG &rarr; JWT Bearer Grant at Resource AS &rarr; Access Token &rarr; MCP Server API calls
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+          <div style="background: rgba(103, 66, 213, 0.08); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md);">
+            <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-auth0-purple); margin-bottom: 4px;">Benefits</div>
+            <div style="font-size: 0.85rem; color: var(--c-text);">No consent screens &bull; Centralized admin policy control &bull; Cross-trust-domain delegation &bull; Managed Connections + scope policies</div>
+          </div>
+          <div style="background: rgba(103, 66, 213, 0.08); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md);">
+            <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--c-auth0-purple); margin-bottom: 4px;">Standard</div>
+            <div style="font-size: 0.85rem; color: var(--c-text);">IETF draft-ietf-oauth-identity-assertion-authz-grant</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- When to Use Each -->
+      <h4 style="margin-top: var(--spacing-lg);">When to Use Each Pattern</h4>
+      <table class="integration-table" style="margin-top: var(--spacing-md);">
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th style="color: var(--c-okta-blue);">Pattern A (Separated AS)</th>
+            <th style="color: var(--c-auth0-purple);">Pattern B (XAA/ID-JAG)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Use when</strong></td>
+            <td>MCP server is a generic tool, standard OAuth audience</td>
+            <td>Enterprise-managed agent-to-app delegation</td>
+          </tr>
+          <tr>
+            <td><strong>User interaction</strong></td>
+            <td>Standard OAuth consent screen</td>
+            <td>No consent — admin-managed connections</td>
+          </tr>
+          <tr>
+            <td><strong>Trust model</strong></td>
+            <td>MCP client authenticates directly to Okta</td>
+            <td>Agent presents ID-JAG across trust domains</td>
+          </tr>
+          <tr>
+            <td><strong>Token type</strong></td>
+            <td>Standard Bearer access token</td>
+            <td>ID-JAG &rarr; then Bearer access token</td>
+          </tr>
+          <tr>
+            <td><strong>Admin control</strong></td>
+            <td>Okta access policies on custom AS</td>
+            <td>Managed Connections + scope policies</td>
+          </tr>
+          <tr>
+            <td><strong>Standards</strong></td>
+            <td>MCP Auth Spec (2025-06-18)</td>
+            <td>IETF draft-ietf-oauth-identity-assertion-authz-grant</td>
+          </tr>
+          <tr>
+            <td><strong>Best for</strong></td>
+            <td>Developer tools, generic MCP clients</td>
+            <td>Enterprise agents accessing internal SaaS</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
     <!-- RAG Security Section -->
