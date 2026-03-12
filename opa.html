@@ -483,6 +483,61 @@ footer p{font-size:12px;color:var(--c-text-dim)}
 <!-- ─── Main Content ─── -->
 <div class="content-area">
 
+  <!-- ─── EA/GA Status Banner ─── -->
+  <section class="section-block" id="ea-ga-status" style="margin-bottom:48px">
+    <div class="section-block-header">
+      <div class="section-block-number" style="background:var(--c-accent-amber)">!</div>
+      <h2 class="section-block-title">EA / GA Status &amp; SKU Context</h2>
+    </div>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Capability / SKU</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Okta Privileged Access with Axiom</strong></td>
+          <td><span class="badge badge-amber">EA</span></td>
+          <td>Early Access, Q1 CY 2026</td>
+        </tr>
+        <tr>
+          <td><strong>OPA Workload Identity Resource Unit</strong></td>
+          <td><span class="badge badge-blue">Billing Unit</span></td>
+          <td>Part of the "Okta for AI Agents" SKU; per-agent billing unit for vaulted credentials</td>
+        </tr>
+        <tr>
+          <td><strong>Managed Connections — Authorization Server</strong></td>
+          <td><span class="badge badge-green">Available</span></td>
+          <td>XAA path; agent gets scoped OAuth access token for downstream APIs</td>
+        </tr>
+        <tr>
+          <td><strong>Managed Connections — Secret</strong></td>
+          <td><span class="badge badge-green">Available</span></td>
+          <td>OPA vault; static API keys, certificates, and connection strings</td>
+        </tr>
+        <tr>
+          <td><strong>Managed Connections — Service Account</strong></td>
+          <td><span class="badge badge-green">Available</span></td>
+          <td>OPA vault via Universal Directory; Windows service accounts, AD-bound systems</td>
+        </tr>
+        <tr>
+          <td><strong>OIG Access Certifications for AI Agents</strong></td>
+          <td><span class="badge badge-purple">Phase 2</span></td>
+          <td>AI agent lifecycle integration with OIG certification campaigns; GA target FY27</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="okta-note" style="margin-top:16px">
+      <div class="callout-title">Managed Connections Resource Types</div>
+      OPA's Managed Connections supports three credential resource types: <strong>Authorization Server</strong> (XAA path — agent receives a scoped OAuth access token), <strong>Secret</strong> (OPA vault — static credentials, API keys, certificates), and <strong>Service Account</strong> (OPA vault via Universal Directory — Windows / AD / LDAP service account credentials with rotation).
+    </div>
+  </section>
+
   <!-- ─── Section 1: The Secrets Problem ─── -->
   <section class="section-block" id="secrets-problem">
     <div class="section-block-header">
@@ -1116,6 +1171,40 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
       </div>
     </div>
 
+  </section>
+
+  <!-- ─── Section 7: Current Limitations ─── -->
+  <section class="section-block" id="limitations">
+    <div class="section-block-header">
+      <div class="section-block-number">7</div>
+      <h2 class="section-block-title">Current Limitations — Honest Assessment</h2>
+    </div>
+
+    <p style="color:var(--c-text-muted);margin-bottom:24px;font-size:15px">These are the constraints SE teams and customers need to plan around. Being upfront here builds credibility — these are known gaps on the roadmap, not surprises.</p>
+
+    <div class="card-grid">
+      <div class="concept-card card-accent-amber">
+        <h3>Licensing Dependency</h3>
+        <p>Agent credential management via OPA requires <strong>both an OPA license and either an ISPM or AI license</strong>. OPA alone is not sufficient for the full agent secrets management capability set.</p>
+      </div>
+      <div class="concept-card card-accent-blue">
+        <h3>Billing Unit</h3>
+        <p>The <strong>Workload Identity Resource Unit</strong> is the billing unit for vaulted credentials. Each agent identity with active Managed Connections counts against this unit. Factor this into SKU conversations with procurement.</p>
+      </div>
+      <div class="concept-card card-accent-green">
+        <h3>JIT Checkout &amp; Rotation Tier</h3>
+        <p>Just-in-time credential checkout and automatic secret rotation are available, but require a <strong>specific OPA tier</strong>. Confirm tier eligibility before scoping these capabilities in a proof-of-concept.</p>
+      </div>
+      <div class="concept-card card-accent-red">
+        <h3>OIG Integration — Phase 2</h3>
+        <p>Integration with the AI agent lifecycle via <strong>OIG access certifications</strong> (periodic review of agent-to-secret mappings, automated revocation for overdue certifications) is Phase 2 with a GA target of FY27. This is the governance closure loop — currently requires manual OIG campaign setup.</p>
+      </div>
+    </div>
+
+    <div class="security-note">
+      <div class="callout-title">SE Talking Point for Limitations</div>
+      "The core vault capabilities — secrets management, JIT credential brokering, automatic rotation, and the full audit trail — are available today. The OIG integration for agent lifecycle governance closes the loop in Phase 2. For customers with immediate compliance requirements around agent access reviews, the interim answer is manual OIG campaign configuration targeting the agent's Okta entity."
+    </div>
   </section>
 
 </div><!-- /content-area -->

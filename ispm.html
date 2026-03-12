@@ -1108,6 +1108,394 @@ footer p{font-size:12px;color:var(--c-text-dim)}
   </div>
 
 
+
+  <!-- ===== SECTION 8 — SAM PLUGIN TECHNICAL DETAILS ===== -->
+  <div class="content-section" id="sam-technical">
+    <div class="content-section-header">
+      <div class="section-num">8</div>
+      <h2>SAM Plugin: Technical Configuration Details</h2>
+    </div>
+
+    <p>The SAM (SaaS Access Management) plugin is a managed Chrome extension deployed via Google Admin Console. Understanding its architecture and configuration steps is essential for both demo setup and customer conversations about deployment feasibility.</p>
+
+    <div class="two-col">
+      <div>
+        <h3>Plugin Identity &amp; Transport</h3>
+        <div class="concept-card">
+          <h4>Extension Type</h4>
+          <p>Managed Chrome Extension, enterprise-deployed via Google Admin Console. Cannot be installed by individual users &mdash; requires organizational policy push.</p>
+        </div>
+        <div class="concept-card">
+          <h4>Chrome Extension ID</h4>
+          <p>The extension is identified by the following immutable ID in the Chrome Web Store and in Google Admin Console policy:</p>
+          <div class="code-label">Extension ID</div>
+          <pre class="code-block">galipinbbdandeicdicjbalcbpdbljjj</pre>
+        </div>
+        <div class="concept-card">
+          <h4>Data Transport</h4>
+          <p>All telemetry is transmitted via mutual TLS (mTLS) to the Okta org endpoint. The device certificate authenticates the browser to the ISPM backend, ensuring only managed devices can submit grant data.</p>
+          <div class="code-label">mTLS Endpoint</div>
+          <pre class="code-block">https://&lt;org&gt;.mtls.okta.com</pre>
+        </div>
+      </div>
+      <div>
+        <h3>Data Captured Per OAuth Grant</h3>
+        <div style="overflow-x:auto">
+          <table class="info-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>URL</code></td>
+                <td>Origin of the OAuth grant (the page where the authorization happened)</td>
+              </tr>
+              <tr>
+                <td><code>Type</code></td>
+                <td>Grant mechanism: Redirect / Direct / Grant</td>
+              </tr>
+              <tr>
+                <td><code>Okta UserId</code></td>
+                <td>The Okta user identity of the employee who authorized the grant</td>
+              </tr>
+              <tr>
+                <td><code>Resource</code></td>
+                <td>The target resource app (e.g., Google Drive, Microsoft 365)</td>
+              </tr>
+              <tr>
+                <td><code>Client</code></td>
+                <td>The requesting client app &mdash; the shadow AI tool seeking access</td>
+              </tr>
+              <tr>
+                <td><code>Scopes</code></td>
+                <td>Full list of permissions granted (e.g., <code>mail.read</code>, <code>drive.readwrite</code>)</td>
+              </tr>
+              <tr>
+                <td><code>Device / Browser Info</code></td>
+                <td>Okta Verify Device Trust context: device posture, managed status, browser version</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h3>Configuration Walkthrough</h3>
+    <p>Deploying the SAM plugin requires five steps spanning Google Admin Console and the Okta Admin Console. Each step must be completed in order.</p>
+
+    <div class="demo-step open" id="sam-step1">
+      <div class="demo-step-header" onclick="toggleStep('sam-step1')">
+        <div class="demo-step-num">1</div>
+        <div class="demo-step-title">Chrome Certificate Policy (Google Admin Console)</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>In Google Admin Console, configure the <code>AutoSelectCertificateForUrls</code> policy so that managed Chrome automatically presents the device certificate to the Okta mTLS endpoint. Without this, the mTLS handshake will fail and no telemetry will be transmitted.</p>
+        <div class="code-label">Chrome Policy &mdash; AutoSelectCertificateForUrls</div>
+        <pre class="code-block">AutoSelectCertificateForUrls:
+{
+  "pattern": "https://&lt;org&gt;.mtls.okta.com",
+  "filter": {"ISSUER": {"CN":"Chrome Enterprise CA"}}
+}</pre>
+        <p style="margin-top:12px">Replace <code>&lt;org&gt;</code> with your Okta subdomain. The <code>ISSUER CN</code> value must match the CA used to issue your managed Chrome device certificates.</p>
+      </div>
+    </div>
+
+    <div class="demo-step" id="sam-step2">
+      <div class="demo-step-header" onclick="toggleStep('sam-step2')">
+        <div class="demo-step-num">2</div>
+        <div class="demo-step-title">Upload CA Certificate to Okta</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Upload the Chrome Enterprise CA certificate chain to Okta so the ISPM backend can validate the device certificates presented during mTLS. Navigate to:</p>
+        <div class="code-label">Okta Admin Console Path</div>
+        <pre class="code-block">Security &gt; Device Integrations &gt; Certificate authority tab
+&gt; Add certificate authority
+&gt; Issue certificate to: Secure Access Monitor plugin
+&gt; Upload .pem CA certificate chain</pre>
+        <p style="margin-top:12px">The CA must be the same issuer configured in Step 1. Upload the full chain (intermediate + root) as a single PEM file.</p>
+      </div>
+    </div>
+
+    <div class="demo-step" id="sam-step3">
+      <div class="demo-step-header" onclick="toggleStep('sam-step3')">
+        <div class="demo-step-num">3</div>
+        <div class="demo-step-title">Deploy Extension via Google Admin Console</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>Force-install the SAM extension to the target organizational unit in Google Admin Console. Provide the extension ID and the policy JSON that points the extension at the customer's Okta org URL.</p>
+        <div class="code-label">Extension ID</div>
+        <pre class="code-block">galipinbbdandeicdicjbalcbpdbljjj</pre>
+        <div class="code-label" style="margin-top:16px">Extension Policy JSON</div>
+        <pre class="code-block">{
+  "orgUrl": { "Value": "https://&lt;org&gt;.okta.com" }
+}</pre>
+        <p style="margin-top:12px">Replace <code>&lt;org&gt;</code> with the customer's Okta subdomain. This tells the extension which Okta tenant to report to. The extension must be set to <strong>Force installed</strong> (not allowed/blocked) for automatic deployment.</p>
+      </div>
+    </div>
+
+    <div class="demo-step" id="sam-step4">
+      <div class="demo-step-header" onclick="toggleStep('sam-step4')">
+        <div class="demo-step-num">4</div>
+        <div class="demo-step-title">User Enrollment</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>The SAM plugin activates when two conditions are met simultaneously on the same browser session:</p>
+        <ul style="list-style:none;margin:12px 0">
+          <li style="padding:8px 0;border-bottom:1px solid var(--c-border);display:flex;align-items:flex-start;gap:10px"><span style="color:var(--c-accent-green);font-weight:700;flex-shrink:0">1.</span><span>The user is signed into a <strong>managed Chrome profile</strong> (their corporate Google Workspace account via Chrome profile sign-in)</span></li>
+          <li style="padding:8px 0;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--c-accent-green);font-weight:700;flex-shrink:0">2.</span><span>The user is signed into the <strong>Okta End-User Dashboard</strong> (active Okta session in the browser)</span></li>
+        </ul>
+        <p>When both conditions are met, the plugin can correlate browser OAuth events to the employee's Okta identity. No additional user action or Okta Verify enrollment is required for this step.</p>
+      </div>
+    </div>
+
+    <div class="demo-step" id="sam-step5">
+      <div class="demo-step-header" onclick="toggleStep('sam-step5')">
+        <div class="demo-step-num">5</div>
+        <div class="demo-step-title">Verify Deployment</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>After deploying to a test group, verify that telemetry is flowing to ISPM:</p>
+        <p>Navigate to the ISPM dashboard and check <strong>Inventory &rarr; NHI &amp; AI agents &rarr; Browser OAuth grants</strong>. OAuth grant events from enrolled browsers should appear within the initial data window.</p>
+        <div class="security-note" style="margin-top:16px">
+          <div class="callout-title">7-Day Initial Data Lag</div>
+          After first deploying the SAM plugin, allow up to <strong>7 days</strong> before shadow AI data appears in the ISPM console. This is a known initial sync window. After the initial population, data syncs daily. Do not diagnose a broken deployment based on the first 24&ndash;48 hours of no data.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 9 — SHADOW AI DETECTION WORKFLOW ===== -->
+  <div class="content-section" id="shadow-ai-workflow">
+    <div class="content-section-header">
+      <div class="section-num">9</div>
+      <h2>Shadow AI Detection: Operational Workflow</h2>
+    </div>
+
+    <p>Once the SAM plugin is deployed and data is flowing, the operational workflow for discovering and acting on shadow AI grants follows a consistent path through the ISPM console. This is the step-by-step process for your first triage session.</p>
+
+    <div class="key-point">
+      <div class="callout-title">Console Navigation Path</div>
+      <code style="font-family:var(--font-mono);font-size:13px">ISPM Console &gt; Inventory &gt; NHI &amp; AI agents &gt; Browser OAuth grants</code>
+    </div>
+
+    <div class="card-grid" style="margin-top:24px">
+      <div class="stage-card">
+        <div class="stage-num">1</div>
+        <span class="stage-badge s1">Step 1</span>
+        <h3>Navigate to Browser OAuth Grants</h3>
+        <p>Open the ISPM Console and follow the path: <strong>Inventory &rarr; NHI &amp; AI agents &rarr; Browser OAuth grants</strong>. This view shows all OAuth grants captured by the SAM plugin across enrolled devices.</p>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">2</div>
+        <span class="stage-badge s2">Step 2</span>
+        <h3>Filter by Category: AI</h3>
+        <p>Apply the <strong>Category</strong> filter and select <strong>"AI"</strong>. ISPM automatically tags OAuth grants to known AI tools. This narrows the view to shadow AI exposure without manual sorting.</p>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">3</div>
+        <span class="stage-badge s1">Step 3</span>
+        <h3>Review the Inventory Rows</h3>
+        <p>Each row in the filtered view shows: <strong>Client app</strong> (the AI tool) | <strong>Resource app</strong> (what it can access) | <strong>First seen</strong> | <strong>Last seen</strong>. Sort by First seen to find the oldest persistent grants.</p>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">4</div>
+        <span class="stage-badge s3">Step 4</span>
+        <h3>Drill Into a Grant</h3>
+        <p>Click any row to expand the full grant detail. This reveals: the individual users who authorized this grant, the specific OAuth scopes granted per user, and usage history (last authentication timestamp).</p>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">5</div>
+        <span class="stage-badge s4">Step 5</span>
+        <h3>Choose Remediation Action</h3>
+        <p>For each grant, two remediation paths are available directly from the console:</p>
+        <ul>
+          <li><strong>Register</strong> &mdash; Agent is authorized. Clicking Register promotes the grant to a managed Okta NHI, assigning it an owner and entering it into the governance lifecycle.</li>
+          <li><strong>Revoke</strong> &mdash; Grant is unauthorized. Revokes the OAuth token immediately, removing the AI tool's access to the resource app.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="okta-note">
+      <div class="callout-title">The Register vs. Revoke Decision</div>
+      The register/revoke decision is the core governance moment. "Register" signals that the business has reviewed the grant and sanctioned the AI tool &mdash; it becomes a managed NHI with an owner, rotation policy, and certification schedule. "Revoke" terminates persistent access. Either action removes the finding from the unresolved queue and creates an audit record.
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 10 — KNOWN CONSTRAINTS ===== -->
+  <div class="content-section" id="constraints">
+    <div class="content-section-header">
+      <div class="section-num">10</div>
+      <h2>Known Constraints &amp; Deployment Considerations</h2>
+    </div>
+
+    <p>ISPM Agent Discovery is in Early Access. The following constraints are important to set accurate customer expectations and avoid demo or deployment surprises. Address these proactively in SE conversations.</p>
+
+    <div class="demo-step open" id="constraint1">
+      <div class="demo-step-header" onclick="toggleStep('constraint1')">
+        <div class="demo-step-num" style="background:var(--c-accent-amber)">!</div>
+        <div class="demo-step-title">Chrome-Only: No Firefox, Edge, or Safari</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>The SAM plugin requires <strong>managed Google Chrome</strong> deployed via Google Admin Console. There is no equivalent extension for Mozilla Firefox, Microsoft Edge, or Apple Safari. Organizations that do not standardize on Chrome for managed devices cannot use the browser-layer shadow AI detection capability.</p>
+        <div class="removed-feature">
+          <div class="callout-title">Customer Objection Handling</div>
+          If a prospect uses Edge as their standard managed browser: acknowledge the constraint directly. The Crown Jewel platform connectors (Stage 1) still work regardless of browser. Shadow AI detection via the browser layer requires Chrome. This is a known product gap on the EA roadmap.
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="constraint2">
+      <div class="demo-step-header" onclick="toggleStep('constraint2')">
+        <div class="demo-step-num" style="background:var(--c-accent-amber)">!</div>
+        <div class="demo-step-title">7-Day Initial Data Lag After Plugin Deployment</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>After deploying the SAM plugin to managed Chrome profiles, <strong>up to 7 days</strong> may pass before shadow AI grant data appears in the ISPM console. This is an expected initial sync window, not a bug.</p>
+        <p>After the initial population period, data syncs on a <strong>daily cadence</strong>. For demo environments, seed the SAM plugin well in advance (at least one week before the customer meeting) to ensure the console has data to show.</p>
+      </div>
+    </div>
+
+    <div class="demo-step" id="constraint3">
+      <div class="demo-step-header" onclick="toggleStep('constraint3')">
+        <div class="demo-step-num" style="background:var(--c-accent-amber)">!</div>
+        <div class="demo-step-title">Reactive Detection, Not Prevention</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>ISPM discovers AI agents that have <strong>already obtained OAuth grants</strong>. The SAM plugin observes and reports authorization events; it does not intercept or block them in real time by default.</p>
+        <p>Preventing the initial OAuth grant from occurring requires separate policy enforcement &mdash; for example, an Okta Access Gateway policy, a Conditional Access policy in Entra ID, or a CASB layer. ISPM is the discovery and governance layer, not the preventive control layer.</p>
+        <div class="security-note">
+          <div class="callout-title">Positioning Note</div>
+          Frame this as intentional design: passive discovery avoids change management friction and gives organizations a full picture of their shadow AI posture before deciding on enforcement. "See everything first, then decide what to block" is a safer rollout than deploying block policies against an incomplete inventory.
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-step" id="constraint4">
+      <div class="demo-step-header" onclick="toggleStep('constraint4')">
+        <div class="demo-step-num" style="background:var(--c-accent-amber)">!</div>
+        <div class="demo-step-title">License Requirements</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>ISPM Agent Discovery requires one of the following license entitlements:</p>
+        <ul style="list-style:none;margin:12px 0">
+          <li style="padding:8px 0;border-bottom:1px solid var(--c-border);display:flex;align-items:flex-start;gap:10px"><span style="color:var(--c-okta-blue);font-weight:700;flex-shrink:0">&#10003;</span><span><strong>ISPM license</strong> &mdash; standalone Identity Security Posture Management product</span></li>
+          <li style="padding:8px 0;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--c-okta-blue);font-weight:700;flex-shrink:0">&#10003;</span><span><strong>Okta AI license</strong> (Okta for AI Agents) &mdash; the AI-focused bundle that includes ISPM Agent Discovery capabilities</span></li>
+        </ul>
+        <p>Confirm license entitlement before proceeding with an ISPM PoC. Customers with neither license will need a license add-on discussion before the EA can be enabled.</p>
+      </div>
+    </div>
+
+    <div class="demo-step" id="constraint5">
+      <div class="demo-step-header" onclick="toggleStep('constraint5')">
+        <div class="demo-step-num" style="background:var(--c-okta-blue)">i</div>
+        <div class="demo-step-title">EA Crown Jewel Platform Connectors (Current Inventory)</div>
+        <div class="demo-step-toggle">&#9654;</div>
+      </div>
+      <div class="demo-step-body">
+        <p>The Stage 1 (Crown Jewel AI Platform Visibility) connectors in EA currently cover the following platforms. These are the platforms for which ISPM has purpose-built API connectors to inventory registered agents and service principals:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+          <span class="nhi-tag" style="background:rgba(0,82,163,0.06)">Microsoft Copilot</span>
+          <span class="nhi-tag" style="background:rgba(0,82,163,0.06)">Salesforce Agentforce</span>
+          <span class="nhi-tag" style="background:rgba(0,82,163,0.06)">AWS Bedrock</span>
+          <span class="nhi-tag" style="background:rgba(0,82,163,0.06)">OpenAI</span>
+          <span class="nhi-tag" style="background:rgba(0,82,163,0.06)">Google Vertex AI</span>
+          <span class="nhi-tag" style="background:rgba(0,82,163,0.06)">Gemini Enterprise</span>
+        </div>
+        <p style="margin-top:12px">Additional connectors are on the roadmap. For platforms not listed, shadow AI discovery still works via the SAM browser plugin (browser-layer OAuth grant capture).</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== SECTION 11 — EA TO GA TIMELINE ===== -->
+  <div class="content-section" id="timeline">
+    <div class="content-section-header">
+      <div class="section-num">11</div>
+      <h2>EA-to-GA Feature Timeline</h2>
+    </div>
+
+    <p>Use this table to set accurate availability expectations in customer conversations and to track which capabilities to demo versus which to position as coming soon. All dates are as of the March 2026 Enablement Hub update.</p>
+
+    <div style="overflow-x:auto">
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>ISPM NHI Visibility</strong><br>
+              <span style="font-size:12px;color:var(--c-text-muted)">Service accounts, API keys, OAuth app inventory across cloud and SaaS</span>
+            </td>
+            <td><span class="badge badge-low">GA</span></td>
+            <td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px">March 2025</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>ISPM OWASP NHI Top 10 Detections (25+)</strong><br>
+              <span style="font-size:12px;color:var(--c-text-muted)">Full detection library with severity scoring and remediation recommendations</span>
+            </td>
+            <td><span class="badge badge-low">GA</span></td>
+            <td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px">2025</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>ISPM Agent Detection</strong><br>
+              <span style="font-size:12px;color:var(--c-text-muted)">SAM browser plugin + shadow AI OAuth grant inventory</span>
+            </td>
+            <td><span class="badge badge-medium">EA</span></td>
+            <td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px">February 5, 2026</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>ISPM OIN / Custom App Integration (SCIM)</strong><br>
+              <span style="font-size:12px;color:var(--c-text-muted)">SCIM-based connectors for OIN catalog apps and custom integrations</span>
+            </td>
+            <td><span class="badge badge-medium">EA</span></td>
+            <td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px">February 11, 2026</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Okta for AI Agents Phase 2</strong><br>
+              <span style="font-size:12px;color:var(--c-text-muted)">Access Certifications for NHIs, Extended Universal Logout for agents</span>
+            </td>
+            <td><span class="badge badge-high">GA Target</span></td>
+            <td style="white-space:nowrap;font-family:var(--font-mono);font-size:13px">FY27</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mcp-note" style="margin-top:24px">
+      <div class="callout-title">SE Guidance on EA Features</div>
+      For EA features (Agent Detection, OIN/Custom App SCIM), customers must request EA access through their Okta account team. EA features are not enabled by default on any org. When positioning these features, confirm EA availability before setting demo expectations. Check the Okta EA changelog and the internal #ispm-ea Slack channel for current status.
+    </div>
+
+    <div class="key-point" style="margin-top:16px">
+      <div class="callout-title">FY27 Roadmap Framing</div>
+      Okta for AI Agents Phase 2 extends the governance lifecycle to include formal Access Certifications campaigns for NHIs (same OIG workflow used for human access reviews) and Extended Universal Logout that can terminate agent sessions across downstream systems &mdash; not just Okta-issued tokens. This closes the loop between discovery (ISPM) and full lifecycle governance (OIG + Universal Logout).
+    </div>
+  </div>
+
+
 </div><!-- /content-area -->
 
 <!-- ─── Footer ─── -->

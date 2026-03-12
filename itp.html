@@ -614,6 +614,18 @@ footer p{font-size:12px;color:var(--c-text-dim)}
       </pre>
     </div>
 
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">How Universal Logout Works for AI Agents</h3>
+
+    <div class="concept-card card-red" id="universal-logout-agents">
+      <p>When ITP's behavioral analytics detect anomalous agent activity — for example, an agent accessing 500 Salesforce records in 10 minutes against a behavioral baseline of 10–15 records per day — the risk score crosses the HIGH threshold and automated global token revocation triggers. Universal Logout then revokes tokens across <strong>all connected systems simultaneously</strong>, not just the system where the anomaly was detected.</p>
+      <p style="margin-top:10px">This simultaneous cross-system revocation is what distinguishes Universal Logout from a standard token revocation. An attacker who has pivoted to a second system using the same agent token finds both access paths cut at the same moment.</p>
+    </div>
+
+    <div class="roadmap-note">
+      <div class="callout-title">Extended Universal Logout for AI Agents — Phase 2 (GA target FY27)</div>
+      Today's Universal Logout covers all Okta-connected applications (SAML, OIDC, OAuth). <strong>Extended Universal Logout for AI Agents</strong> propagates revocation beyond Okta-connected apps — into third-party credential stores, cloud IAM systems, and OPA-managed secrets. This is a Phase 2 capability on the roadmap. The SSF (Shared Signals Framework) event schema is used for cross-vendor interoperability: vendors implement the SSF <code>session_revoked</code> event and receive revocation signals without requiring direct Okta integration.
+    </div>
+
     <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">What Triggers Universal Logout</h3>
 
     <div class="flow-step-list">
@@ -660,46 +672,56 @@ footer p{font-size:12px;color:var(--c-text-dim)}
       Universal Logout terminates all active sessions and tokens, but does not destroy audit logs. Every API call the agent made, every scope it exercised, every delegation event it participated in — all of this is preserved in Okta's System Log and surfaced in the SecurityEvents API for post-incident forensic investigation. The evidence trail is intact before the first step of your incident response playbook runs.
     </div>
 
-    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px">Current State and Roadmap</h3>
+    <h3 style="font-size:17px;font-weight:600;margin:28px 0 16px" id="capability-status">Per-Capability EA / GA Status</h3>
 
     <table class="info-table">
       <thead>
         <tr>
           <th>Capability</th>
           <th>Status</th>
-          <th>Notes</th>
+          <th>Date / Target</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Universal Logout for Auth0 apps</td>
-          <td style="color:var(--c-accent-green);font-weight:600">GA</td>
-          <td>Available today. Terminates sessions across all OIDC/OAuth apps connected to Auth0.</td>
+          <td>ITP behavioral analytics (human users)</td>
+          <td><span class="badge badge-green" style="font-size:12px;padding:3px 10px">GA</span></td>
+          <td>Available</td>
         </tr>
         <tr>
-          <td>Universal Logout for Okta WIC apps</td>
-          <td style="color:var(--c-accent-green);font-weight:600">GA</td>
-          <td>Available today. Covers SAML, OIDC, and SWA apps connected to Okta Workforce Identity Cloud.</td>
+          <td>Identity Threat Detection</td>
+          <td><span class="badge badge-green" style="font-size:12px;padding:3px 10px">GA</span></td>
+          <td>Available</td>
         </tr>
         <tr>
-          <td>Third-party signal ingestion (CrowdStrike, Zscaler)</td>
-          <td style="color:var(--c-accent-green);font-weight:600">GA</td>
-          <td>Shared Signals Framework (SSF) integration. Available today.</td>
+          <td>Session Revocation</td>
+          <td><span class="badge badge-green" style="font-size:12px;padding:3px 10px">GA</span></td>
+          <td>Available</td>
         </tr>
         <tr>
-          <td>Agent-specific behavioral baselines</td>
-          <td style="color:var(--c-accent-amber);font-weight:600">Phase 2</td>
-          <td>ML models trained on NHI/agent traffic patterns. On roadmap; not yet GA.</td>
+          <td>Universal Logout (human users)</td>
+          <td><span class="badge badge-green" style="font-size:12px;padding:3px 10px">GA</span></td>
+          <td>Available — covers SAML, OIDC, OAuth apps (Auth0 + Okta WIC)</td>
         </tr>
         <tr>
-          <td>Extended Universal Logout (cross-system agent token revocation)</td>
-          <td style="color:var(--c-accent-amber);font-weight:600">Phase 2</td>
-          <td>Propagates revocation beyond Okta-connected apps to third-party credential stores. On roadmap.</td>
+          <td>SSF event publishing</td>
+          <td><span class="badge badge-green" style="font-size:12px;padding:3px 10px">GA</span></td>
+          <td>Available — Shared Signals Framework; CrowdStrike, Zscaler, Palo Alto integrations live</td>
         </tr>
         <tr>
-          <td>Agent-specific risk policies (dedicated NHI policy engine)</td>
-          <td style="color:var(--c-accent-amber);font-weight:600">Phase 2</td>
-          <td>Separate policy evaluation path for non-human identities. On roadmap.</td>
+          <td>Automated remediation via Workflows</td>
+          <td><span class="badge badge-green" style="font-size:12px;padding:3px 10px">GA</span></td>
+          <td>Available — Okta Workflows triggered by ITP risk events</td>
+        </tr>
+        <tr>
+          <td>Extended Universal Logout for AI Agents</td>
+          <td><span class="badge badge-amber" style="font-size:12px;padding:3px 10px">EA target</span></td>
+          <td>FY27 Phase 2 — extends revocation beyond Okta-connected apps to third-party credential stores</td>
+        </tr>
+        <tr>
+          <td>Agent behavioral baseline detection</td>
+          <td><span class="badge badge-purple" style="font-size:12px;padding:3px 10px">Planned</span></td>
+          <td>TBD — ML models trained on NHI/agent traffic patterns; dedicated NHI policy engine</td>
         </tr>
       </tbody>
     </table>

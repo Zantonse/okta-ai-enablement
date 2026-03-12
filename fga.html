@@ -3138,6 +3138,132 @@ result = <span class="kw">await</span> fga_client.<span class="fn">check</span>(
   </div>
   <!-- /section-7 -->
 
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  SECTION 8 — Current Limitations & Version Matrix         -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="section-block" id="section-8">
+    <span class="section-number">Section 8</span>
+    <h2>Current Limitations &amp; Known Constraints</h2>
+
+    <p style="color:#5a5a70;margin-bottom:20px;font-size:15px">These are the constraints and sharp edges that matter for production implementations. Share these proactively with engineering teams — they will find them anyway.</p>
+
+    <div class="security-note">
+      <strong>Under Heavy SDK Development</strong>
+      <p style="margin-top:6px">The Auth0 AI SDK family (auth0-ai-vercel, auth0-ai-langchain) moved through v4 &#8594; v5 &#8594; v6 within months. Always lock to specific versions in package.json. Never use <code>^</code> for these packages in production.</p>
+    </div>
+
+    <h3>BatchCheck Limits</h3>
+    <ul style="color:#5a5a70;font-size:14px;line-height:2;padding-left:20px;margin-bottom:16px">
+      <li><strong>50 items per server call.</strong> The SDK auto-splits larger sets using <code>maxBatchSize: 50</code> (default) and <code>maxParallelRequests: 10</code> (default).</li>
+      <li><strong>No built-in result caching.</strong> SDKs do not cache BatchCheck results between calls. Add a short-TTL cache layer manually for repeated queries on the same user/object pairs.</li>
+    </ul>
+
+    <h3>LangGraph-Specific Constraints</h3>
+    <ul style="color:#5a5a70;font-size:14px;line-height:2;padding-left:20px;margin-bottom:16px">
+      <li><strong><code>handleToolErrors</code> must be <code>false</code>.</strong> In LangGraph, <code>ToolNode</code> must be initialized with <code>handleToolErrors: false</code> (JS) or <code>handle_tool_errors=False</code> (Python). Otherwise <code>GraphInterrupt</code> exceptions are caught and swallowed silently — the authorization check never fires.</li>
+      <li><strong>LangGraph Platform rewrites <code>Authorization</code> header.</strong> The platform internally rewrites the <code>Authorization</code> header to <code>x-api-key</code>. Auth handlers must check both headers.</li>
+      <li><strong>Python <code>FGARetriever.invoke()</code> is synchronous.</strong> Use <code>retriever.ainvoke()</code> in async LangGraph contexts to avoid blocking the event loop.</li>
+    </ul>
+
+    <h3>Vercel AI SDK Constraints</h3>
+    <ul style="color:#5a5a70;font-size:14px;line-height:2;padding-left:20px;margin-bottom:16px">
+      <li><strong><code>FGAFilter</code> has no <code>asJoinedStringTool()</code>.</strong> The Vercel AI SDK integration only provides <code>.filter()</code>. Tool wrapping is fully manual — there is no helper for joining filtered results into a string for the LLM context window.</li>
+    </ul>
+
+    <h3 id="sdk-version-matrix">SDK Version Matrix</h3>
+    <p style="color:#5a5a70;font-size:14px;margin-bottom:12px">Pin to these versions. Breaking changes across major versions are common.</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>SDK / Package</th>
+          <th>Pinned Version</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>@auth0/ai-vercel</code></td>
+          <td><span class="badge badge-blue">5.1.0</span></td>
+          <td>Vercel AI SDK v6</td>
+        </tr>
+        <tr>
+          <td><code>@auth0/ai-langchain</code></td>
+          <td><span class="badge badge-blue">4.x</span></td>
+          <td>Quickstart uses <code>@4</code>; v5 has breaking changes</td>
+        </tr>
+        <tr>
+          <td><code>auth0-ai-langchain</code> (Python)</td>
+          <td><span class="badge badge-green">1.0.2</span></td>
+          <td>Stable; async support via <code>ainvoke()</code></td>
+        </tr>
+        <tr>
+          <td><code>@langchain/core</code></td>
+          <td><span class="badge badge-blue">0.3.77</span></td>
+          <td>Quickstart pinned; later versions may have peer dep issues</td>
+        </tr>
+        <tr>
+          <td><code>@langchain/langgraph</code></td>
+          <td><span class="badge badge-blue">0.4.4</span></td>
+          <td>Quickstart pinned; <code>GraphInterrupt</code> behavior stabilized here</td>
+        </tr>
+        <tr>
+          <td><code>ai</code> (Vercel AI)</td>
+          <td><span class="badge badge-amber">6.x</span></td>
+          <td>Breaking changes from v5; <code>FGAFilter</code> adapter targets v6</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="sample-apps">Sample Apps Reference</h3>
+    <p style="color:#5a5a70;font-size:14px;margin-bottom:12px">All samples are in <code>github.com/auth0-samples/</code>. These are the most reference-worthy for SE demos and customer POCs.</p>
+
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>App / Repo</th>
+          <th>Stack</th>
+          <th>Key Features</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>langchain-next-js</code></td>
+          <td>LangGraph.js + Next.js</td>
+          <td>Full RAG + FGA authorization + Auth0 login</td>
+        </tr>
+        <tr>
+          <td><code>vercel-ai-next-js</code></td>
+          <td>Vercel AI SDK + Next.js</td>
+          <td>FGAFilter pattern for RAG document filtering</td>
+        </tr>
+        <tr>
+          <td><code>langchain-fastapi-py</code></td>
+          <td>LangGraph + FastAPI (Python)</td>
+          <td>Python full-stack; FGARetriever with async</td>
+        </tr>
+        <tr>
+          <td><code>langgraph-agentic-js</code></td>
+          <td>LangGraph.js + Node.js</td>
+          <td>Minimal agentic; good starting point for custom builds</td>
+        </tr>
+        <tr>
+          <td><code>auth0-assistant0/ts-langchain</code></td>
+          <td>LangGraph.js + Next.js</td>
+          <td>RAG + CIBA human-in-the-loop + Token Vault</td>
+        </tr>
+        <tr>
+          <td><code>auth0-ai-smart-hr-assistant</code></td>
+          <td>LlamaIndex</td>
+          <td>Complex ReBAC authorization for HR document access</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+  <!-- /section-8 -->
+
 </div><!-- /page-wrapper -->
 </body>
 </html>

@@ -1736,6 +1736,255 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
     </div>
   </div>
 
+  <!-- xaa.dev Playground -->
+  <div class="concept-card" id="xaa-playground">
+    <h3>xaa.dev Interactive Playground</h3>
+    <p>The fastest way to see the full XAA / ID-JAG flow in action without setting up any infrastructure. Free, no sign-up required, pre-configured with all four roles already wired together.</p>
+    <div class="okta-note" style="margin-bottom:16px">
+      <div class="callout-title">What Is Pre-Configured</div>
+      The playground spins up a complete environment: an Identity Provider, a Resource App Authorization Server, a Requesting App, and an MCP Server — all connected and ready to run through the four XAA flow steps.
+    </div>
+    <h4>What You Can Do</h4>
+    <ul style="margin:0 0 16px 20px;color:var(--c-text-muted);line-height:2">
+      <li>Walk through all four XAA flow steps end-to-end in the browser</li>
+      <li>Inspect raw tokens at each stage — see the ID-JAG, the intermediate grants, and the final access token decoded side by side</li>
+      <li>Use <strong>"bring your own requesting app"</strong> — register your own client at <a href="https://xaa.dev/developer/register" target="_blank">xaa.dev/developer/register</a> to test your actual implementation against the pre-configured IdP and resource server</li>
+    </ul>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <a href="https://xaa.dev/" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--c-okta-blue);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">
+        Open xaa.dev Playground
+      </a>
+      <a href="https://www.youtube.com/watch?v=hXZ4o2Oasc0" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--c-surface);border:1px solid var(--c-border);color:var(--c-text);border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">
+        Video Walkthrough
+      </a>
+    </div>
+    <h4>Reference Implementations on GitHub</h4>
+    <table class="info-table" style="margin-top:8px">
+      <thead>
+        <tr>
+          <th>Repository</th>
+          <th>Description</th>
+          <th>Stack</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="https://github.com/oktadev/okta-cross-app-access-mcp" target="_blank"><code>oktadev/okta-cross-app-access-mcp</code></a></td>
+          <td>Full Node.js reference implementation of the complete XAA flow. Includes Agent0 (requesting app), Todo0 (resource app), auth server, and ID-JAG client.</td>
+          <td>Node.js, Redis, Prisma ORM, Yarn workspaces, VS Code Dev Containers</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/auth0-samples/auth0-zoo-ai" target="_blank"><code>auth0-samples/auth0-zoo-ai</code></a></td>
+          <td>Multi-part Python/LangGraph tutorial walking through XAA integration. Six progressive branches building from a simple agent up to fully async authorization.</td>
+          <td>Python, LangGraph — branches <code>step1</code> through <code>step6-async-auth</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="key-point" style="margin-top:16px">
+      <div class="callout-title">SE Demo Tip</div>
+      For a live customer demo: open xaa.dev, click through the four steps, and pause on the token inspector at each stage. The decoded ID-JAG view (step 3) is the most compelling — it makes the enterprise IdP-as-gatekeeper pattern visually concrete. Use the <code>oktadev/okta-cross-app-access-mcp</code> repo for dev environments that need a full local setup with VS Code Dev Containers.
+    </div>
+  </div>
+
+  <!-- Agent Registration API (Beta) -->
+  <div class="concept-card" id="agent-registration-api">
+    <h3>Agent Registration API (Beta) — Full Reference</h3>
+    <p>The Okta Workload Principals API provides programmatic CRUD operations for AI agent lifecycle management. This is separate from the Admin Console UI and is intended for automated agent provisioning pipelines.</p>
+
+    <div class="okta-note" style="margin-bottom:16px">
+      <div class="callout-title">Base Path &amp; Auth Requirements</div>
+      <div class="code-block" style="margin-top:8px">https://{subdomain}.okta.com/workload-principals/api/v1/</div>
+      <p style="margin-top:10px"><strong>Required OAuth scopes:</strong></p>
+      <ul style="margin:6px 0 0 20px;line-height:2">
+        <li><code>okta.aiAgents.read</code> — all read operations (list, retrieve)</li>
+        <li><code>okta.aiAgents.manage</code> — all write operations (register, update, delete, lifecycle)</li>
+      </ul>
+      <p style="margin-top:8px"><strong>Required admin role:</strong> <code>SUPER_ADMIN</code></p>
+    </div>
+
+    <h4>List All AI Agents</h4>
+    <div class="code-label">GET /ai-agents — with optional SCIM filter</div>
+    <div class="code-block">curl -i -X GET \
+  'https://{subdomain}.okta.com/workload-principals/api/v1/ai-agents' \
+  -H 'Authorization: Bearer {accessToken}'</div>
+    <p style="margin-top:10px;color:var(--c-text-muted);font-size:14px"><strong>Query parameters:</strong></p>
+    <table class="info-table" style="margin-top:6px">
+      <thead>
+        <tr><th>Parameter</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>after</code></td><td>Pagination cursor — value from previous response's <code>next</code> link</td></tr>
+        <tr><td><code>limit</code></td><td>Results per page (1–200, default 20)</td></tr>
+        <tr><td><code>search</code></td><td>SCIM-style filter expression</td></tr>
+      </tbody>
+    </table>
+    <div class="code-label" style="margin-top:12px">Example SCIM search filter</div>
+    <div class="code-block">search=profile.name sw "Demo Agent" and status eq "ACTIVE"</div>
+
+    <h4 style="margin-top:20px">Register an AI Agent</h4>
+    <div class="code-label">POST /ai-agents — returns 202 Accepted (async operation)</div>
+    <div class="code-block">POST /workload-principals/api/v1/ai-agents
+Content-Type: application/json
+Authorization: Bearer {accessToken}
+
+{
+  "appId": "0oab1234EXAMPLEID5d6",
+  "profile": {
+    "name": "Demo Agent",
+    "description": "Demo Conversational AI Agent"
+  }
+}</div>
+    <div class="security-note" style="margin-top:8px">
+      <div class="callout-title">Async Operation</div>
+      Registration returns <code>202 Accepted</code> — not <code>201 Created</code>. The agent is provisioned asynchronously. Poll the returned operation URL or retrieve by ID to confirm the agent reached <code>STAGED</code> status before proceeding to activation.
+    </div>
+
+    <h4 style="margin-top:20px">Retrieve, Update, and Delete</h4>
+    <table class="info-table">
+      <thead>
+        <tr><th>Operation</th><th>Method + Path</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Retrieve</strong></td>
+          <td><code>GET /ai-agents/{agentId}</code></td>
+          <td>Returns full agent object including status and profile</td>
+        </tr>
+        <tr>
+          <td><strong>Update</strong></td>
+          <td><code>PATCH /ai-agents/{agentId}</code></td>
+          <td>Uses <code>Content-Type: application/merge-patch+json</code> — send only changed fields</td>
+        </tr>
+        <tr>
+          <td><strong>Delete</strong></td>
+          <td><code>DELETE /ai-agents/{agentId}</code></td>
+          <td>Agent must be in <code>INACTIVE</code> status before deletion is permitted</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4 style="margin-top:20px">Lifecycle Operations</h4>
+    <div class="code-label">Activate an agent</div>
+    <div class="code-block">POST /workload-principals/api/v1/ai-agents/{agentId}/lifecycle/activate
+Authorization: Bearer {accessToken}</div>
+    <div class="code-label" style="margin-top:10px">Deactivate an agent</div>
+    <div class="code-block">POST /workload-principals/api/v1/ai-agents/{agentId}/lifecycle/deactivate
+Authorization: Bearer {accessToken}</div>
+    <div class="key-point" style="margin-top:12px">
+      <div class="callout-title">Activation Pre-Conditions</div>
+      The activate call will fail if the agent does not yet have at least one owner assigned AND at least one credential (public key in JWK format) added. These must be configured via the Admin Console or the credentials sub-resource before calling activate.
+    </div>
+  </div>
+
+  <!-- Managed Connections Admin Walkthrough -->
+  <div class="concept-card" id="managed-connections-walkthrough">
+    <h3>Managed Connections — Step-by-Step Admin Walkthrough</h3>
+    <p>Managed Connections is the Admin Console surface that controls which AI agents are allowed to access which resource apps. Every XAA token exchange request is validated against this allowlist — no connection, no token.</p>
+
+    <h4>Step 1 — Enable Cross App Access</h4>
+    <ol style="margin:8px 0 0 20px;line-height:2.2;color:var(--c-text-muted)">
+      <li>Navigate to <strong>Admin Console &rarr; Settings &rarr; Features</strong></li>
+      <li>Click the <strong>Early Access</strong> tab</li>
+      <li>Find <strong>Cross App Access</strong> in the feature list and toggle <strong>Turn On</strong></li>
+      <li>Refresh the Admin Console to activate the new UI surfaces</li>
+    </ol>
+    <div class="security-note" style="margin-top:10px">
+      Once enabled, the Managed Connections tab appears on each registered application's detail page and the Directory menu gains an <strong>AI Agents</strong> entry.
+    </div>
+
+    <h4 style="margin-top:20px">Step 2 — Add the OIN Test Apps</h4>
+    <p style="color:var(--c-text-muted);font-size:14px">Both the requesting app (AI agent) and the resource app <strong>must be OIN-listed applications</strong> with XAA support declared. Custom OIDC apps are not yet supported as of March 2026.</p>
+    <p style="margin-top:8px;color:var(--c-text-muted);font-size:14px"><strong>For demos and POCs, use the official Okta sample apps:</strong></p>
+    <table class="info-table" style="margin-top:8px">
+      <thead>
+        <tr><th>Role</th><th>OIN App Name</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Resource App</strong></td>
+          <td>Todo0 - Cross App Access (XAA) Sample Resource App</td>
+        </tr>
+        <tr>
+          <td><strong>Requesting App (AI Agent)</strong></td>
+          <td>Agent0 - Cross App Access (XAA) Sample Requesting App</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="code-label" style="margin-top:12px">Add from OIN</div>
+    <p style="color:var(--c-text-muted);font-size:14px"><strong>Applications &rarr; Applications &rarr; Browse App Catalog</strong> &rarr; search "Todo0" or "Agent0" &rarr; Add Integration</p>
+
+    <h4 style="margin-top:20px">Step 3 — Configure the Managed Connection</h4>
+    <p style="color:var(--c-text-muted);font-size:14px">Configuration is done from the <strong>requesting app side</strong> (the AI agent app):</p>
+    <ol style="margin:8px 0 0 20px;line-height:2.2;color:var(--c-text-muted)">
+      <li>Go to <strong>Applications &rarr; Applications</strong> and open the Agent app (e.g., Agent0)</li>
+      <li>Click the <strong>Manage Connections</strong> tab</li>
+      <li>Under <em>"App granted consent"</em> &rarr; click <strong>Add requesting apps</strong> to declare which apps can act <em>as</em> this app (relevant if this app is also a resource)</li>
+      <li>Under <em>"Apps providing consent"</em> &rarr; click <strong>Add resource apps</strong> and select the resource app (e.g., Todo0) that this agent is authorized to access</li>
+      <li>Assign both apps to end users: <strong>Directory &rarr; People &rarr; [select user] &rarr; Assign Applications</strong> — the user must be assigned to both the requesting app and the resource app for the flow to succeed</li>
+    </ol>
+    <div class="key-point" style="margin-top:12px">
+      <div class="callout-title">Why User Assignment is Required</div>
+      XAA validates the user's access to both apps at token exchange time. If the user is assigned to the agent app but not the resource app (or vice versa), the ID-JAG request at Okta's Org AS will return an error. Assignment is the per-user entitlement layer on top of the admin-governed connection allowlist.
+    </div>
+  </div>
+
+  <!-- Agent Lifecycle States -->
+  <div class="concept-card" id="agent-lifecycle-states">
+    <h3>Agent Lifecycle States</h3>
+    <p>AI agents registered in Okta follow a three-state lifecycle. The transition from <code>STAGED</code> to <code>ACTIVE</code> has hard prerequisites — the admin console enforces them before the activate action is permitted.</p>
+
+    <div style="display:flex;align-items:center;gap:0;margin:20px 0;flex-wrap:wrap">
+      <div style="background:var(--c-surface);border:2px solid var(--c-border);border-radius:10px;padding:14px 24px;text-align:center;min-width:120px">
+        <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--c-text-muted);margin-bottom:4px">STAGED</div>
+        <div style="font-size:12px;color:var(--c-text-muted)">Registered, not yet<br>activated</div>
+      </div>
+      <div style="padding:0 12px;font-size:20px;color:var(--c-accent-green);font-weight:700">&rarr;</div>
+      <div style="background:rgba(31,170,88,0.08);border:2px solid var(--c-accent-green);border-radius:10px;padding:14px 24px;text-align:center;min-width:120px">
+        <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--c-accent-green);margin-bottom:4px">ACTIVE</div>
+        <div style="font-size:12px;color:var(--c-text-muted)">Operational — can<br>exchange tokens</div>
+      </div>
+      <div style="padding:0 12px;font-size:20px;color:var(--c-text-dim);font-weight:700">&harr;</div>
+      <div style="background:rgba(224,62,77,0.06);border:2px solid rgba(224,62,77,0.4);border-radius:10px;padding:14px 24px;text-align:center;min-width:120px">
+        <div style="font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--c-accent-red);margin-bottom:4px">INACTIVE</div>
+        <div style="font-size:12px;color:var(--c-text-muted)">Suspended — token<br>exchange blocked</div>
+      </div>
+    </div>
+
+    <h4>Activation Prerequisites</h4>
+    <p style="color:var(--c-text-muted);font-size:14px;margin-bottom:8px">Both conditions must be met before the Activate action is available:</p>
+    <table class="info-table">
+      <thead>
+        <tr><th>Requirement</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>At least one owner assigned</strong></td>
+          <td>Up to 5 individual users OR 1 group. Owners are responsible parties for the agent — they receive lifecycle notifications and are shown in audit logs.</td>
+        </tr>
+        <tr>
+          <td><strong>At least one credential added</strong></td>
+          <td>A public key in JWK (JSON Web Key) format. The agent uses the corresponding private key to sign its identity assertions during token exchange. Credentials can be rotated without deactivating the agent (by overlapping old and new keys during the rotation window).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4 style="margin-top:20px">Registration Steps (Admin Console)</h4>
+    <p style="color:var(--c-text-muted);font-size:14px"><strong>Admin path:</strong> <code>Admin Console &rarr; Directory &rarr; AI Agents</code></p>
+    <ol style="margin:10px 0 0 20px;line-height:2.2;color:var(--c-text-muted)">
+      <li>Navigate to <strong>Directory &rarr; AI Agents</strong> &rarr; click <strong>Register AI agent</strong></li>
+      <li>Fill in the agent's <strong>Name</strong> and <strong>Description</strong></li>
+      <li>(Optional) Link to an existing <strong>OIDC application</strong> if this agent has a corresponding OAuth client registration</li>
+      <li>Click <strong>Register</strong> — the agent is created in <code>STAGED</code> state and the <strong>Owners</strong> tab opens automatically</li>
+      <li>Assign owners (up to 5 individual users or 1 group) &rarr; click <strong>Save</strong></li>
+      <li>Switch to the <strong>Credentials</strong> tab &rarr; click <strong>Add public key</strong> &rarr; paste the JWK-formatted public key</li>
+      <li>Return to the agent overview &rarr; open the <strong>Actions</strong> menu &rarr; click <strong>Activate</strong></li>
+    </ol>
+    <div class="mcp-note" style="margin-top:12px">
+      <div class="callout-title">API Alternative</div>
+      All registration steps above can be driven via the Agent Registration API (see reference above). Use <code>POST /ai-agents</code> to register, the owners and credentials sub-resources to fulfill the prerequisites, then <code>POST /ai-agents/{agentId}/lifecycle/activate</code> to activate. This is the recommended approach for automated agent provisioning pipelines.
+    </div>
+  </div>
+
   <!-- Auth0 Token Vault -->
   <div class="concept-card">
     <h3>Auth0 Token Vault — SDK Code Examples</h3>
