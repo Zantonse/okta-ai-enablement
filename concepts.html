@@ -1788,6 +1788,175 @@ curl -X POST <span class="str">"https://{auth0TenantDomain}/oauth/token"</span> 
     <section id="id-jag">
       <h2>ID-JAG Deep Dive</h2>
 
+      <!-- What It Is -->
+      <h3 style="margin-top: var(--spacing-lg);">What Is an ID-JAG?</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">The <strong>Identity Assertion Authorization Grant (ID-JAG)</strong> is a signed JWT defined by <code>draft-ietf-oauth-identity-assertion-authz-grant-02</code> (published March 2, 2026). It was co-authored by Aaron Parecki (Okta), Karl McGuinness, and Brian Campbell (Ping Identity). It is the cryptographic primitive that makes Cross-App Access (XAA) work.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-okta-blue);">The Problem It Solves</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">When an AI agent needs to access a resource in a <em>separate trust domain</em> (different authorization server), there was no standard way for the enterprise IdP to assert: "This user authorized this agent to access this resource." OAuth consent screens don't work for enterprise-managed agents. SAML is session-based. ID-JAG fills this gap — it's a delegation assertion that carries user context across trust boundaries without user interaction.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-okta-blue);">How It Differs from Existing Standards</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">
+            <strong>vs. Access Tokens:</strong> An ID-JAG is <em>not</em> used to call APIs directly. Its <code>token_type</code> is <code>N_A</code>. It's an assertion presented to a <em>different</em> authorization server to obtain an access token.<br><br>
+            <strong>vs. ID Tokens:</strong> ID tokens prove who the user is. ID-JAGs prove who the user is <em>and</em> that the enterprise IdP authorized this specific agent to act on their behalf for a specific resource.<br><br>
+            <strong>vs. SAML Assertions:</strong> SAML is session-based and heavyweight. ID-JAG is a single JWT — stateless, 5-minute TTL, no session required.
+          </p>
+        </div>
+      </div>
+
+      <!-- Security Design Rationale -->
+      <h3 style="margin-top: var(--spacing-lg);">Security Design — Separation of Trust Domains</h3>
+      <div style="border-left: 4px solid var(--c-accent-red); padding: var(--spacing-lg); background: rgba(224, 62, 77, 0.05); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg);">
+        <h4 style="margin-top: 0; color: var(--c-accent-red);">Critical Constraint (IETF Spec §8.3)</h4>
+        <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-sm);">The Identity Provider <strong>MUST NOT</strong> issue access tokens in response to an ID-JAG it issued itself. If an IdP could both issue and consume its own ID-JAGs, it would risk unintentionally broadening authorization scope.</p>
+        <p style="color: var(--c-text-secondary); margin-bottom: 0;"><strong>What this means in practice:</strong> The Requesting App's IdP (Okta org AS) and the Resource App's Authorization Server (e.g., Auth0, or a separate Okta custom AS) must be <strong>separate issuers</strong>. Two apps sharing the same <code>/oauth2/default</code> custom AS within one Okta org cannot use XAA today. First-party/internal app support is on the roadmap.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-okta-blue); color: #fff; padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-lg) var(--radius-lg) 0 0; font-weight: 600; font-size: 0.9rem;">1. Okta Org AS (Enterprise IdP) — Issues the ID-JAG</div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); padding: var(--spacing-md) var(--spacing-lg); font-family: var(--font-mono); font-size: 0.8rem; color: var(--c-text-secondary);">ID Token → Token Exchange → ID-JAG (signed with IdP's key, <code>token_type: "N_A"</code>, 5-min TTL)</div>
+        <div style="background: var(--c-auth0-purple); color: #fff; padding: var(--spacing-md) var(--spacing-lg); font-weight: 600; font-size: 0.9rem;">2. Resource App AS (Auth0 / Separate Okta) — Consumes the ID-JAG</div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); padding: var(--spacing-md) var(--spacing-lg); border-radius: 0 0 var(--radius-lg) var(--radius-lg); font-family: var(--font-mono); font-size: 0.8rem; color: var(--c-text-secondary);">ID-JAG → JWT Bearer Grant → Access Token (<code>token_type: "Bearer"</code>, scoped, resource-specific)</div>
+      </div>
+
+      <!-- JWT Header -->
+      <h3 style="margin-top: var(--spacing-lg);">JWT Header</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">The <code>typ</code> header value <code>oauth-id-jag+jwt</code> is what distinguishes an ID-JAG from a standard ID token or access token. The signing key is the <strong>same key</strong> the IdP uses for ID tokens — resource apps already configured for SSO can validate it without additional key exchange.</p>
+      <div class="code-wrapper" style="margin-bottom: var(--spacing-lg); margin-top: var(--spacing-md);">
+        <button class="copy-btn">Copy</button>
+        <pre><code>{
+  <span class="attr">"typ"</span>: <span class="str">"oauth-id-jag+jwt"</span>,
+  <span class="attr">"alg"</span>: <span class="str">"RS256"</span>,
+  <span class="attr">"kid"</span>: <span class="str">"{keyId}"</span>
+}</code></pre>
+      </div>
+
+      <!-- Token Exchange Parameters -->
+      <h3 style="margin-top: var(--spacing-lg);">Token Exchange Request Parameters</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">The token exchange to obtain an ID-JAG uses the Okta <strong>org authorization server</strong> (<code>/oauth2/v1/token</code>), not a custom authorization server.</p>
+      <div style="overflow-x: auto; margin-bottom: var(--spacing-lg);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--c-border);">
+              <th style="text-align: left; padding: var(--spacing-sm) var(--spacing-md); color: var(--c-text-secondary); font-weight: 600;">Parameter</th>
+              <th style="text-align: left; padding: var(--spacing-sm) var(--spacing-md); color: var(--c-text-secondary); font-weight: 600;">Required</th>
+              <th style="text-align: left; padding: var(--spacing-sm) var(--spacing-md); color: var(--c-text-secondary); font-weight: 600;">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">grant_type</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Yes</td><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">urn:ietf:params:oauth:grant-type:token-exchange</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">requested_token_type</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Yes</td><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">urn:ietf:params:oauth:token-type:id-jag</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">audience</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Yes</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Issuer URL of the Resource App's authorization server</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">subject_token</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Yes</td><td style="padding: var(--spacing-sm) var(--spacing-md);">The Okta ID token from the SSO step</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">subject_token_type</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Yes</td><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">urn:ietf:params:oauth:token-type:id_token</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">client_id</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Yes</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Client ID of the requesting app at the enterprise IdP</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">resource</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Optional</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Resource App's API audience (RFC 8707). Included in ID-JAG's <code>aud</code>.</td></tr>
+            <tr><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.8rem;">authorization_details</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Optional</td><td style="padding: var(--spacing-sm) var(--spacing-md);">JSON array of Rich Authorization Request objects (RFC 9396)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Token Exchange Response -->
+      <h3 style="margin-top: var(--spacing-lg);">Token Exchange Response</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Note: <code>token_type</code> is <code>N_A</code> — this token is not used as a Bearer token. The <code>access_token</code> field contains the ID-JAG JWT.</p>
+      <div class="code-wrapper" style="margin-bottom: var(--spacing-lg); margin-top: var(--spacing-md);">
+        <button class="copy-btn">Copy</button>
+        <pre><code>{
+  <span class="attr">"issued_token_type"</span>: <span class="str">"urn:ietf:params:oauth:token-type:id-jag"</span>,
+  <span class="attr">"access_token"</span>: <span class="str">"eyJhbGciOiJSUzI1NiIsInR5cCI6Im9hdXRoLWlkLWphZytqd3QiLCJraWQiOiIuLi4ifQ..."</span>,
+  <span class="attr">"token_type"</span>: <span class="str">"N_A"</span>,
+  <span class="attr">"expires_in"</span>: <span class="num">300</span>
+}</code></pre>
+      </div>
+
+      <!-- Required vs Optional Claims -->
+      <h3 style="margin-top: var(--spacing-lg);">ID-JAG Claims — Required vs Optional</h3>
+      <p style="color: var(--c-text-secondary); margin-bottom: var(--spacing-md);">Required claims are enforced by both the IETF spec and Okta's implementation. Optional claims provide richer context for advanced use cases.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-okta-blue);">Required Claims</h4>
+          <div style="font-size: 0.85rem; color: var(--c-text-secondary);">
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-okta-blue);">iss</code> — IdP Authorization Server issuer URL</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-okta-blue);">sub</code> — User's immutable Okta ID (cannot be remapped)</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-okta-blue);">aud</code> — Resource Authorization Server issuer URL</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-okta-blue);">client_id</code> — OAuth client ID at the Resource AS</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-okta-blue);">jti</code> — Unique JWT ID for replay prevention</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-okta-blue);">exp</code> — Expiration (default 300s / 5 minutes)</p>
+            <p style="margin-bottom: 0;"><code style="color: var(--c-okta-blue);">iat</code> — Issued-at timestamp</p>
+          </div>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-auth0-purple);">Optional Claims</h4>
+          <div style="font-size: 0.85rem; color: var(--c-text-secondary);">
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-auth0-purple);">resource</code> — Resource Server URI(s) per RFC 8707</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-auth0-purple);">scope</code> — Space-separated scope list</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-auth0-purple);">authorization_details</code> — RAR objects (RFC 9396)</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-auth0-purple);">auth_time</code> — When the user authenticated</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-auth0-purple);">acr</code> / <code style="color: var(--c-auth0-purple);">amr</code> — Authentication context and methods</p>
+            <p style="margin-bottom: var(--spacing-xs);"><code style="color: var(--c-auth0-purple);">tenant</code> — Multi-tenant issuer identifier</p>
+            <p style="margin-bottom: 0;"><code style="color: var(--c-auth0-purple);">aud_sub</code> — Resource AS's identifier for the user</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Responses -->
+      <h3 style="margin-top: var(--spacing-lg);">Error Responses to Know</h3>
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+        <div style="border-left: 4px solid var(--c-accent-amber); padding: var(--spacing-md) var(--spacing-lg); background: rgba(212, 138, 0, 0.05); border-radius: var(--radius-lg);">
+          <h4 style="margin-top: 0; color: var(--c-accent-amber);"><code>invalid_grant</code> — Audience validation failed</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">The <code>audience</code> parameter doesn't match any resource app configured in Managed Connections. Check the issuer URL of the Resource App's authorization server.</p>
+        </div>
+        <div style="border-left: 4px solid var(--c-accent-amber); padding: var(--spacing-md) var(--spacing-lg); background: rgba(212, 138, 0, 0.05); border-radius: var(--radius-lg);">
+          <h4 style="margin-top: 0; color: var(--c-accent-amber);"><code>insufficient_user_authentication</code> — Step-up required</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">The user's authentication level doesn't meet the resource's requirements. The response includes a <code>max_age</code> hint. Redirect the user back to the IdP for step-up authentication, then retry with a fresh ID token.</p>
+        </div>
+        <div style="border-left: 4px solid var(--c-accent-red); padding: var(--spacing-md) var(--spacing-lg); background: rgba(224, 62, 77, 0.05); border-radius: var(--radius-lg);">
+          <h4 style="margin-top: 0; color: var(--c-accent-red);">Auth0 Beta: <code>User not found</code></h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">The user has never logged into the Resource App using the configured Okta connection. The user must have previously authenticated to the resource app at least once. This is an Auth0 XAA Beta constraint.</p>
+        </div>
+      </div>
+
+      <!-- Key Design Decisions -->
+      <h3 style="margin-top: var(--spacing-lg);">Why the Spec Works This Way</h3>
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-okta-blue);">No Refresh Tokens from ID-JAG Exchanges</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">Intentional. Each time the agent needs a new access token, it must re-run the token exchange against the IdP. This forces the IdP to re-evaluate access policies on every acquisition — if an admin revokes a Managed Connection at 2:05 PM, the agent loses access at 2:05 PM, not when a cached refresh token eventually expires.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-okta-blue);">Same Signing Key as ID Tokens</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">The ID-JAG is signed with the <strong>same key</strong> the IdP uses for ID tokens. Resource apps already configured for SSO can validate it using their existing JWKS endpoint — no additional key exchange, certificate pinning, or trust configuration needed.</p>
+        </div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+          <h4 style="margin-top: 0; color: var(--c-okta-blue);">5-Minute TTL</h4>
+          <p style="color: var(--c-text-secondary); margin-bottom: 0;">The ID-JAG expires in 300 seconds. This is long enough for the agent to present it to the Resource AS and obtain an access token, but short enough that a leaked ID-JAG has a tiny window of exploitability. The Resource AS sets its own access token lifetime independently.</p>
+        </div>
+      </div>
+
+      <!-- Standards References -->
+      <h3 style="margin-top: var(--spacing-lg);">Standards Foundation</h3>
+      <div style="overflow-x: auto; margin-bottom: var(--spacing-lg);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--c-border);">
+              <th style="text-align: left; padding: var(--spacing-sm) var(--spacing-md); color: var(--c-text-secondary); font-weight: 600;">Document</th>
+              <th style="text-align: left; padding: var(--spacing-sm) var(--spacing-md); color: var(--c-text-secondary); font-weight: 600;">Role in XAA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">draft-ietf-oauth-identity-assertion-authz-grant-02</td><td style="padding: var(--spacing-sm) var(--spacing-md);">The ID-JAG specification itself (March 2026)</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">RFC 8693</td><td style="padding: var(--spacing-sm) var(--spacing-md);">OAuth 2.0 Token Exchange — the grant type used to request an ID-JAG</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">RFC 7523</td><td style="padding: var(--spacing-sm) var(--spacing-md);">JWT Bearer Grant — how the Resource AS consumes the ID-JAG</td></tr>
+            <tr style="border-bottom: 1px solid var(--c-border);"><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">RFC 8707</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Resource Indicators — the <code>resource</code> parameter for audience binding</td></tr>
+            <tr><td style="padding: var(--spacing-sm) var(--spacing-md); font-family: var(--font-mono); font-size: 0.75rem;">RFC 9396</td><td style="padding: var(--spacing-sm) var(--spacing-md);">Rich Authorization Requests — the <code>authorization_details</code> mechanism</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Existing content continues: Decoded JWT example -->
       <h3 style="margin-top: var(--spacing-lg);">Decoded JWT</h3>
       <div class="code-wrapper" style="margin-bottom: var(--spacing-lg); margin-top: var(--spacing-md);">
         <button class="copy-btn">Copy</button>
