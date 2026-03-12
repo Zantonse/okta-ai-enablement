@@ -11,29 +11,42 @@
 <style>
 /* ─── Reset & Variables ─── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ─── @property for animated gradients ─── */
+@property --hero-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 135deg;
+}
+@property --hero-glow {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.12;
+}
+
 :root{
-  --c-bg:#f8f8fa;
-  --c-bg-elevated:#ffffff;
-  --c-bg-card:#ffffff99;
-  --c-surface:#f0f0f5;
-  --c-border:#d8d8e0;
-  --c-text:#1a1a2e;
-  --c-text-muted:#5a5a70;
-  --c-text-dim:#9090a0;
-  --c-okta-blue:#0052a3;
-  --c-okta-blue-light:#0066cc;
-  --c-auth0-purple:#6742d5;
-  --c-auth0-purple-light:#5a35c0;
-  --c-accent-amber:#d48a00;
-  --c-accent-red:#e03e4d;
-  --c-accent-green:#1faa58;
-  --c-accent-cyan:#0099bb;
-  --c-seller-bg:#fef9f0;
-  --c-seller-border:#e0d5c0;
-  --c-seller-accent:#d48a00;
-  --c-nav-bg:rgba(248,248,250,0.9);
-  --c-inset-bg:rgba(0,0,0,0.06);
-  --c-auth0-gradient-end:#f0eef8;
+  --c-bg: oklch(0.97 0.005 264);
+  --c-bg-elevated: #ffffff;
+  --c-bg-card: rgba(255,255,255,0.6);
+  --c-surface: oklch(0.94 0.008 264);
+  --c-border: oklch(0.85 0.01 264);
+  --c-text: oklch(0.15 0.02 264);
+  --c-text-muted: oklch(0.45 0.02 264);
+  --c-text-dim: oklch(0.62 0.01 264);
+  --c-okta-blue: oklch(0.48 0.18 264);
+  --c-okta-blue-light: oklch(0.55 0.20 264);
+  --c-auth0-purple: oklch(0.45 0.22 295);
+  --c-auth0-purple-light: oklch(0.52 0.18 295);
+  --c-accent-amber: oklch(0.65 0.16 75);
+  --c-accent-red: oklch(0.55 0.22 20);
+  --c-accent-green: oklch(0.58 0.17 145);
+  --c-accent-cyan: oklch(0.58 0.13 210);
+  --c-seller-bg: oklch(0.97 0.02 75);
+  --c-seller-border: oklch(0.82 0.06 75);
+  --c-seller-accent: oklch(0.65 0.16 75);
+  --c-nav-bg: oklch(0.97 0.005 264 / 0.9);
+  --c-inset-bg: oklch(0 0 0 / 0.06);
+  --c-auth0-gradient-end: oklch(0.95 0.02 295);
   --font-display:'Instrument Serif',Georgia,serif;
   --font-body:'DM Sans',system-ui,sans-serif;
   --font-mono:'JetBrains Mono',monospace;
@@ -42,31 +55,37 @@
   --nav-total-h:104px;
   --section-pad:clamp(60px,8vw,120px);
   --max-w:1200px;
+  --radius-lg:16px;
+  --radius-md:12px;
+  --radius-sm:8px;
+  --radius-pill:100px;
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+  --ease-out-quart:cubic-bezier(0.25,0.46,0.45,0.94);
 }
 
 html[data-theme="dark"]{
-  --c-bg:#0a0a0f;
-  --c-bg-elevated:#12121a;
-  --c-bg-card:#18182299;
-  --c-surface:#1e1e2a;
-  --c-border:#2a2a3a;
-  --c-text:#e8e6e3;
-  --c-text-muted:#8a8a9a;
-  --c-text-dim:#5a5a6a;
-  --c-okta-blue:#0066cc;
-  --c-okta-blue-light:#3399ff;
-  --c-auth0-purple:#6742d5;
-  --c-auth0-purple-light:#b3a7ff;
-  --c-accent-amber:#f5a623;
-  --c-accent-red:#ff4757;
-  --c-accent-green:#2ed573;
-  --c-accent-cyan:#00c4ee;
-  --c-seller-bg:#1a1710;
-  --c-seller-border:#3d3520;
-  --c-seller-accent:#f5a623;
-  --c-nav-bg:rgba(10,10,15,0.85);
-  --c-inset-bg:rgba(0,0,0,0.3);
-  --c-auth0-gradient-end:#0e0b18;
+  --c-bg: oklch(0.08 0.02 264);
+  --c-bg-elevated: oklch(0.12 0.025 264);
+  --c-bg-card: oklch(0.14 0.02 264 / 0.6);
+  --c-surface: oklch(0.16 0.025 264);
+  --c-border: oklch(0.24 0.03 264);
+  --c-text: oklch(0.92 0.01 264);
+  --c-text-muted: oklch(0.62 0.015 264);
+  --c-text-dim: oklch(0.42 0.01 264);
+  --c-okta-blue: oklch(0.55 0.20 264);
+  --c-okta-blue-light: oklch(0.65 0.18 264);
+  --c-auth0-purple: oklch(0.45 0.22 295);
+  --c-auth0-purple-light: oklch(0.70 0.14 295);
+  --c-accent-amber: oklch(0.72 0.16 75);
+  --c-accent-red: oklch(0.62 0.22 20);
+  --c-accent-green: oklch(0.62 0.17 145);
+  --c-accent-cyan: oklch(0.62 0.13 210);
+  --c-seller-bg: oklch(0.12 0.03 75);
+  --c-seller-border: oklch(0.28 0.06 75);
+  --c-seller-accent: oklch(0.72 0.16 75);
+  --c-nav-bg: oklch(0.08 0.02 264 / 0.85);
+  --c-inset-bg: oklch(0 0 0 / 0.3);
+  --c-auth0-gradient-end: oklch(0.10 0.03 295);
 }
 html{scroll-behavior:smooth;scroll-padding-top:var(--nav-total-h)}
 body{
@@ -317,36 +336,62 @@ body.seller-mode .seller-section{display:block}
   border-radius:4px;background:rgba(245,166,35,0.06);
 }
 
-/* ─── Hero ─── */
+/* ─── Hero (always dark) ─── */
 .hero{
   padding:calc(var(--nav-total-h) + 80px) 0 var(--section-pad);
   position:relative;overflow:hidden;
   min-height:100vh;
   display:flex;align-items:center;
+  background:oklch(0.06 0.02 264);
+  color:oklch(0.95 0.01 264);
 }
+/* Animated mesh gradient overlay */
 .hero::before{
-  content:'';position:absolute;top:-200px;right:-200px;
-  width:800px;height:800px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,102,204,0.08) 0%,transparent 70%);
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 50%, oklch(0.48 0.18 264 / var(--hero-glow)), transparent 50%),
+    radial-gradient(ellipse 60% 60% at 80% 20%, oklch(0.45 0.22 295 / 0.10), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 80%, oklch(0.55 0.22 20 / 0.06), transparent 50%);
+  animation:hero-pulse 8s ease-in-out infinite alternate;
   pointer-events:none;
 }
+/* Subtle rotating conic accent */
 .hero::after{
-  content:'';position:absolute;bottom:-300px;left:-100px;
-  width:600px;height:600px;border-radius:50%;
-  background:radial-gradient(circle,rgba(103,66,213,0.06) 0%,transparent 70%);
+  content:'';position:absolute;
+  top:-30%;left:50%;transform:translateX(-50%);
+  width:140%;height:140%;
+  background:conic-gradient(from var(--hero-angle), oklch(0.48 0.18 264 / 0.04), transparent 30%, oklch(0.45 0.22 295 / 0.03), transparent 60%, oklch(0.48 0.18 264 / 0.04));
+  animation:hero-rotate 20s linear infinite;
   pointer-events:none;
+}
+@keyframes hero-rotate{to{--hero-angle:495deg}}
+@keyframes hero-pulse{
+  from{--hero-glow:0.10}
+  to{--hero-glow:0.18}
 }
 .hero-content{position:relative;z-index:1}
-.hero-eyebrow{
-  font-family:var(--font-mono);font-size:12px;letter-spacing:3px;
-  text-transform:uppercase;color:var(--c-okta-blue-light);
-  margin-bottom:24px;
-  display:flex;align-items:center;gap:10px;
+
+/* Hero badge pill */
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:var(--radius-pill);
+  border:1px solid oklch(0.45 0.22 295 / 0.3);
+  background:oklch(0.45 0.22 295 / 0.10);
+  font-size:12px;font-weight:500;font-family:var(--font-body);
+  color:oklch(0.78 0.12 295);
+  letter-spacing:0.02em;
+  margin-bottom:28px;
 }
-.hero-eyebrow::before{
-  content:'';width:40px;height:2px;
-  background:linear-gradient(90deg,var(--c-okta-blue),var(--c-auth0-purple));
+.hero-badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:oklch(0.55 0.20 295);
+  animation:badge-pulse 2s ease-in-out infinite;
 }
+@keyframes badge-pulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 oklch(0.55 0.20 295 / 0.4)}
+  50%{opacity:0.7;box-shadow:0 0 0 6px oklch(0.55 0.20 295 / 0)}
+}
+
 .hero h1{
   font-family:var(--font-display);
   font-size:clamp(42px,7vw,80px);
@@ -354,66 +399,180 @@ body.seller-mode .seller-section{display:block}
   letter-spacing:-0.03em;
   margin-bottom:24px;
   max-width:800px;
+  color:oklch(0.97 0.005 264);
 }
-.hero h1 em{font-style:italic;color:var(--c-okta-blue-light)}
+.hero h1 em{font-style:italic;color:oklch(0.65 0.18 264)}
 .hero-desc{
-  font-size:19px;color:var(--c-text-muted);
+  font-size:19px;color:oklch(0.70 0.015 264);
   max-width:560px;margin-bottom:48px;line-height:1.7;
 }
+
+/* Hairline-grid stat cards */
 .hero-stats{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:2px;
-  background:var(--c-border);
-  border-radius:12px;
+  gap:1px;
+  background:oklch(1 0 0 / 0.08);
+  border-radius:var(--radius-md);
   overflow:hidden;
   max-width:900px;
 }
 .hero-stat{
-  background:var(--c-bg-elevated);
+  background:oklch(0.10 0.025 264);
   padding:28px 24px;
   text-align:center;
 }
 .hero-stat .num{
   font-family:var(--font-display);
   font-size:clamp(28px,4vw,44px);
-  color:var(--c-text);
+  color:oklch(0.97 0.005 264);
   line-height:1;
   margin-bottom:8px;
+  font-variant-numeric:tabular-nums;
 }
-.hero-stat .num .suffix{font-size:0.6em;color:var(--c-okta-blue-light)}
+.hero-stat .num .suffix{font-size:0.6em;color:oklch(0.65 0.18 264)}
 .hero-stat .label{
-  font-size:12px;color:var(--c-text-muted);line-height:1.4;
+  font-size:12px;color:oklch(0.55 0.015 264);line-height:1.4;
   font-weight:500;
+}
+/* Fill bar under each stat */
+.stat-fill{
+  height:2px;
+  background:oklch(1 0 0 / 0.06);
+  border-radius:2px;
+  margin-top:14px;
+  overflow:hidden;
+}
+.stat-fill-bar{
+  height:100%;
+  border-radius:2px;
+  background:linear-gradient(90deg, oklch(0.55 0.20 264), oklch(0.50 0.22 295));
+  transform-origin:left;
+  transform:scaleX(0);
+  transition:transform 1.2s var(--ease-out-quart);
+}
+.stat-fill-bar.animate{
+  transform:scaleX(var(--fill,0.75));
+}
+
+/* ─── Hero Transition ─── */
+.hero-transition{
+  height:120px;
+  background:linear-gradient(to bottom, oklch(0.06 0.02 264), var(--c-bg));
+  position:relative;z-index:1;
 }
 
 /* ─── Stats animation ─── */
 .count-up{opacity:0;transform:translateY(10px);transition:all 0.6s ease-out}
 .count-up.visible{opacity:1;transform:translateY(0)}
 
+/* ─── Command Palette ─── */
+.cmd-k-trigger{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--c-border);
+  background:transparent;color:var(--c-text-dim);
+  font-size:13px;font-family:var(--font-body);
+  cursor:pointer;transition:all 0.2s;
+  white-space:nowrap;margin-right:8px;
+}
+.cmd-k-trigger:hover{border-color:var(--c-okta-blue);color:var(--c-text)}
+.cmd-k-trigger kbd{
+  font-family:var(--font-mono);font-size:10px;
+  padding:2px 6px;border-radius:4px;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  color:var(--c-text-dim);line-height:1;
+}
+.cmd-palette{
+  position:fixed;top:20vh;left:50%;
+  transform:translateX(-50%);
+  width:min(560px,90vw);
+  background:var(--c-bg-elevated);
+  border:1px solid var(--c-border);
+  border-radius:var(--radius-lg);
+  box-shadow:0 24px 64px oklch(0 0 0 / 0.2), 0 0 0 1px oklch(0 0 0 / 0.05);
+  padding:0;overflow:hidden;
+  max-height:min(480px,60vh);
+  display:none;flex-direction:column;
+}
+.cmd-palette[open]{
+  display:flex;
+}
+.cmd-palette::backdrop{
+  background:oklch(0 0 0 / 0.5);
+  backdrop-filter:blur(4px);
+}
+.cmd-palette-input{
+  width:100%;padding:16px 20px;
+  border:none;border-bottom:1px solid var(--c-border);
+  background:transparent;font-size:16px;
+  color:var(--c-text);font-family:var(--font-body);
+  outline:none;
+}
+.cmd-palette-input::placeholder{color:var(--c-text-dim)}
+.cmd-palette-list{
+  list-style:none;overflow-y:auto;padding:8px;
+  flex:1;
+}
+.cmd-palette-group{
+  font-family:var(--font-mono);font-size:10px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--c-text-dim);padding:8px 12px 4px;
+}
+.cmd-palette-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  cursor:pointer;color:var(--c-text-muted);
+  font-size:14px;transition:background 0.1s;
+}
+.cmd-palette-item:hover,.cmd-palette-item[aria-selected="true"]{
+  background:var(--c-surface);color:var(--c-text);
+}
+.cmd-palette-item .cmd-icon{
+  width:20px;text-align:center;font-size:14px;flex-shrink:0;
+}
+.cmd-palette-empty{
+  padding:32px 20px;text-align:center;
+  color:var(--c-text-dim);font-size:14px;
+}
+
 /* ─── Section Base ─── */
 section{padding:var(--section-pad) 0}
 section:nth-child(even){background:var(--c-bg-elevated)}
+section.hero{background:oklch(0.06 0.02 264) !important}
 .seller-section{background:var(--c-seller-bg) !important}
 
 /* ─── Problem Section ─── */
 .risk-card{
   background:var(--c-bg-card);
   border:1px solid var(--c-border);
-  border-radius:12px;
+  border-radius:var(--radius-md);
   padding:28px;
   backdrop-filter:blur(10px);
-  transition:all 0.3s;
+  transition:transform 0.4s var(--ease-out-quart), box-shadow 0.4s var(--ease-out-quart), border-color 0.3s;
   position:relative;
   overflow:hidden;
 }
+/* Mouse-follow gradient */
 .risk-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%),
+    oklch(0.55 0.22 20 / 0.08) 0%, transparent 60%);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+/* Top gradient border */
+.risk-card::after{
   content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--c-accent-red),transparent);
   opacity:0;transition:opacity 0.3s;
 }
-.risk-card:hover{border-color:var(--c-accent-red);transform:translateY(-2px)}
+.risk-card:hover{
+  border-color:var(--c-accent-red);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px oklch(0.55 0.22 20 / 0.08);
+}
 .risk-card:hover::before{opacity:1}
+.risk-card:hover::after{opacity:1}
 .risk-card .icon{
   width:40px;height:40px;border-radius:10px;
   background:rgba(255,71,87,0.1);
@@ -439,8 +598,8 @@ section:nth-child(even){background:var(--c-bg-elevated)}
 
 /* ─── Solution Lifecycle ─── */
 .lifecycle{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
-  background:var(--c-border);border-radius:16px;overflow:hidden;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--c-border);border-radius:var(--radius-lg);overflow:hidden;
   margin-top:40px;
 }
 .lifecycle-phase{
@@ -470,17 +629,31 @@ section:nth-child(even){background:var(--c-bg-elevated)}
   background:linear-gradient(180deg,var(--c-bg) 0%,var(--c-auth0-gradient-end) 100%) !important;
 }
 .feature-card{
-  background:rgba(103,66,213,0.06);
-  border:1px solid rgba(103,66,213,0.15);
-  border-radius:12px;
+  background:oklch(0.45 0.22 295 / 0.06);
+  border:1px solid oklch(0.45 0.22 295 / 0.15);
+  border-radius:var(--radius-md);
   padding:28px;
-  transition:all 0.3s;
+  transition:transform 0.4s var(--ease-out-quart), box-shadow 0.4s var(--ease-out-quart), border-color 0.3s;
+  position:relative;overflow:hidden;
+}
+.feature-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%),
+    oklch(0.45 0.22 295 / 0.10) 0%, transparent 60%);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+.feature-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,oklch(0.45 0.22 295),oklch(0.48 0.18 264));
+  opacity:0;transition:opacity 0.3s;
 }
 .feature-card:hover{
   border-color:var(--c-auth0-purple);
   transform:translateY(-2px);
-  box-shadow:0 8px 32px rgba(103,66,213,0.1);
+  box-shadow:0 8px 32px oklch(0.45 0.22 295 / 0.12);
 }
+.feature-card:hover::before{opacity:1}
+.feature-card:hover::after{opacity:1}
 .feature-card .fc-icon{
   width:40px;height:40px;border-radius:10px;
   background:rgba(103,66,213,0.15);
@@ -546,12 +719,30 @@ button,a[href*="#"],input[type="number"],input[type="text"],select{
 .pattern-card{
   background:var(--c-bg-card);
   border:1px solid var(--c-border);
-  border-radius:12px;
+  border-radius:var(--radius-md);
   padding:24px;
   backdrop-filter:blur(10px);
-  transition:all 0.3s;
+  transition:transform 0.4s var(--ease-out-quart), box-shadow 0.4s var(--ease-out-quart), border-color 0.3s;
+  position:relative;overflow:hidden;
 }
-.pattern-card:hover{border-color:var(--c-okta-blue);transform:translateY(-2px)}
+.pattern-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%),
+    oklch(0.48 0.18 264 / 0.08) 0%, transparent 60%);
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+.pattern-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,oklch(0.48 0.18 264),oklch(0.45 0.22 295));
+  opacity:0;transition:opacity 0.3s;
+}
+.pattern-card:hover{
+  border-color:var(--c-okta-blue);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px oklch(0.48 0.18 264 / 0.10);
+}
+.pattern-card:hover::before{opacity:1}
+.pattern-card:hover::after{opacity:1}
 .pattern-tag{
   display:inline-block;
   font-family:var(--font-mono);font-size:10px;
@@ -803,11 +994,13 @@ blockquote cite{
   .hamburger{display:flex}
   .nav-links{display:none}
   .nav-sub{display:none}
+  .cmd-k-trigger{display:none}
   .nav-brand{font-size:18px;gap:8px}
   .nav-brand .okta-mark{width:24px;height:24px;font-size:10px}
   .seller-toggle{display:none}
   html{scroll-padding-top:var(--nav-h)}
   .hero{padding-top:calc(var(--nav-h) + 80px)}
+  .hero-transition{height:80px}
 }
 
 @media(max-width:600px){
@@ -834,6 +1027,26 @@ blockquote cite{
   /* Calc inputs and results fit better */
   .calc-result .result-value{font-size:24px}
 }
+
+/* ─── Bento Grid ─── */
+.bento-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
+.bento-span-2{grid-column:span 2}
+.bento-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){
+  .bento-grid{grid-template-columns:1fr}
+  .bento-span-2{grid-column:span 1}
+  .bento-3{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .bento-3{grid-template-columns:1fr}
+}
+
+/* ─── Nav scroll-spy active state ─── */
+.nav-links a.active{color:var(--c-text);background:var(--c-surface)}
 
 /* ─── Scroll reveal ─── */
 .reveal{opacity:0;transform:translateY(20px);transition:all 0.7s cubic-bezier(0.16,1,0.3,1)}
@@ -864,6 +1077,9 @@ blockquote cite{
       <li><a href="#architecture">Architecture</a></li>
       <li><a href="#token-flow">Token Flow</a></li>
     </ul>
+    <button class="cmd-k-trigger" id="cmdKTrigger" type="button" aria-label="Open command palette">
+      Search… <kbd>⌘K</kbd>
+    </button>
     <button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Toggle light/dark mode">
       <span class="theme-icon">☾</span>
     </button>
@@ -931,32 +1147,45 @@ blockquote cite{
   </div>
 </div>
 
+<!-- ─── Command Palette ─── -->
+<dialog id="cmdPalette" class="cmd-palette">
+  <input type="search" class="cmd-palette-input" id="cmdInput" placeholder="Go to page, search topics…" autocomplete="off">
+  <ul class="cmd-palette-list" id="cmdList" role="listbox"></ul>
+</dialog>
+
 <!-- ─── Hero ─── -->
 <section class="hero" id="hero">
   <div class="container hero-content">
-    <div class="hero-eyebrow">Okta + Auth0 for AI Agents</div>
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Okta + Auth0 for AI Agents</div>
     <h1>AI Security Starts<br>with <em>Identity</em></h1>
     <p class="hero-desc">Agents are autonomous. They make decisions, access data, and trigger workflows at machine speed. Every material risk in the agentic enterprise is an identity problem.</p>
     <div class="hero-stats">
       <div class="hero-stat count-up">
         <div class="num"><span data-target="91">0</span><span class="suffix">%</span></div>
         <div class="label">of companies adopting<br>AI agents</div>
+        <div class="stat-fill"><div class="stat-fill-bar" style="--fill:0.91"></div></div>
       </div>
       <div class="hero-stat count-up">
         <div class="num"><span data-target="58">0</span></div>
         <div class="label">tool calls per single<br>agent conversation</div>
+        <div class="stat-fill"><div class="stat-fill-bar" style="--fill:0.58"></div></div>
       </div>
       <div class="hero-stat count-up">
         <div class="num"><span data-target="580">0</span><span class="suffix">M</span></div>
         <div class="label">access policy decisions<br>at enterprise scale</div>
+        <div class="stat-fill"><div class="stat-fill-bar" style="--fill:0.80"></div></div>
       </div>
       <div class="hero-stat count-up">
         <div class="num"><span data-target="6500">0</span><span class="suffix">+</span></div>
         <div class="label">public MCP servers<br>in the ecosystem</div>
+        <div class="stat-fill"><div class="stat-fill-bar" style="--fill:0.65"></div></div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ─── Hero Transition ─── -->
+<div class="hero-transition"></div>
 
 <!-- ─── Governance Warning ─── -->
 <section style="padding:32px 0;background:linear-gradient(135deg,rgba(224,62,77,0.06),rgba(212,138,0,0.06))">
@@ -990,8 +1219,8 @@ blockquote cite{
     <h2 class="section-title reveal">Meet Your Next<br>Insider Threat</h2>
     <p class="section-subtitle reveal">Anyone can spin up an AI agent in minutes. These agents bypass SSO, skip MFA, and hold direct access to your most sensitive data. Traditional security was built for humans.</p>
 
-    <div class="grid-4" style="margin-top:40px">
-      <div class="risk-card reveal">
+    <div class="bento-grid" style="margin-top:40px">
+      <div class="risk-card reveal bento-span-2">
         <div class="icon">&#x1F6E1;</div>
         <h3>Shadow AI Sprawl</h3>
         <p>Users build agents with no approval process. IT can see who logs in, but what the agent does after login is completely invisible.</p>
@@ -1006,7 +1235,7 @@ blockquote cite{
         <h3>Missing User Context</h3>
         <p>Agents operate without user context. They need to act on behalf of a user with permissions lesser than or equal to that user's.</p>
       </div>
-      <div class="risk-card reveal reveal-delay-3">
+      <div class="risk-card reveal reveal-delay-3 bento-span-2">
         <div class="icon">&#x1F4CA;</div>
         <h3>No Audit Trail</h3>
         <p>Agents work 24/7 at 5,000 ops/minute. EU AI Act Article 14 mandates every agent action be logged with who, why, when, and on whose behalf.</p>
@@ -1121,8 +1350,8 @@ blockquote cite{
     <h2 class="section-title reveal">The Developer<br>Security Toolkit</h2>
     <p class="section-subtitle reveal">A suite of identity features that help developers build secure GenAI applications. SDKs for every major AI framework.</p>
 
-    <div class="grid-2" style="margin-top:40px">
-      <div class="feature-card reveal">
+    <div class="bento-grid" style="margin-top:40px">
+      <div class="feature-card reveal bento-span-2">
         <div class="fc-icon">&#x1F512;</div>
         <h3>User Authentication</h3>
         <p>Securely authenticate users with Universal Login — OAuth 2.0 and OpenID Connect for both interactive and headless AI agents. Support for social, enterprise, and custom identity providers.</p>
@@ -1137,7 +1366,7 @@ blockquote cite{
         <h3>Async Auth (CIBA)</h3>
         <p>Human-in-the-loop for critical actions. Agents request approval via push, SMS, or email using Client-Initiated Backchannel Authentication. Supports Rich Authorization Requests (RAR).</p>
       </div>
-      <div class="feature-card reveal reveal-delay-3">
+      <div class="feature-card reveal reveal-delay-3 bento-span-2">
         <div class="fc-icon">&#x1F50D;</div>
         <h3>Authorization for RAG</h3>
         <p>Enforce document-level access control in RAG pipelines using Auth0 FGA. Only data the user is authorized to see is included in LLM context. Prevents sensitive data leakage.</p>
@@ -1186,8 +1415,8 @@ blockquote cite{
     <h2 class="section-title reveal">Reference Patterns</h2>
     <p class="section-subtitle reveal">Five foundational patterns for securing agent-to-resource and agent-to-agent communication, grounded in OpenID Foundation standards.</p>
 
-    <div class="grid-3" style="margin-top:40px">
-      <div class="pattern-card reveal">
+    <div class="bento-grid bento-3" style="margin-top:40px">
+      <div class="pattern-card reveal bento-span-2">
         <div class="pattern-tag">Pattern A — XAA</div>
         <h3>Agent-to-Resource (Enterprise)</h3>
         <p class="use-case">Agent accesses internal APIs (HR, CRM, ERP) on behalf of authenticated users.</p>
@@ -1241,7 +1470,7 @@ blockquote cite{
           <span class="flow-step">Token Issued</span>
         </div>
       </div>
-      <div class="pattern-card reveal reveal-delay-1">
+      <div class="pattern-card reveal reveal-delay-1 bento-span-2">
         <div class="pattern-tag">Pattern E — FGA + RAG</div>
         <h3>RAG Security</h3>
         <p class="use-case">AI agent uses RAG with enterprise documents — access levels enforced at retrieval time.</p>
@@ -1886,7 +2115,6 @@ function copyCode(btn) {
 document.querySelectorAll('.nav-links a, .nav-drawer-links a').forEach(link => {
   link.addEventListener('click', (e) => {
     const href = link.getAttribute('href');
-    // Only apply smooth scroll to hash links (#), not external links
     if (href && href.startsWith('#')) {
       e.preventDefault();
       const target = document.querySelector(href);
@@ -1896,6 +2124,185 @@ document.querySelectorAll('.nav-links a, .nav-drawer-links a').forEach(link => {
     }
   });
 });
+
+/* ─── Command Palette (Cmd+K) ─── */
+(function initCmdPalette() {
+  var palette = document.getElementById('cmdPalette');
+  var input = document.getElementById('cmdInput');
+  var list = document.getElementById('cmdList');
+  var trigger = document.getElementById('cmdKTrigger');
+  if (!palette || !input || !list) return;
+
+  var pages = [
+    { title:'Hub Home', url:'index.html', icon:'\u25C9', group:'Hub' },
+    { title:'The Problem', url:'#problem', icon:'\u26A0', group:'Hub' },
+    { title:'Okta Platform', url:'#okta-solution', icon:'\u25C6', group:'Hub' },
+    { title:'Auth0 for AI', url:'#auth0', icon:'\u25C7', group:'Hub' },
+    { title:'Architecture', url:'#architecture', icon:'\u25A6', group:'Hub' },
+    { title:'Token Flow', url:'#token-flow', icon:'\u2192', group:'Hub' },
+    { title:'Technical Deep-Dive', url:'technical.html', icon:'\u2699', group:'Deep Dives' },
+    { title:'Concepts Guide', url:'concepts.html', icon:'\u25C8', group:'Deep Dives' },
+    { title:'Use Cases', url:'usecases.html', icon:'\u2630', group:'Deep Dives' },
+    { title:'OAuth 2.1', url:'oauth.html', icon:'\uD83D\uDD11', group:'Deep Dives' },
+    { title:'Agent Identity', url:'agent-identity.html', icon:'\u2295', group:'Deep Dives' },
+    { title:'Fine-Grained Auth (FGA)', url:'fga.html', icon:'\u25A3', group:'Deep Dives' },
+    { title:'AI Gateway', url:'ai-gateway.html', icon:'\u25CE', group:'Deep Dives' },
+    { title:'OIDC', url:'oidc.html', icon:'\u2299', group:'Deep Dives' },
+    { title:'Privileged Access (OPA)', url:'opa.html', icon:'\u2298', group:'Deep Dives' },
+    { title:'Threat Protection (ITP)', url:'itp.html', icon:'\u229B', group:'Deep Dives' },
+    { title:'Platform Integrations', url:'integrations.html', icon:'\u229E', group:'Deep Dives' },
+    { title:'ISPM Agent Discovery', url:'ispm.html', icon:'\u25C9', group:'Deep Dives' },
+  ];
+
+  var selectedIdx = 0;
+
+  function renderList(filter) {
+    var q = (filter || '').toLowerCase().trim();
+    var filtered = q ? pages.filter(function(p) { return p.title.toLowerCase().includes(q); }) : pages;
+    while (list.firstChild) list.removeChild(list.firstChild);
+    if (filtered.length === 0) {
+      var empty = document.createElement('li');
+      empty.className = 'cmd-palette-empty';
+      empty.textContent = 'No results found';
+      list.appendChild(empty);
+      return;
+    }
+    var currentGroup = '';
+    filtered.forEach(function(p, i) {
+      if (p.group !== currentGroup) {
+        currentGroup = p.group;
+        var groupEl = document.createElement('li');
+        groupEl.className = 'cmd-palette-group';
+        groupEl.textContent = currentGroup;
+        list.appendChild(groupEl);
+      }
+      var li = document.createElement('li');
+      li.className = 'cmd-palette-item';
+      li.setAttribute('role', 'option');
+      li.setAttribute('data-url', p.url);
+      if (i === 0) li.setAttribute('aria-selected', 'true');
+      var iconSpan = document.createElement('span');
+      iconSpan.className = 'cmd-icon';
+      iconSpan.textContent = p.icon;
+      li.appendChild(iconSpan);
+      li.appendChild(document.createTextNode(p.title));
+      li.addEventListener('click', function() { navigate(p.url); });
+      list.appendChild(li);
+    });
+    selectedIdx = 0;
+  }
+
+  function navigate(url) {
+    palette.close();
+    if (url.startsWith('#')) {
+      var el = document.querySelector(url);
+      if (el) el.scrollIntoView({ behavior:'smooth' });
+    } else {
+      window.location.href = url;
+    }
+  }
+
+  function updateSelection(items) {
+    for (var i = 0; i < items.length; i++) {
+      items[i].setAttribute('aria-selected', i === selectedIdx ? 'true' : 'false');
+    }
+    var sel = items[selectedIdx];
+    if (sel) sel.scrollIntoView({ block:'nearest' });
+  }
+
+  function openPalette() {
+    input.value = '';
+    renderList('');
+    palette.showModal();
+    setTimeout(function() { input.focus(); }, 50);
+  }
+
+  function closePalette() { palette.close(); }
+
+  document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (palette.open) closePalette(); else openPalette();
+    }
+  });
+
+  if (trigger) trigger.addEventListener('click', openPalette);
+  input.addEventListener('input', function() { renderList(input.value); });
+
+  input.addEventListener('keydown', function(e) {
+    var items = list.querySelectorAll('.cmd-palette-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIdx = Math.min(selectedIdx + 1, items.length - 1);
+      updateSelection(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIdx = Math.max(selectedIdx - 1, 0);
+      updateSelection(items);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      var sel = items[selectedIdx];
+      if (sel) navigate(sel.getAttribute('data-url'));
+    }
+  });
+
+  palette.addEventListener('click', function(e) {
+    if (e.target === palette) closePalette();
+  });
+
+  renderList('');
+})();
+
+/* ─── Mouse-Follow Gradient on Cards ─── */
+(function initMouseFollow() {
+  document.querySelectorAll('.risk-card, .feature-card, .pattern-card').forEach(function(card) {
+    card.addEventListener('mousemove', function(e) {
+      var rect = card.getBoundingClientRect();
+      var x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+      var y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+      card.style.setProperty('--mouse-x', x + '%');
+      card.style.setProperty('--mouse-y', y + '%');
+    });
+  });
+})();
+
+/* ─── Fill Bar Animation ─── */
+(function initFillBars() {
+  var fillObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate');
+        fillObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.stat-fill-bar').forEach(function(bar) {
+    fillObserver.observe(bar);
+  });
+})();
+
+/* ─── Scroll-Spy for Nav Links ─── */
+(function initScrollSpy() {
+  var sections = document.querySelectorAll('section[id]');
+  var navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+  if (!sections.length || !navLinks.length) return;
+
+  var spy = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var id = entry.target.id;
+        navLinks.forEach(function(link) {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, {
+    rootMargin: '-104px 0px -60% 0px',
+    threshold: 0
+  });
+  sections.forEach(function(s) { spy.observe(s); });
+})();
 </script>
 </body>
 </html>
